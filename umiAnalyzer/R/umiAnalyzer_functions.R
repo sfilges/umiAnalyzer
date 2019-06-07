@@ -1,4 +1,4 @@
-# Define sample class
+#' Define sample class
 UMIsample <- setClass("UMIsample",
                       slots = list(name = "character",
                                    cons.data = "data.frame",
@@ -6,7 +6,7 @@ UMIsample <- setClass("UMIsample",
                                    summary.data = "data.frame")
 )
 
-# Define experiment class
+#' Define experiment class
 UMIexperiment <- setClass("UMIexperiment",
                           slots = list(name = "character",
                                        sample.list = "list",
@@ -15,6 +15,7 @@ UMIexperiment <- setClass("UMIexperiment",
                                        summary.data = "data.frame")
 )
 
+#' Method for creating a UMI sample
 create.UMIsample <- function(sample.name,sample.dir){
   cons.file <- list.files(path = sample.dir,pattern = "\\.cons$")
 
@@ -38,6 +39,9 @@ create.UMIsample <- function(sample.name,sample.dir){
                           summary.data = summary.table)
 }
 
+#' Method for creating a UMI experiment object
+#' @experiment.name Name of the experiment
+#' @dir.names List of sample names
 create.UMIexperiment <- function(experiment.name,dir.names){
 
   sample.list = list()
@@ -73,20 +77,25 @@ create.UMIexperiment <- function(experiment.name,dir.names){
 }
 
 
-# Filter data
-filterUMIobject <- function(object, minDepth, minCoverage, minFreq){
-  cons.table <- object@cons.data
+#' Filter data
+#' @object Requires a UMI sample or UMI experiment object
+#' @minDepth Consensus depth to analyze. Default is 3
+#' @minCoverage Mininum coverage required for amplicons. Default is 1
+#' @minFreq Minimum variant allele frequency to keep. Default is 0
+filterUMIobject <- function(object, minDepth=3, minCoverage=1, minFreq=0){
+  cons.table <- object@cons.data.merged
 
   cons.table <- cons.table[cons.table$Consensus.group.size == minDepth,]
   cons.table <- cons.table[cons.table$Coverage >= minCoverage,]
   cons.table <- cons.table[cons.table$Name != "",]
   cons.table <- cons.table[cons.table$Max.Non.ref.Allele.Frequency >= minFreq,]
 
-  object@cons.data <- cons.table
+  object@cons.data.merged <- cons.table
   return(object)
 }
 
-# Generate QC plots
+#' Generate QC plots
+#' @object Requires a UMI sample or UMI experiment object
 generateQCplots <- function(object){
   cons.table <- object@cons.table
 
