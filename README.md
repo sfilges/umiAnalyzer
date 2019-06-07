@@ -15,12 +15,16 @@ How to use umiAnalyzer
 -----------
 
 ```
-# Define main directory
-main = "/Users/Project/"
+library(umiAnalyzer)
 
-# List umierrorcorrect output directories within main
-dir.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+main = "/Path_to_Project"
 
-# Create a UMI experiment object
-experiment <- create.UMIexperiment(experiment.name = "exp1", dir.names = dir.names)
+sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+
+exp1 <- create.UMIexperiment(experiment.name = "exp1",
+                             main.dir = main,
+                             dir.names = sample.names)
+
+exp1 <- filterUMIobject(exp1)
+
 ```
