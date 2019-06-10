@@ -6,6 +6,11 @@
 \usage{
 create.UMIsample(sample.name, sample.dir)
 }
+\arguments{
+\item{sample.name}{UMI sample object name}
+
+\item{sample.dir}{Path to UMI sample}
+}
 \description{
 Method for creating a UMI sample
 }

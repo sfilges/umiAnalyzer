@@ -71,7 +71,7 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
     summary.data.merged <- rbind(summary.data.merged,summary)
   }
   colnames(hist.data.merged) <- c("coordinates","assay","consReads","singletons","sample")
-  colnames(summary.data.merged) <- c("ID","region","assay","fraction","counts1","counts2","sample")
+  colnames(summary.data.merged) <- c("ID","region","assay","depth","fraction","counts1","counts2","sample")
 
   UMIexperiment <- UMIexperiment(name = experiment.name,
                                  sample.list = sample.list,
@@ -102,15 +102,13 @@ filterUMIobject <- function(object, minDepth=3, minCoverage=1, minFreq=0){
 #' Generate QC plots
 #' @param object Requires a UMI sample or UMI experiment object
 generateQCplots <- function(object){
-  require(ggplot2)
+  requireNamespace("ggplot2", quietly = TRUE)
 
   cons.table <- object@cons.data
   hist.table <- object@hist.data
   summary.table <- object@summary.data
 
   # Consensus depth plot per assay
-
-
 
   # Plot consensus depth distribution
 

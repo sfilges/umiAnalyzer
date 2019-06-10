@@ -1,0 +1,38 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# umiAnalyzer
+
+umiAnalyzer provides tools for analyzing umierrorcorrect output. 
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(umiAnalyzer)
+
+main = "/Path_to_Project"
+
+sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+
+exp1 <- create.UMIexperiment(experiment.name = "exp1",
+                             main.dir = main,
+                             dir.names = sample.names)
+
+exp1 <- filterUMIobject(exp1)
+
+```
