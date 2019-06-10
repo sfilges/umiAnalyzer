@@ -16,6 +16,8 @@ UMIexperiment <- setClass("UMIexperiment",
 )
 
 #' Method for creating a UMI sample
+#' @param sample.name UMI sample object name
+#' @param sample.dir Path to UMI sample
 create.UMIsample <- function(sample.name,sample.dir){
   cons.file <- list.files(path = sample.dir,pattern = "\\.cons$")
 
@@ -40,10 +42,11 @@ create.UMIsample <- function(sample.name,sample.dir){
 }
 
 #' Method for creating a UMI experiment object
-#' @experiment.name Name of the experiment
-#' @dir.names List of sample names
-create.UMIexperiment <- function(experiment.name,dir.names){
-
+#' @param experiment.name Name of the experiment
+#' @param main.dir Main experiment directory
+#' @param dir.names List of sample names
+create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
+  main = main.dir
   sample.list = list()
   cons.data.merged = data.frame()
   hist.data.merged = data.frame()
@@ -65,8 +68,10 @@ create.UMIexperiment <- function(experiment.name,dir.names){
 
     summary <- sample@summary.data
     summary$sample <- dir.names[i]
-    summary.data.merged <- rbind(summary.data.merged,cons)
+    summary.data.merged <- rbind(summary.data.merged,summary)
   }
+  colnames(hist.data.merged) <- c("coordinates","assay","consReads","singletons","sample")
+  colnames(summary.data.merged) <- c("ID","region","assay","fraction","counts1","counts2","sample")
 
   UMIexperiment <- UMIexperiment(name = experiment.name,
                                  sample.list = sample.list,
@@ -77,27 +82,52 @@ create.UMIexperiment <- function(experiment.name,dir.names){
 }
 
 
-#' Filter data
-#' @object Requires a UMI sample or UMI experiment object
-#' @minDepth Consensus depth to analyze. Default is 3
-#' @minCoverage Mininum coverage required for amplicons. Default is 1
-#' @minFreq Minimum variant allele frequency to keep. Default is 0
+#' Method for filtering UMIexperiment and sample objects
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param minDepth Consensus depth to analyze. Default is 3
+#' @param minCoverage Mininum coverage required for amplicons. Default is 1
+#' @param minFreq Minimum variant allele frequency to keep. Default is 0
 filterUMIobject <- function(object, minDepth=3, minCoverage=1, minFreq=0){
-  cons.table <- object@cons.data.merged
+  cons.table <- object@cons.data
 
   cons.table <- cons.table[cons.table$Consensus.group.size == minDepth,]
   cons.table <- cons.table[cons.table$Coverage >= minCoverage,]
   cons.table <- cons.table[cons.table$Name != "",]
   cons.table <- cons.table[cons.table$Max.Non.ref.Allele.Frequency >= minFreq,]
 
-  object@cons.data.merged <- cons.table
+  object@cons.data <- cons.table
   return(object)
 }
 
 #' Generate QC plots
-#' @object Requires a UMI sample or UMI experiment object
+#' @param object Requires a UMI sample or UMI experiment object
 generateQCplots <- function(object){
-  cons.table <- object@cons.table
+  require(ggplot2)
+
+  cons.table <- object@cons.data
+  hist.table <- object@hist.data
+  summary.table <- object@summary.data
+
+  # Consensus depth plot per assay
+
+
+
+  # Plot consensus depth distribution
+
+  # Downsampling plots
 
   return(object)
 }
+
+
+#' Generate VCF file from UMI sample or UMI experiment object
+#' @param object Requires a UMI sample or UMI experiment object
+generateVCF <- function(object){
+  cons.table <- object@cons.table
+
+
+  return(object)
+}
+
+
+

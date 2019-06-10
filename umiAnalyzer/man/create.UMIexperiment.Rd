@@ -4,7 +4,14 @@
 \alias{create.UMIexperiment}
 \title{Method for creating a UMI experiment object}
 \usage{
-create.UMIexperiment(experiment.name, dir.names)
+create.UMIexperiment(experiment.name, main.dir, dir.names)
+}
+\arguments{
+\item{experiment.name}{Name of the experiment}
+
+\item{main.dir}{Main experiment directory}
+
+\item{dir.names}{List of sample names}
 }
 \description{
 Method for creating a UMI experiment object

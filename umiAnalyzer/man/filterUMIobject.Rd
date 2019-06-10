@@ -2,10 +2,19 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{filterUMIobject}
 \alias{filterUMIobject}
-\title{Filter data}
+\title{Method for filtering UMIexperiment and sample objects}
 \usage{
 filterUMIobject(object, minDepth = 3, minCoverage = 1, minFreq = 0)
 }
+\arguments{
+\item{object}{Requires a UMI sample or UMI experiment object}
+
+\item{minDepth}{Consensus depth to analyze. Default is 3}
+
+\item{minCoverage}{Mininum coverage required for amplicons. Default is 1}
+
+\item{minFreq}{Minimum variant allele frequency to keep. Default is 0}
+}
 \description{
-Filter data
+Method for filtering UMIexperiment and sample objects
 }
