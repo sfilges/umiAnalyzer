@@ -5,7 +5,7 @@ Tools for analyzing umierrorcorrect output
 Requirements
 ------------
 
-R (>= 3.5), which can be downloaded and installed via The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/).
+- R (>= 3.5), which can be downloaded and installed via The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/).
 
 Installation from R using devtools
 ------------
