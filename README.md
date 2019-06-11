@@ -2,12 +2,19 @@
 
 Tools for analyzing umierrorcorrect output
 
-Installation
+Requirements
+------------
+
+R (>= 3.5), which can be downloaded and installed via The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/).
+
+Installation from R using devtools
 ------------
 
 In the R studio console, type:
 
 ```
+require(devtools)
+
 install_github("ozimand1as/umiAnalyzer")
 ```
 
