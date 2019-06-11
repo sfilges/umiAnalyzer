@@ -1,0 +1,59 @@
+---
+title: "umiAnalyzer vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{umiAnalyzer vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# Introduction
+
+umiAnalyzer provides tools for analyzing umierrorcorrect output. 
+
+## A basic example
+
+umiAnalyzer comes with a build-in umiExperiment object to explore. For details on how to create your
+own umiExperiment object see below.
+
+In order to call variants using the umiAnalyzer variant caller simply load the package and test data
+and use the callVariants function. You can then filter the resulting consensus data (cons.data) within
+the object, e.g. for significant variants.
+
+```{r example1}
+library(umiAnalyzer)
+
+data <- simsen
+#data <- callVariants(data)
+
+#vars <- data@cons.data
+#vars <- vars[vars$p.adjust <= 0.1,]
+```
+
+## How to make your own umiExperiment object
+
+Define a variable containing the path to the directory with all the umierrorcorrect output folders 
+belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
+you can import if you don't have any of your own.
+
+Call the create.UMIexperiment to create your umiExperiment object.
+
+```{r example2}
+library(umiAnalyzer)
+
+main = system.file("extdata", package = "umiAnalyzer")
+
+sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+
+exp1 <- create.UMIexperiment(experiment.name = "exp1",
+                             main.dir = main,
+                             dir.names = sample.names)
+```
