@@ -23,6 +23,6 @@ Method for filtering UMIexperiment and sample objects
 }
 \examples{
 library(umiAnalyzer)
-data <- UMIexperiment
+data <- simsen
 data <- filterUMIobject(data)
 }

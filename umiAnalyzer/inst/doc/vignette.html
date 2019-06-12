@@ -306,39 +306,32 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>umiAnalyzer provides tools for analyzing umierrorcorrect output.</p>
-<div id="a-basic-example" class="section level2">
-<h2>A basic example</h2>
-<p>umiAnalyzer comes with a build-in umiExperiment object to explore. For details on how to create your own umiExperiment object see below.</p>
-<p>In order to call variants using the umiAnalyzer variant caller simply load the package and test data and use the callVariants function. You can then filter the resulting consensus data (cons.data) within the object, e.g. for significant variants.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(umiAnalyzer)</a>
-<a class="sourceLine" id="cb1-2" title="2"></a>
-<a class="sourceLine" id="cb1-3" title="3">data &lt;-<span class="st"> </span>UMIexperiment</a>
-<a class="sourceLine" id="cb1-4" title="4">data &lt;-<span class="st"> </span><span class="kw">callVariants</span>(data)</a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="co">#&gt; Warning in dbeta(data, shape1 = a, shape2 = b, log = TRUE): NaNs produced</span></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="co">#&gt; Warning in nlm(betaNLL, params0, a0/b0): NA/Inf replaced by maximum</span></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="co">#&gt; positive value</span></a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="co">#&gt; Warning in dbeta(data, shape1 = a, shape2 = b, log = TRUE): NaNs produced</span></a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="co">#&gt; Warning in nlm(betaNLL, params0, a0/b0): NA/Inf replaced by maximum</span></a>
-<a class="sourceLine" id="cb1-10" title="10"><span class="co">#&gt; positive value</span></a>
-<a class="sourceLine" id="cb1-11" title="11"><span class="co">#&gt; Warning in dbeta(data, shape1 = a, shape2 = b, log = TRUE): NaNs produced</span></a>
-<a class="sourceLine" id="cb1-12" title="12"><span class="co">#&gt; Warning in nlm(betaNLL, params0, a0/b0): NA/Inf replaced by maximum</span></a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="co">#&gt; positive value</span></a>
-<a class="sourceLine" id="cb1-14" title="14"></a>
-<a class="sourceLine" id="cb1-15" title="15">vars &lt;-<span class="st"> </span>data<span class="op">@</span>cons.data</a>
-<a class="sourceLine" id="cb1-16" title="16">vars &lt;-<span class="st"> </span>vars[vars<span class="op">$</span>p.adjust <span class="op">&lt;=</span><span class="st"> </span><span class="fl">0.1</span>,]</a></code></pre></div>
-</div>
 <div id="how-to-make-your-own-umiexperiment-object" class="section level2">
 <h2>How to make your own umiExperiment object</h2>
-<p>Define a variable containing the path to the directory with all the umierrorcorrect output folders belonging to your experiment.</p>
+<p>Define a variable containing the path to the directory with all the umierrorcorrect output folders belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that you can import if you don’t have any of your own.</p>
 <p>Call the create.UMIexperiment to create your umiExperiment object.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(umiAnalyzer)</a>
-<a class="sourceLine" id="cb2-2" title="2"></a>
-<a class="sourceLine" id="cb2-3" title="3">main =<span class="st"> &quot;/Users/xfilst/umiExperiment&quot;</span></a>
-<a class="sourceLine" id="cb2-4" title="4">sample.names &lt;-<span class="st"> </span><span class="kw">list.dirs</span>(<span class="dt">path =</span> main, <span class="dt">full.names =</span> <span class="ot">FALSE</span>, <span class="dt">recursive =</span> <span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb2-5" title="5"></a>
-<a class="sourceLine" id="cb2-6" title="6">exp1 &lt;-<span class="st"> </span><span class="kw">create.UMIexperiment</span>(<span class="dt">experiment.name =</span> <span class="st">&quot;exp1&quot;</span>,</a>
-<a class="sourceLine" id="cb2-7" title="7">                             <span class="dt">main.dir =</span> main,</a>
-<a class="sourceLine" id="cb2-8" title="8">                             <span class="dt">dir.names =</span> sample.names)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(umiAnalyzer)</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3">main =<span class="st"> </span><span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;umiAnalyzer&quot;</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">sample.names &lt;-<span class="st"> </span><span class="kw">list.dirs</span>(<span class="dt">path =</span> main, <span class="dt">full.names =</span> <span class="ot">FALSE</span>, <span class="dt">recursive =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb1-6" title="6"></a>
+<a class="sourceLine" id="cb1-7" title="7">exp1 &lt;-<span class="st"> </span><span class="kw">create.UMIexperiment</span>(<span class="dt">experiment.name =</span> <span class="st">&quot;exp1&quot;</span>,</a>
+<a class="sourceLine" id="cb1-8" title="8">                             <span class="dt">main.dir =</span> main,</a>
+<a class="sourceLine" id="cb1-9" title="9">                             <span class="dt">dir.names =</span> sample.names)</a></code></pre></div>
+</div>
+<div id="a-basic-example" class="section level2">
+<h2>A basic example</h2>
+<p>umiAnalyzer comes with a build-in umiExperiment object to explore, which was generated using the code above, so it can be used without creating the it first if so desired.</p>
+<p>In order to call variants using the umiAnalyzer variant caller simply load the package and test data and use the callVariants function. You can then filter the resulting consensus data (cons.data) within the object, e.g. for significant variants.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">data &lt;-<span class="st"> </span>simsen</a>
+<a class="sourceLine" id="cb2-2" title="2">data &lt;-<span class="st"> </span><span class="kw">callVariants</span>(data)</a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="co">#&gt; Warning in dbeta(data, shape1 = a, shape2 = b, log = TRUE): NaNs produced</span></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co">#&gt; Warning in nlm(betaNLL, params0, a0/b0): NA/Inf replaced by maximum</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="co">#&gt; positive value</span></a>
+<a class="sourceLine" id="cb2-6" title="6"></a>
+<a class="sourceLine" id="cb2-7" title="7">vars &lt;-<span class="st"> </span>data<span class="op">@</span>cons.data</a>
+<a class="sourceLine" id="cb2-8" title="8">vars &lt;-<span class="st"> </span>vars[vars<span class="op">$</span>p.adjust <span class="op">&lt;=</span><span class="st"> </span><span class="fl">0.1</span>,]</a></code></pre></div>
 </div>
 </div>
 

@@ -25,6 +25,6 @@ arisen by chance
 }
 \examples{
 library(umiAnalyzer)
-data <- UMIexperiment
+data <- simsen
 data <- callVariants(data)
 }

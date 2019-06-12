@@ -86,7 +86,7 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 #' @param minCount Minimum variant allele count to keep. Default is 3.
 #' @examples
 #' library(umiAnalyzer)
-#' data <- UMIexperiment
+#' data <- simsen
 #' data <- filterUMIobject(data)
 filterUMIobject <- function(object, minDepth=3, minCoverage=50, minFreq=0, minCount=3){
   cons.table <- object@cons.data
@@ -132,7 +132,7 @@ betaNLL <- function(params,data){
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @examples
 #' library(umiAnalyzer)
-#' data <- UMIexperiment
+#' data <- simsen
 #' data <- callVariants(data)
 callVariants <- function(object){
 
@@ -170,6 +170,13 @@ callVariants <- function(object){
 
   object@cons.data <- cons.table
   return(object)
+}
+
+#' Add metaData
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param name Name of the meta data
+addMetaData <- function(object,name){
+
 }
 
 
