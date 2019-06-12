@@ -17,11 +17,12 @@ In the R studio console, type:
 devtools::install_github("ozimand1as/umiAnalyzer")
 ```
 
-How to use umiAnalyzer
------------
+How to make your own umiExperiment object
+---------------------
 
 Define a variable containing the path to the directory with all the umierrorcorrect output folders 
-belonging to your experiment.
+belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
+you can import if you don't have any of your own.
 
 Call the create.UMIexperiment to create your umiExperiment object.
 
@@ -35,19 +36,26 @@ sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 exp1 <- create.UMIexperiment(experiment.name = "exp1",
                              main.dir = main,
                              dir.names = sample.names)
-
 ```
+
+A basic example
+-----------------
+
+umiAnalyzer comes with a build-in umiExperiment object to explore, which was generated using the code 
+above, so it can be used without creating the it first if so desired.
+
 In order to call variants using the umiAnalyzer variant caller simply load the package and test data
 and use the callVariants function. You can then filter the resulting consensus data (cons.data) within
 the object, e.g. for significant variants.
 
 ```
 data <- simsen
-data <- callVariants(data) # or use your own with callVariants(exp1)
+data <- callVariants(data)
 
 vars <- data@cons.data
-vars <- vars[vars$p.adjust <= 0.1]
+vars <- vars[vars$p.adjust <= 0.1,]
 ```
+
 
 
 
