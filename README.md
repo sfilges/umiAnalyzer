@@ -11,6 +11,7 @@ Requirements
 ------------
 
 - R (>= 3.5), which can be downloaded and installed via The Comprehensive R Archive Network [CRAN](https://cran.r-project.org/).
+- Installation from R using install_github requires the devtools package
 - Installation of the package will, if necessary, automatically install its dependencies: ggplot2, methods, utils, VGAM, stats
 
 Installation from R using devtools
