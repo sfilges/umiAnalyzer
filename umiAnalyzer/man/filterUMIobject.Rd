@@ -22,7 +22,10 @@ filterUMIobject(object, minDepth = 3, minCoverage = 50, minFreq = 0,
 Method for filtering UMIexperiment and sample objects
 }
 \examples{
+\dontrun{
 library(umiAnalyzer)
+
 data <- simsen
 data <- filterUMIobject(data)
+}
 }
