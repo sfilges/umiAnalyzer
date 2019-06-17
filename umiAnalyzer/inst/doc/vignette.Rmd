@@ -1,18 +1,17 @@
 ---
 title: "umiAnalyzer vignette"
+author: "Stefan Filges"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{umiAnalyzer vignette}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteIndexEntry{umiAnalyzer vignette}
+  %\usepackage[utf8]{inputenc}
 ---
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
-)
+  knitr::opts_chunk$set(collapse = TRUE, 
+                        comment = "#>")
 ```
 
 # Introduction
@@ -55,5 +54,28 @@ data <- callVariants(data)
 vars <- data@cons.data
 vars <- vars[vars$p.adjust <= 0.1,]
 ```
+
+## Importing experimental designs and statistics
+### Experimental design
+umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental design matrices or clinical parameters. This is done using the importDesign function and requires a simple formatted table supplied by the user
+as a tab separated file. It is important that the order of the samples in the
+meta data file is the same as when building the UMIexperiment object.
+
+```{r design}
+data <- simsen
+data <- callVariants(data)
+
+metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+
+data <- importDesign(object = data, file = metaData)
+
+attributes(data)$design
+
+```
+
+### General addition of meta data
+
+
+
 
 

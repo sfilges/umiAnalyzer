@@ -24,7 +24,10 @@ to estimate variant P-Values. This can be interpreted as a probability for a var
 arisen by chance
 }
 \examples{
+\dontrun{
 library(umiAnalyzer)
+
 data <- simsen
 data <- callVariants(data)
+}
 }

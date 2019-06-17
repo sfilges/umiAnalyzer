@@ -4,12 +4,14 @@
 \alias{addMetaData}
 \title{Add metaData}
 \usage{
-addMetaData(object, name)
+addMetaData(object, attributeName, attributeValue)
 }
 \arguments{
-\item{object}{Requires a UMI sample or UMI experiment object}
+\item{object}{R object to which meta data should be added}
 
-\item{name}{Name of the meta data}
+\item{attributeName}{Name of the meta data attribute.}
+
+\item{attributeValue}{Meta data to be saved.}
 }
 \description{
 Add metaData

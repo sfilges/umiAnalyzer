@@ -43,10 +43,14 @@ create.UMIsample <- function(sample.name,sample.dir){
 #' @param main.dir Main experiment directory
 #' @param dir.names List of sample names
 #' @examples
+#' \dontrun{
 #' library(umiAnalyzer)
+#'
 #' main = system.file("extdata", package = "umiAnalyzer")
 #' sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#'
 #' exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
+#' }
 create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
   main = main.dir
   sample.list = list()
@@ -85,9 +89,12 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 #' @param minFreq Minimum variant allele frequency to keep. Default is 0.
 #' @param minCount Minimum variant allele count to keep. Default is 3.
 #' @examples
+#' \dontrun{
 #' library(umiAnalyzer)
+#'
 #' data <- simsen
 #' data <- filterUMIobject(data)
+#' }
 filterUMIobject <- function(object, minDepth=3, minCoverage=50, minFreq=0, minCount=3){
   cons.table <- object@cons.data
 
@@ -104,7 +111,9 @@ filterUMIobject <- function(object, minDepth=3, minCoverage=50, minFreq=0, minCo
                 minFreq=minFreq,
                 minCount=minCount)
 
-  attr(object@cons.data, "filter") <- filter
+  object <- addMetaData(object = object,
+                        attributeName = "filter",
+                        attributeValue = filter)
   return(object)
 }
 
@@ -131,10 +140,18 @@ betaNLL <- function(params,data){
 #' @param object A UMierrorcorrect object.
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @examples
+#' \dontrun{
 #' library(umiAnalyzer)
+#'
 #' data <- simsen
 #' data <- callVariants(data)
+#' }
 callVariants <- function(object){
+
+  if(names(attributes(object))=="filter"){
+    warning("It appears the UMI experiment object has been filtered. Consider
+            running callVariants on an unfiltered object instead.")
+  }
 
   object <- filterUMIobject(object = object,
                             minDepth = 3, # Require consensus 3
@@ -172,11 +189,26 @@ callVariants <- function(object){
   return(object)
 }
 
-#' Add metaData
-#' @param object Requires a UMI sample or UMI experiment object
-#' @param name Name of the meta data
-addMetaData <- function(object,name){
+#' Import experimental design meta data such as replicates, treatments, categorical variables.
+#' @export
+#' @importFrom utils read.table
+#' @param object UMI.experiment to which to add metadata
+#' @param file File containing meta data
+#' @param sep Column separator. Default is tab.
+importDesign<- function(object,file,sep="\t"){
+  mData <- read.table(file = file, sep = sep, header = TRUE)
 
+  object <- addMetaData(object = object, attributeName = "design", mData)
+  return(object)
+}
+
+#' Add metaData
+#' @param object R object to which meta data should be added
+#' @param attributeName Name of the meta data attribute.
+#' @param attributeValue Meta data to be saved.
+addMetaData <- function(object,attributeName,attributeValue){
+  attr(x = object, attributeName) <- attributeValue
+  return(object)
 }
 
 
