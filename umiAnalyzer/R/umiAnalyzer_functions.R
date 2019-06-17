@@ -294,17 +294,5 @@ generateVCF <- function(object, outFile){
   return(object)
 }
 
-#' Downsample raw reads
-#' @importFrom ShortRead readFastq
-#' @param fastq Path to fastq containing UMIs in header
-downSample <- function(fastq){
-
-  #import fastq and extract header
-  reads <- readFastq(fastq)
-
-  #samples <- sample(1:ncol(data), N_samples, rep=TRUE, prob=data[row,])
-
-
-}
 
 
