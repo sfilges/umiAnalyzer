@@ -28,6 +28,20 @@ metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
 data <- importDesign(object = data, file = metaData)
 
-attributes(data)$design
+## ----getmetadata---------------------------------------------------------
+design <- getMetaData(object = data, attributeName = "design")
+
+design
+
+## ----addmetadata---------------------------------------------------------
+comment <- "fix this"
+data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
+
+myattribute <- getMetaData(object = data, attributeName = "my-comment")
+myattribute
+
+## ----QC plots------------------------------------------------------------
+data <- generateQCplots(data, do.plot = TRUE, group.by = "assay")
+
 
 

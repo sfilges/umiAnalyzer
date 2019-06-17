@@ -4,10 +4,12 @@
 \alias{generateVCF}
 \title{Generate VCF file from UMI sample or UMI experiment object}
 \usage{
-generateVCF(object)
+generateVCF(object, outFile)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
+
+\item{outFile}{String. Name of the output file}
 }
 \description{
 Generate VCF file from UMI sample or UMI experiment object

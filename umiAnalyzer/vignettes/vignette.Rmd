@@ -57,9 +57,10 @@ vars <- vars[vars$p.adjust <= 0.1,]
 
 ## Importing experimental designs and statistics
 ### Experimental design
-umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental design matrices or clinical parameters. This is done using the importDesign function and requires a simple formatted table supplied by the user
-as a tab separated file. It is important that the order of the samples in the
-meta data file is the same as when building the UMIexperiment object.
+umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental 
+design matrices or clinical parameters. This is done using the importDesign function and requires a 
+simple formatted table supplied by the user as a tab separated file. It is important that the order 
+of the samples in the meta data file is the same as when building the UMIexperiment object.
 
 ```{r design}
 data <- simsen
@@ -68,12 +69,44 @@ data <- callVariants(data)
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
 data <- importDesign(object = data, file = metaData)
+```
 
-attributes(data)$design
+### Working with meta data
+
+It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
+matrix loaded with importDesign can be retrieved as follows:
+
+```{r getmetadata}
+design <- getMetaData(object = data, attributeName = "design")
+
+design
+```
+
+Similarly, any kind of meta data can be added and retrieved from an object using addMetaData:
+
+```{r addmetadata}
+comment <- "fix this"
+data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
+
+myattribute <- getMetaData(object = data, attributeName = "my-comment")
+myattribute
+```
+
+## Plotting data with umiAnalyzer
+### Quality control plots
+
+The umiAnalyzer plotting function will print the generated plots, if the do.plot variable is set 
+to TRUE (default) and also return a ggplot plotting object to the data object, which can be 
+retrieved and modified by the user later on.
+
+```{r QC plots}
+data <- generateQCplots(data, do.plot = TRUE, group.by = "assay")
+
 
 ```
 
-### General addition of meta data
+### Amplicon plots
+
 
 
 

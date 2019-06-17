@@ -14,6 +14,7 @@ UMIexperiment <- setClass("UMIexperiment",
 )
 
 #' Method for creating a UMI sample
+#' @export
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @param sample.name UMI sample object name
@@ -137,6 +138,7 @@ betaNLL <- function(params,data){
 #' @export
 #' @importFrom VGAM rbetabinom.ab
 #' @importFrom stats nlm var p.adjust
+#' @importFrom utils install.packages
 #' @param object A UMierrorcorrect object.
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @examples
@@ -148,9 +150,14 @@ betaNLL <- function(params,data){
 #' }
 callVariants <- function(object){
 
-  if(names(attributes(object))=="filter"){
+  if("filter" %in% names(attributes(object))){
     warning("It appears the UMI experiment object has been filtered. Consider
             running callVariants on an unfiltered object instead.")
+    print(attributes(object)$filter)
+  }
+
+  if(!requireNamespace("VGAM", quietly = TRUE)){
+    install.packages("VGAM")
   }
 
   object <- filterUMIobject(object = object,
@@ -186,7 +193,32 @@ callVariants <- function(object){
   cons.table$p.adjust <-p.adjust(pval,method="fdr")
 
   object@cons.data <- cons.table
+
+  object <- addMetaData(object = object, attributeName = "varCalls", "varCalls")
+
   return(object)
+}
+
+
+#' Filter variants based on p values or depth
+#' @export
+#' @param object A UMIexperiment object
+#' @param p.adjust Adjusted p value (FDR)
+#' @param minDepth Minimum consensus depth required
+#' @return A UMIexperiment object with filtered variants
+filterVariants <- function(object, p.adjust = 0.2, minDepth = 50){
+  if("varCalls" %in% names(attributes(object))){
+    vars <- object@cons.data
+    vars <- vars[vars$p.adjust <= p.adjust,]
+    vars <- vars[vars$minDepth >= minDepth,]
+
+    object@cons.data <- vars
+    return(object)
+  }
+  else{
+    message <- simpleError("You need to run callVariants before running filterVariants.")
+    print(message)
+  }
 }
 
 #' Import experimental design meta data such as replicates, treatments, categorical variables.
@@ -195,7 +227,7 @@ callVariants <- function(object){
 #' @param object UMI.experiment to which to add metadata
 #' @param file File containing meta data
 #' @param sep Column separator. Default is tab.
-importDesign<- function(object,file,sep="\t"){
+importDesign <- function(object,file,sep="\t"){
   mData <- read.table(file = file, sep = sep, header = TRUE)
 
   object <- addMetaData(object = object, attributeName = "design", mData)
@@ -203,6 +235,7 @@ importDesign<- function(object,file,sep="\t"){
 }
 
 #' Add metaData
+#' @export
 #' @param object R object to which meta data should be added
 #' @param attributeName Name of the meta data attribute.
 #' @param attributeValue Meta data to be saved.
@@ -211,31 +244,67 @@ addMetaData <- function(object,attributeName,attributeValue){
   return(object)
 }
 
+#' Retrieve meta data by name.
+#' @export
+#' @param object R object from which to get meta data.
+#' @param attributeName Name of the meta data attribute.
+getMetaData <- function(object,attributeName){
+  if(attributeName %in% names(attributes(object))){
+    value <- attributes(object)[names(attributes(object)) == attributeName][[1]]
+    return(value)
+  }
+  else{
+    message <- simpleError("Attribute not found in object.")
+    print(message)
+  }
+}
 
-#' Generate QC plots
+#' Generate VCF file from UMI sample or UMI experiment object
 #' @param object Requires a UMI sample or UMI experiment object
-generateQCplots <- function(object){
-  cons.table <- object@cons.data
-  hist.table <- object@hist.data
-  summary.table <- object@summary.data
+#' @param outFile String. Name of the output file
+generateVCF <- function(object, outFile){
 
-  # Consensus depth plot per assay
+  # This should be moved to a function annotateVCF
 
-  # Plot consensus depth distribution
+  #if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  #  install.packages("BiocManager")
+  #  if (!requireNamespace("VariantAnnotation"), quietly = TRUE)){
+  #     BiocManager::install("VariantAnnotation")
+  #  }
+  #}
 
-  # Downsampling plots
+  cons.table <- object@cons.table
+
+
+  header <- c("##fileformat=VCFv4.3",
+              paste("##fileDate=", Sys.Date(),sep=""),
+              "##source=umiAnalyzerv0.3.0",
+              "##INFO=<ID=DP,Number=1,Type=Integer,Description='Total Depth'>",
+              "##INFO=<ID=AF,Number=A,Type=Float,Description='Allele Frequency'>",
+              "##INFO=<ID=PADJ,Number=A,Type=Float,Description='FDR-adjusted p-value'>",
+              #paste("##INFO=<ID=SAMPLE,Number=A,Type=Float,Description=",
+              #      sample.name,">"),
+              "#CHROM POS ID  REF ALT QUAL  FILTER  INFO  FORMAT")
+
+  #fileConn<-file("output.txt")
+  #writeLines(header, fileConn)
+  #close(fileConn)
+
 
   return(object)
 }
 
+#' Downsample raw reads
+#' @importFrom ShortRead readFastq
+#' @param fastq Path to fastq containing UMIs in header
+downSample <- function(fastq){
 
-#' Generate VCF file from UMI sample or UMI experiment object
-#' @param object Requires a UMI sample or UMI experiment object
-generateVCF <- function(object){
-  cons.table <- object@cons.table
+  #import fastq and extract header
+  reads <- readFastq(fastq)
+
+  #samples <- sample(1:ncol(data), N_samples, rep=TRUE, prob=data[row,])
 
 
-  return(object)
 }
 
 
