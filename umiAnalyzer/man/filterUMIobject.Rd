@@ -4,11 +4,13 @@
 \alias{filterUMIobject}
 \title{Method for filtering UMIexperiment and sample objects}
 \usage{
-filterUMIobject(object, minDepth = 3, minCoverage = 50, minFreq = 0,
-  minCount = 3)
+filterUMIobject(object, name, minDepth = 3, minCoverage = 50,
+  minFreq = 0, minCount = 0)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object.}
+
+\item{name}{String. Name of the filter.}
 
 \item{minDepth}{Consensus depth to analyze. Default is 3.}
 
@@ -17,6 +19,9 @@ filterUMIobject(object, minDepth = 3, minCoverage = 50, minFreq = 0,
 \item{minFreq}{Minimum variant allele frequency to keep. Default is 0.}
 
 \item{minCount}{Minimum variant allele count to keep. Default is 3.}
+}
+\value{
+A UMI sample or UMI experiment object.
 }
 \description{
 Method for filtering UMIexperiment and sample objects

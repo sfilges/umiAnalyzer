@@ -11,7 +11,9 @@ vignette: >
 
 ```{r, echo = FALSE}
   knitr::opts_chunk$set(collapse = TRUE, 
-                        comment = "#>")
+                        comment = "#>",
+                        fig.width=9, 
+                        fig.height=6)
 ```
 
 # Introduction
@@ -26,6 +28,11 @@ you can import if you don't have any of your own.
 
 Call the create.UMIexperiment to create your umiExperiment object.
 
+The UMIexperiment object always maintains your raw data, however you can create as many filters as you
+like, which will be saved as separate objects to access. You can filter the consensus table of
+UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
+and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
+
 ```{r example1}
 library(umiAnalyzer)
 
@@ -36,6 +43,12 @@ sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 exp1 <- create.UMIexperiment(experiment.name = "exp1",
                              main.dir = main,
                              dir.names = sample.names)
+
+exp1 <- filterUMIobject(object = exp1, name = "myfilter", minDepth = 3, 
+                        minCoverage = 100, minFreq = 0, minCount = 0)
+
+myfilter <- getFilter(object = exp1, name = "myfilter")
+myfilter
 ```
 
 ## A basic example
@@ -51,8 +64,7 @@ the object, e.g. for significant variants.
 data <- simsen
 data <- callVariants(data)
 
-vars <- data@cons.data
-vars <- vars[vars$p.adjust <= 0.1,]
+data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
 ```
 
 ## Importing experimental designs and statistics
@@ -102,11 +114,13 @@ retrieved and modified by the user later on.
 ```{r QC plots}
 data <- generateQCplots(data, do.plot = TRUE, group.by = "assay")
 
-
+data <- generateQCplots(data, do.plot = TRUE, group.by = "sample")
 ```
 
 ### Amplicon plots
-
+```{r Amplicon plots}
+data <- generateAmpliconPlots(data, do.plot = TRUE)
+```
 
 
 

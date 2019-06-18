@@ -5,12 +5,29 @@ UMIsample <- setClass("UMIsample",
                                    summary.data = "data.frame")
 )
 
+setOldClass(c("tbl_df", "tbl", "data.frame"))
+
 #' Define experiment class
-UMIexperiment <- setClass("UMIexperiment",
-                          slots = list(name = "character",
-                                       sample.list = "list",
-                                       cons.data = "data.frame",
-                                       summary.data = "data.frame")
+#' @import tibble
+UMIexperiment <- setClass(
+  "UMIexperiment",
+
+  # Define the slots
+  slots = list(name = "character",
+               sample.list = "list",
+               cons.data = "data.frame",
+               summary.data = "data.frame",
+               filters = "list",
+               variants = "tbl_df"),
+
+  # Set the default values for the slots. (optional)
+  prototype = list(name = NULL,
+               sample.list = list(),
+               cons.data = NULL,
+               summary.data = NULL,
+               filters = list(),
+               variants = tibble())
+
 )
 
 #' Method for creating a UMI sample
@@ -75,7 +92,7 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
   colnames(summary.data.merged) <- c("ID","region","assay","depth","fraction","totalCount","UMIcount","sample")
 
   UMIexperiment <- UMIexperiment(name = experiment.name,
-                                 sample.list = sample.list,
+                                 #sample.list = sample.list,
                                  cons.data = cons.data.merged,
                                  summary.data = summary.data.merged)
   return(UMIexperiment)
@@ -84,11 +101,16 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 
 #' Method for filtering UMIexperiment and sample objects
 #' @export
+#' @importFrom utils data
+#' @importFrom tibble as_tibble
+#' @importFrom dplyr filter
 #' @param object Requires a UMI sample or UMI experiment object.
+#' @param name String. Name of the filter.
 #' @param minDepth Consensus depth to analyze. Default is 3.
 #' @param minCoverage Mininum coverage required for amplicons. Default is 1.
 #' @param minFreq Minimum variant allele frequency to keep. Default is 0.
 #' @param minCount Minimum variant allele count to keep. Default is 3.
+#' @return A UMI sample or UMI experiment object.
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -96,27 +118,32 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 #' data <- simsen
 #' data <- filterUMIobject(data)
 #' }
-filterUMIobject <- function(object, minDepth=3, minCoverage=50, minFreq=0, minCount=3){
-  cons.table <- object@cons.data
+filterUMIobject <- function(object, name, minDepth=3, minCoverage=50, minFreq=0, minCount=0){
 
-  cons.table <- cons.table[cons.table$Consensus.group.size == minDepth,]
-  cons.table <- cons.table[cons.table$Coverage >= minCoverage,]
-  cons.table <- cons.table[cons.table$Name != "",]
-  cons.table <- cons.table[cons.table$Max.Non.ref.Allele.Frequency >= minFreq,]
-  cons.table <- cons.table[cons.table$Max.Non.ref.Allele.Count >= minCount,]
+  cons.table <- as_tibble(object@cons.data)
 
-  object@cons.data <- cons.table
+  cons.table <- cons.table %>%
+    dplyr::filter(.data$Consensus.group.size >= minDepth,
+                  .data$Coverage >= minCoverage,
+                  .data$Name != "",
+                  .data$Max.Non.ref.Allele.Frequency >= minFreq,
+                  .data$Max.Non.ref.Allele.Count >= minCount)
 
-  filter = list(minDepth=minDepth,
-                minCoverage=minCoverage,
-                minFreq=minFreq,
-                minCount=minCount)
+  object@filters[[name]] <- cons.table
 
-  object <- addMetaData(object = object,
-                        attributeName = "filter",
-                        attributeValue = filter)
   return(object)
 }
+
+#' Method for retrieving filtered data
+#' @export
+#' @param object Requires a UMI sample or UMI experiment object.
+#' @param name String. Name of the filter.
+#' @return A filtered consensus table, as a tibble.
+getFilter <- function(object, name){
+  filter <- object@filters[name]
+  return(filter)
+}
+
 
 #' Calculates the negative log likelihood for the beta distribution.
 #' @importFrom stats dbeta
@@ -136,6 +163,8 @@ betaNLL <- function(params,data){
 #' to estimate variant P-Values. This can be interpreted as a probability for a variant to not have
 #' arisen by chance
 #' @export
+#' @importFrom dplyr mutate progress_estimated
+#' @importFrom tibble as_tibble
 #' @importFrom VGAM rbetabinom.ab
 #' @importFrom stats nlm var p.adjust
 #' @importFrom utils install.packages
@@ -160,13 +189,13 @@ callVariants <- function(object){
     install.packages("VGAM")
   }
 
-  object <- filterUMIobject(object = object,
+  object <- filterUMIobject(object = object, name = "varCalls",
                             minDepth = 3, # Require consensus 3
                             minCoverage = 100, # Require at least 100 cons reads
                             minFreq = 0, # no minimum allele freq
                             minCount = 0) # no minimum variant allele count
 
-  cons.table <- object@cons.data
+  cons.table <- object@filters["varCalls"][[1]]
 
   a1 <- cons.table$Coverage*cons.table$Max.Non.ref.Allele.Frequency # No. of variant alleles
   b1 <- cons.table$Coverage # Total coverage
@@ -184,15 +213,21 @@ callVariants <- function(object){
   b<-fit$estimate[2]
   pval<-NULL
 
+  pbar <- dplyr::progress_estimated(length(a1))
+  print("Estimating p-values using permutation test. This might take a while.")
   for (i in 1:length(a1)){ # for each named amplicon position:
+    pbar$tick()$print()
     r1 <- rbetabinom.ab(10000,b1[i],shape1=a,shape2=b) # Calculate probability of success
     pval[i] = sum(r1>a1[i])/10000                      # Estimate p value of variant
   }
 
-  cons.table$pval <- pval
-  cons.table$p.adjust <-p.adjust(pval,method="fdr")
+  padj <- p.adjust(pval,method="fdr")
 
-  object@cons.data <- cons.table
+  cons.table <- dplyr::mutate(cons.table, pval = pval)
+  cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
+
+  #object@cons.data <- cons.table
+  object@variants <- cons.table
 
   object <- addMetaData(object = object, attributeName = "varCalls", "varCalls")
 
@@ -202,17 +237,36 @@ callVariants <- function(object){
 
 #' Filter variants based on p values or depth
 #' @export
+#' @import magrittr
+#' @importFrom dplyr select filter
+#' @importFrom tibble as_tibble
+#' @importFrom rlang .data
 #' @param object A UMIexperiment object
-#' @param p.adjust Adjusted p value (FDR)
-#' @param minDepth Minimum consensus depth required
+#' @param p.adjust Numeric. Adjusted p value (FDR). Default is 0.2.
+#' @param minDepth Integer. Minimum variant allele count. Default is 5.
 #' @return A UMIexperiment object with filtered variants
-filterVariants <- function(object, p.adjust = 0.2, minDepth = 50){
+filterVariants <- function(object, p.adjust = 0.2, minDepth = 5){
   if("varCalls" %in% names(attributes(object))){
-    vars <- object@cons.data
-    vars <- vars[vars$p.adjust <= p.adjust,]
-    vars <- vars[vars$minDepth >= minDepth,]
+    # Load the consensus data from object
+    vars.to.print <- object@variants
 
-    object@cons.data <- vars
+    # Filter based on p-value and minimum variant allele depth and select important columns
+    vars.to.print <- vars.to.print %>%
+      dplyr::filter(.data$Max.Non.ref.Allele.Count >= minDepth,
+                    .data$p.adjust <= p.adjust) %>%
+      dplyr::select(.data$Sample.Name,
+                    .data$Contig,
+                    .data$Position,
+                    .data$Name,
+                    .data$Reference,
+                    .data$Max.Non.ref.Allele,
+                    .data$Coverage,
+                    .data$Max.Non.ref.Allele.Count,
+                    .data$Max.Non.ref.Allele.Frequency)
+
+    print(vars.to.print)
+    object@variants <- vars.to.print
+
     return(object)
   }
   else{
@@ -293,6 +347,7 @@ generateVCF <- function(object, outFile){
 
   return(object)
 }
+
 
 
 

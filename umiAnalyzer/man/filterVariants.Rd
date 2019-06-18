@@ -4,14 +4,14 @@
 \alias{filterVariants}
 \title{Filter variants based on p values or depth}
 \usage{
-filterVariants(object, p.adjust = 0.2, minDepth = 50)
+filterVariants(object, p.adjust = 0.2, minDepth = 5)
 }
 \arguments{
 \item{object}{A UMIexperiment object}
 
-\item{p.adjust}{Adjusted p value (FDR)}
+\item{p.adjust}{Numeric. Adjusted p value (FDR). Default is 0.2.}
 
-\item{minDepth}{Minimum consensus depth required}
+\item{minDepth}{Integer. Minimum variant allele count. Default is 5.}
 }
 \value{
 A UMIexperiment object with filtered variants
