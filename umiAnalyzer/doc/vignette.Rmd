@@ -44,9 +44,6 @@ exp1 <- create.UMIexperiment(experiment.name = "exp1",
                              main.dir = main,
                              dir.names = sample.names)
 
-#simsen <- exp1
-#save(simsen, file = "data/simsen.RData")
-
 exp1 <- generateQCplots(exp1, do.plot = TRUE, group.by = "assay")
 
 exp1 <- filterUMIobject(object = exp1, name = "myfilter", minDepth = 3, 

@@ -1,7 +1,7 @@
 sample	replicate	inputDNA	VAF	depth
-VAF-1-0-5ng-rep-1-10	1	20	1.0	10
-VAF-1-0-5ng-rep-2-10	1	20	1.0	10
-VAF-1-0-5ng-rep-3-10	1	20	1.0	10
-WT-5ng-rep-1-10x.fas	2	20	0.0	10
-WT-5ng-rep-2-10x.fas	2	20	0.0	10
-WT-5ng-rep-3-10x.fas	2	20	0.0	10	
+VAF-1-0-5ng-rep-1-10x	1	20	1.0	10
+VAF-1-0-5ng-rep-2-10x	1	20	1.0	10
+VAF-1-0-5ng-rep-3-10x	1	20	1.0	10
+WT-5ng-rep-1-10x	2	20	0.0	10
+WT-5ng-rep-2-10x	2	20	0.0	10
+WT-5ng-rep-3-10x	2	20	0.0	10

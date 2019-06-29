@@ -1,6 +1,8 @@
 #' Generate QC plots
 #' @export
 #' @import ggplot2
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
@@ -34,10 +36,33 @@ generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
       ggtitle("Consensus 3 depths by sample")
   }
 
+  summary.table <- as_tibble(summary.table)
+
+  cons0.depths <- summary.table %>%
+    dplyr::filter(.data$assay != "", .data$depth == 0) %>%
+    dplyr::select(.data$assay,.data$region,.data$sample,.data$totalCount)
+
+  cons3.UMIcount <- summary.table %>%
+    dplyr::filter(.data$assay != "", .data$depth == 3) %>%
+    dplyr::select(.data$assay,.data$region,.data$sample,.data$UMIcount)
+
+  avg.depths <- dplyr::left_join(cons0.depths,cons3.UMIcount, c("region" = "region",
+                                                                "assay" = "assay",
+                                                                "sample" = "sample"))
+
+  avg.depths <- avg.depths %>% dplyr::mutate(avg.FamDepth = .data$totalCount/.data$UMIcount)
+
+  avg.depths_plot <- ggplot(avg.depths, aes_(x=~assay, y=~avg.FamDepth)) +
+    geom_boxplot(outlier.colour="red", outlier.shape=8,
+                 outlier.size=4) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("Average family size per assay")
+
   # Plot consensus depth distribution
 
   if(do.plot){
     print(depth_plot)
+    print(avg.depths_plot)
     object <- addMetaData(object = object, attributeName = "depth_plot", depth_plot)
   }
   else{
@@ -50,23 +75,68 @@ generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
 #' Generate Amplicon plots
 #' @export
 #' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom dplyr filter select
+#' @importFrom tidyr unite
+#' @importFrom sjPlot tab_df
+#' @importFrom utils head
 #' @param object Requires a UMI sample or UMI experiment object
+#' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown.
-generateAmpliconPlots <- function(object, do.plot = TRUE){
+generateAmpliconPlots <- function(object,filter.name, do.plot = TRUE){
 
-  cons.table <- object@variants
-  cons.table$Name <- as.factor(cons.table$Name)
-  cons.table$sample<- as.factor(cons.table$sample)
+  # Check if variant caller has been run on object
+  if( identical(dim(object@variants),dim(tibble())) ) {
+    cons.table <- getFilter(object = object, name = filter.name)
+    cons.table <- cons.table[[1]]
 
-  cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant","Background")
+    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant","Background")
+  }
+  else{
+    cons.table <- object@variants
+    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant","Background")
+  }
 
-  amplicon_plot <- ggplot(cons.table, aes_(x=~as.factor(Position),
-                                           y=~Max.Non.ref.Allele.Frequency,
-                                           fill=~Variants)) +
-    geom_bar(stat="identity") +
-    theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(sample ~ Name, scales = "free_x", space = "free_x")
+  cons.table$Position %<>% as.factor
+  cons.table$Name %<>% as.factor
+  cons.table$sample %<>% as.factor
 
+  # If the plot is too big, limit number of positions plotted;
+  # also output tabular output as an html table
+  if(length(unique(cons.table$Name)) > 3){
+
+    cons.table <- cons.table %>% dplyr::filter(.data$Variants == "Variant")
+
+    amplicon_plot <- ggplot(cons.table, aes_(x=~Position,
+                                             y=~`Max Non-ref Allele Frequency`)) +
+      geom_bar(stat="identity") +
+      theme(axis.text.x = element_text(size = 8, angle = 90)) +
+      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+  }
+  else{
+    amplicon_plot <- ggplot(cons.table, aes_(x=~Position,
+                                             y=~`Max Non-ref Allele Frequency`,
+                                             fill=~Variants)) +
+      geom_bar(stat="identity") +
+      theme(axis.text.x = element_text(size = 2, angle = 90)) +
+      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+
+  }
+
+  cons.table <- cons.table %>%
+    tidyr::unite("Position",c(.data$Contig,.data$Position), sep=":") %>%
+    dplyr::select(.data$`Sample Name`,.data$Position,
+                  .data$Name,.data$Reference,
+                  .data$`Max Non-ref Allele`,
+                  .data$Coverage,
+                  .data$`Max Non-ref Allele Frequency`,
+                  .data$`Max Non-ref Allele Count`)
+
+
+  tab_df(head(as.data.frame(cons.table),n = 20),alternate.rows=TRUE,sort.column=8,
+         file = "tab.html")
+
+  # Show plot and add ggplot object to the UMIexperiment
   if(do.plot){
     print(amplicon_plot)
     object <- addMetaData(object = object, attributeName = "amplicon_plot", amplicon_plot)
@@ -77,6 +147,117 @@ generateAmpliconPlots <- function(object, do.plot = TRUE){
   return(object)
 }
 
+#' Generate Amplicon plots
+#' @export
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param do.plot Logical. Should plots be shown.
+viz_Merged_data <- function(object, do.plot = TRUE){
 
+  # Plotting maximum alternate alle count on merged data
+  data <- object@merged.data
+  data$Position %<>% as.factor
+
+  data$Variants <- ifelse(data$avg.MaxAC > 5, "Variant","Background")
+
+  plot <- ggplot(data, aes_(x=~Position, y=~avg.MaxAC,fill=~Variants)) +
+    geom_bar(stat="identity") +
+    geom_errorbar(aes_(ymin=~avg.MaxAC, ymax=~avg.MaxAC+std.MaxAC), width=.1) +
+    theme(axis.text.x = element_text(size = 2, angle = 90)) +
+    facet_grid(replicate ~ Name, scales = "free_x", space = "free_x")
+
+  print(plot)
+}
+
+
+#' Plot coverage before and after normalization
+#' @importFrom gridExtra grid.arrange
+#' @importFrom magrittr "%>%" "%<>%"
+#' @param cons.data Consensus data table
+#' @return A ggplot object.
+viz_Normalization <- function(cons.data){
+
+  cons.data$Name %<>% as.factor
+
+  # plot coverage before nomralization per assay and group by replicate
+  p1 <- ggplot(cons.data, aes_(x=~Name, y=~Coverage)) +
+    geom_boxplot(outlier.colour="red", outlier.shape=8,
+                 outlier.size=4) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("Before normalization") +
+    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
+
+  # plot coverage after normalization per assay and group by replicate
+  p2 <- ggplot(cons.data, aes_(x=~Name, y=~normCoverage)) +
+    geom_boxplot(outlier.colour="red", outlier.shape=8,
+                 outlier.size=4) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("After normalization") +
+    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
+
+  # group replicates
+  merged <- grid.arrange(p1, p2, nrow = 1)
+
+  return(merged)
+}
+
+
+#' Plot coverage before and after normalization
+#' @import tibble
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom tidyr gather
+#' @importFrom rlang .data
+#' @param cons.data A consensus data table
+#' @return A ggplot object.
+# Remove counts for reference allele for plotting
+viz_stacked_counts <- function(cons.data){
+
+  out.file <- tibble()
+  for(j in 1:nrow(cons.data)) {
+    row <- cons.data[j,]
+    if( row$Reference == "A" ) {
+      row$avg.A <- 0
+    }
+    else if( row$Reference == "C" ) {
+      row$avg.C <- 0
+    }
+    else if( row$Reference == "G" ) {
+      row$avg.G <- 0
+    }
+    else if( row$Reference == "T" ) {
+      row$avg.T <- 0
+    }
+    out.file <- dplyr::bind_rows(out.file, row)
+  }
+
+  # Plot normalised counts
+  out.file <- out.file %>% dplyr::select(.data$Name, .data$Position, .data$replicate,
+                                         .data$avg.Depth,.data$Reference,
+                                         .data$avg.A,.data$avg.T,.data$avg.C,.data$avg.G,
+                                         .data$avg.N,.data$avg.I,.data$avg.D) %>%
+    dplyr::rename(">A"= .data$avg.A,
+                  ">T"= .data$avg.T,
+                  ">C"= .data$avg.C,
+                  ">G"= .data$avg.G,
+                  ">N"= .data$avg.N,
+                  ">I"= .data$avg.I,
+                  ">D"= .data$avg.D) %>%
+    tidyr::gather("variant","count", -c(.data$Name,
+                                        .data$Position,
+                                        .data$replicate,
+                                        .data$Reference,
+                                        .data$avg.Depth))
+
+  # Stacked
+  stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
+    geom_bar( stat="identity") +
+    facet_grid(replicate ~ Name, scales = "free_x", space = "free_x") +
+    theme(axis.text.x = element_text(angle = 90))
+
+  return(stacked)
+}
 
 
