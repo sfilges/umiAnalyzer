@@ -106,3 +106,9 @@ data <- addMetaData(object = data, attributeName = "my-comment", attributeValue 
 myattribute <- getMetaData(object = data, attributeName = "my-comment")
 myattribute
 ```
+
+### Functions for analyzing [Debarcer](https://github.com/oicr-gsi/debarcer) output
+
+```r
+DebarcerExperiment <- create.UMIexperiment.Debarcer(experiment.name = "debarcer", main.dir = main, dir.names = sample.names)
+```
