@@ -86,6 +86,21 @@ metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
 data <- importDesign(object = data, file = metaData)
 ```
+
+## Merging data
+### Merge technical replicates for statistics
+The mergeTechnicalReplicates function will result in a merged data set accessible from the UMIexperiment object using 
+object@merged.data. This is meant to provide statistical information across multiple replicates. If you want to merge 
+multiple sequencing runs of the sample into a single sample using the collapseReplicates function instead.
+
+```r
+mergeTechnicalReplicates(object = object, filter = "myfilter")
+```
+
+### Collapse split libraries into a single sample (TBD)
+ 
+### Analyze time-course data (TBD)
+
 ### Working with meta data
 
 It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
@@ -105,6 +120,15 @@ data <- addMetaData(object = data, attributeName = "my-comment", attributeValue 
 
 myattribute <- getMetaData(object = data, attributeName = "my-comment")
 myattribute
+```
+
+### Generating VCF output (beta)
+
+Generates a VCF file in the current working directory, another output directory can be speciied using the outDir parameter.
+The printAll parameter specifies whether all variants should be printed or only those with at least 5 reads as a support (default = FALSE).
+
+```r
+generateVCF(object = exp1, outFile = "myVCF")
 ```
 
 ### Functions for analyzing [Debarcer](https://github.com/oicr-gsi/debarcer) output
