@@ -90,7 +90,7 @@ data <- importDesign(object = data, file = metaData)
 ## Merging data
 ### Merge technical replicates for statistics
 The mergeTechnicalReplicates function will result in a merged data set accessible from the UMIexperiment object using 
-object@merged.data. This is meant to provide statistical information across multiple replicates. If you want to merge 
+object<at>merged.data. This is meant to provide statistical information across multiple replicates. If you want to merge 
 multiple sequencing runs of the sample into a single sample using the collapseReplicates function instead.
 
 ```r
