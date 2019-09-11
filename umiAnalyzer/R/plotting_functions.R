@@ -3,6 +3,7 @@
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom stats median
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
@@ -12,8 +13,11 @@ generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
 
   # Consensus depth plot per assay
 
-  cdepths <- summary.table[summary.table$assay != "",]
-  cdepths <- cdepths[cdepths$depth == 3,]
+  cdepths <- summary.table %>% dplyr::filter(.data$assay != "",
+                                             .data$depth == 3)
+
+  cdepths$assay %<>% as.factor
+  cdepths$sample %<>% as.factor
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -23,17 +27,33 @@ generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
   # warnings about undefined global variables.
 
   if(group.by == "assay") {
-    depth_plot <- ggplot(cdepths, aes_(x=~as.factor(assay), y=~UMIcount)) +
-      geom_boxplot(outlier.colour="red", outlier.shape=8,
-                   outlier.size=4) +
+
+    depth_plot <- ggplot(cdepths, aes_(x=~assay, y=~UMIcount)) +
+      geom_boxplot(outlier.colour="black", outlier.shape=10, outlier.size=3) +
       theme(axis.text.x = element_text(angle = 90)) +
-      ggtitle("Consensus 3 depths by assay")
+      geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
+      geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
+      labs(
+        title = "Consensus 3 depths by assay",
+        subtitle = paste("Mean depth: ", round(mean(cdepths$UMIcount)),
+                         "Median depth: ", round(median(cdepths$UMIcount))),
+        caption = ""
+      )
+
+
   } else if (group.by == "sample") {
-    depth_plot <- ggplot(cdepths, aes_(x=~as.factor(sample), y=~UMIcount)) +
-      geom_boxplot(outlier.colour="red", outlier.shape=8,
-                   outlier.size=4) +
+
+    depth_plot <- ggplot(cdepths, aes_(x=~sample, y=~UMIcount)) +
+      geom_boxplot(outlier.colour="black", outlier.shape=10, outlier.size=3) +
       theme(axis.text.x = element_text(angle = 90)) +
-      ggtitle("Consensus 3 depths by sample")
+      geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
+      geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
+      labs(
+        title = "Consensus 3 depths by sample",
+        subtitle = paste("Mean depth: ", round(mean(cdepths$UMIcount)),
+                         "Median depth: ", round(median(cdepths$UMIcount))),
+        caption = ""
+      )
   }
 
   summary.table <- as_tibble(summary.table)
@@ -76,10 +96,7 @@ generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
 #' @export
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
-#' @importFrom dplyr filter select
-#' @importFrom tidyr unite
-#' @importFrom sjPlot tab_df
-#' @importFrom utils head
+#' @importFrom dplyr filter
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown.
@@ -105,13 +122,15 @@ generateAmpliconPlots <- function(object,filter.name, do.plot = TRUE){
   # also output tabular output as an html table
   if(length(unique(cons.table$Name)) > 3){
 
-    cons.table <- cons.table %>% dplyr::filter(.data$Variants == "Variant")
-
-    amplicon_plot <- ggplot(cons.table, aes_(x=~Position,
-                                             y=~`Max Non-ref Allele Frequency`)) +
-      geom_bar(stat="identity") +
+    amplicon_plot <- ggplot(cons.table, aes_(x=~Name,
+                                             y=~(100 * `Max Non-ref Allele Frequency`) )) +
+      geom_point(aes(col=.data$Variants, size = .data$`Max Non-ref Allele Count`)) + theme_bw() +
       theme(axis.text.x = element_text(size = 8, angle = 90)) +
-      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+      ylab("Variant Allele Frequency (%)") +
+      xlab("Assay") +
+      labs(title = "Maximum variant allele frequency by assay",
+           caption = "Each dot represenst a position. All samples are included.
+           Blue dots represent positions with at least 5 variant alleles.")
   }
   else{
     amplicon_plot <- ggplot(cons.table, aes_(x=~Position,
@@ -122,19 +141,6 @@ generateAmpliconPlots <- function(object,filter.name, do.plot = TRUE){
       facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
 
   }
-
-  cons.table <- cons.table %>%
-    tidyr::unite("Position",c(.data$Contig,.data$Position), sep=":") %>%
-    dplyr::select(.data$`Sample Name`,.data$Position,
-                  .data$Name,.data$Reference,
-                  .data$`Max Non-ref Allele`,
-                  .data$Coverage,
-                  .data$`Max Non-ref Allele Frequency`,
-                  .data$`Max Non-ref Allele Count`)
-
-
-  tab_df(head(as.data.frame(cons.table),n = 20),alternate.rows=TRUE,sort.column=8,
-         file = "tab.html")
 
   # Show plot and add ggplot object to the UMIexperiment
   if(do.plot){
@@ -201,7 +207,6 @@ viz_Normalization <- function(cons.data){
 
   return(merged)
 }
-
 
 #' Plot coverage before and after normalization
 #' @import tibble

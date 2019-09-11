@@ -43,7 +43,7 @@ UMIexperiment <- setClass(
 #' @importFrom dplyr rename
 #' @param sample.name UMI sample object name
 #' @param sample.dir Path to UMI sample
-create.UMIsample <- function(sample.name,sample.dir){
+createUMIsample <- function(sample.name,sample.dir){
   cons.file <- list.files(path = sample.dir,pattern = "\\.cons$")
 
   cons.table <- readr::read_delim(file = file.path(sample.dir,cons.file),
@@ -68,7 +68,7 @@ create.UMIsample <- function(sample.name,sample.dir){
                                     `Max Non-ref Allele` = col_character()
                                   ))
 
-  summary.file <- list.files(path = sample.dir,pattern = "\\.txt$")
+  summary.file <- list.files(path = sample.dir,pattern = "\\_summary_statistics.txt$")
 
   summary.table <- readr::read_delim(file = file.path(sample.dir,summary.file),
                                      delim = "\t",
@@ -82,13 +82,13 @@ create.UMIsample <- function(sample.name,sample.dir){
                                        X6 = col_double(),
                                        X7 = col_double()
                                        )) %>%
-                                       dplyr::rename(ID = X1,
-                                                     region = X2,
-                                                     assay = X3,
-                                                     depth = X4,
-                                                     fraction = X5,
-                                                     totalCount = X6,
-                                                     UMIcount = X7)
+                                       dplyr::rename(ID = .data$X1,
+                                                     region = .data$X2,
+                                                     assay = .data$X3,
+                                                     depth = .data$X4,
+                                                     fraction = .data$X5,
+                                                     totalCount = .data$X6,
+                                                     UMIcount = .data$X7)
 
   UMI.sample <- UMIsample(name = sample.name,
                           cons.data = cons.table,
@@ -113,14 +113,14 @@ create.UMIsample <- function(sample.name,sample.dir){
 #'
 #' exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
 #' }
-create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
+createUMIexperiment <- function(experiment.name,main.dir,dir.names){
   main = main.dir
   cons.data.merged = tibble()
   summary.data.merged = tibble()
 
   for(i in 1:length(dir.names)){
 
-    sample <- create.UMIsample(dir.names[i], file.path(main,dir.names[i]))
+    sample <- createUMIsample(dir.names[i], file.path(main,dir.names[i]))
 
     cons <- sample@cons.data
     cons$sample <- dir.names[i]
@@ -142,7 +142,6 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 #' @export
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom utils data
-#' @importFrom tibble as_tibble
 #' @importFrom dplyr filter
 #' @param object Requires a UMI sample or UMI experiment object.
 #' @param name String. Name of the filter.
@@ -160,7 +159,7 @@ create.UMIexperiment <- function(experiment.name,main.dir,dir.names){
 #' }
 filterUMIobject <- function(object, name, minDepth=3, minCoverage=50, minFreq=0, minCount=0){
 
-  cons.table <- as_tibble(object@cons.data)
+  cons.table <- object@cons.data
 
   cons.table <- cons.table %>%
     dplyr::filter(.data$`Consensus group size` == minDepth,
@@ -193,6 +192,9 @@ getFilter <- function(object, name){
 betaNLL <- function(params,data){
   a<-params[1]
   b<-params[2]
+
+  print(paste("a= ",a," b= ",b,sep=""))
+
   # negative log likelihood for beta
   return(-sum(dbeta(data,shape1=a, shape2=b, log=TRUE)))
 }
@@ -208,6 +210,7 @@ betaNLL <- function(params,data){
 #' @importFrom VGAM rbetabinom.ab
 #' @importFrom stats nlm var p.adjust
 #' @importFrom utils install.packages
+#' @importFrom graphics plot
 #' @param object A UMierrorcorrect object.
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @examples
@@ -259,6 +262,8 @@ callVariants <- function(object){
     pbar$tick()$print()
     r1 <- rbetabinom.ab(10000,b1[i],shape1=a,shape2=b) # Calculate probability of success
     pval[i] = sum(r1>a1[i])/10000                      # Estimate p value of variant
+
+    graphics::plot(r1)
   }
 
   padj <- p.adjust(pval,method="fdr")
@@ -292,7 +297,7 @@ filterVariants <- function(object, p.adjust = 0.2, minVarCount = 5){
 
     # Filter based on p-value and minimum variant allele depth and select important columns
     # using .data also prevents R CMD check from giving a NOTE about undefined global variables
-    # (provided that you’ve also imported rlang::.data with @importFrom rlang .data).
+    # (provided that you???ve also imported rlang::.data with @importFrom rlang .data).
 
     vars.to.print <- vars.to.print %>%
       dplyr::filter(.data$`Max Non-ref Allele Count` >= minVarCount,
@@ -333,7 +338,10 @@ importDesign <- function(object,file,sep="\t"){
   return(object)
 }
 
-#' A function to merge replicates in UMIexperiment object
+#' A function to merge replicates in UMIexperiment object. This will result in a merged data set
+#' accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
+#' information across multiple replicates. If you want to merge multiple sequencing runs of the
+#' sample into a single sample using the collapseReplicates function instead.
 #' @export
 #' @importFrom magrittr "%>%" "%<>%"
 #' @import dplyr
@@ -341,7 +349,7 @@ importDesign <- function(object,file,sep="\t"){
 #' @importFrom stats sd
 #' @param object UMI.experiment to which to add metadata
 #' @param filter.name Name of the filter to use.
-merge_technical_replicates <- function(object, filter.name) {
+mergeTechnicalReplicates <- function(object, filter.name) {
 
   consData <- getFilter(object = object, name = filter.name)
   consData <- consData[[1]]
@@ -355,8 +363,10 @@ merge_technical_replicates <- function(object, filter.name) {
   consData <- dplyr::inner_join(consData, mData, by = c(`Sample Name` = "sample"))
 
   # Calculate normalization factor
-  consData <- consData %>% group_by(.data$Name) %>% mutate(normFac= mean(.data$Coverage)/.data$Coverage) %>%
-    mutate(normCoverage = .data$Coverage*.data$normFac)  %>% ungroup()
+  consData <- consData %>% group_by(.data$Name) %>%
+    mutate(normFac= mean(.data$Coverage)/.data$Coverage) %>% # Normalization factor
+    mutate(normCoverage = .data$Coverage*.data$normFac)  %>% # Normalized Coverage
+    ungroup()
 
   # Plot coverage before and after normalization
   plot.norm <- viz_Normalization(consData)
@@ -393,6 +403,59 @@ merge_technical_replicates <- function(object, filter.name) {
   return(object)
 }
 
+#' Analyze time-course data
+#' @export
+#' @importFrom magrittr "%>%" "%<>%"
+#' @import dplyr
+#' @importFrom rlang .data
+#' @importFrom stats sd
+#' @param object UMI.experiment containing meta data
+#' @param filter.name Name of the filter to use.
+#' @param time.var String. Name of thethe time variable. Default is "time"
+#' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
+#' @param group.by String. Variable for grouping data, eg.g. replicates. Default is NULL.
+analyzeTimeSeries <- function(object,
+                              filter.name,
+                              time.var = "time",
+                              use.variants = FALSE,
+                              group.by = NULL){
+
+
+  #data <- filterUMIobject(object = data, name = "myfilter", minDepth = 3,
+  #                        minCoverage = 100, minFreq = 0, minCount = 0)
+  #myfilter <- getFilter(object = data, name = "myfilter")
+  #metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+  #data <- importDesign(object = data, file = metaData)
+
+  # Check if variant caller has been run on object
+  if( use.variants == FALSE ) {
+    consData <- getFilter(object = object, name = filter.name)
+    consData <- consData[[1]]
+    consData$Position %<>% as.factor
+
+    consData$Variants <- ifelse(consData$`Max Non-ref Allele Count` >= 5, "Variant","Background")
+  }
+  else{
+    consData <- object@variants
+    consData$Variants <- ifelse(consData$p.adjust <= 0.05, "Variant","Background")
+  }
+
+  metaData <- as_tibble(object@meta.data)
+  metaData$replicate %<>% as.factor
+  metaData$sample %<>% as.character
+
+  # Join meta data and consData replicate ID column to consData
+  # Change to left_join?
+  summaryData <- dplyr::inner_join(consData, metaData, by = c(`Sample Name` = "sample"))
+  summaryData <- summaryData %>%
+    dplyr::filter(.data$Variants == "Variant") %>%
+    tidyr::unite(.data$Position, .data$Contig, .data$Position, sep = ":") %>%
+    dplyr::group_by(.data$`Sample Name`, .data$Position, .data$Name) %>%
+    dplyr::summarise()
+
+}
+
+
 #' Add metaData
 #' @export
 #' @param object R object to which meta data should be added
@@ -419,21 +482,15 @@ getMetaData <- function(object,attributeName){
 }
 
 #' Generate VCF file from UMI sample or UMI experiment object
+#' @export
 #' @param object Requires a UMI sample or UMI experiment object
+#' @param outDir String. Output directory, defaults to wokring directory.
 #' @param outFile String. Name of the output file
-generateVCF <- function(object, outFile){
-
-  # This should be moved to a function annotateVCF
-
-  #if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  #  install.packages("BiocManager")
-  #  if (!requireNamespace("VariantAnnotation"), quietly = TRUE)){
-  #     BiocManager::install("VariantAnnotation")
-  #  }
-  #}
+#' @param printAll Logical. Should all or only trusted variant be printed?
+generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE){
 
   cons.table <- object@cons.table
-
+  cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant","Background")
 
   header <- c("##fileformat=VCFv4.3",
               paste("##fileDate=", Sys.Date(),sep=""),
@@ -443,16 +500,56 @@ generateVCF <- function(object, outFile){
               "##INFO=<ID=PADJ,Number=A,Type=Float,Description='FDR-adjusted p-value'>",
               #paste("##INFO=<ID=SAMPLE,Number=A,Type=Float,Description=",
               #      sample.name,">"),
-              "#CHROM POS ID  REF ALT QUAL  FILTER  INFO  FORMAT")
+              paste("#",
+                    paste("CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO",
+                          collapse = "\t"), sep=""))
+  lines = c()
+  lines = append(lines, header)
 
-  #fileConn<-file("output.txt")
-  #writeLines(header, fileConn)
-  #close(fileConn)
+  if(printAll == FALSE){
 
+    cons.table = cons.table %>% dplyr::filter(.data$Variants == "Variant")
+
+  }
+
+  for(i in 1:nrow(cons.table)){
+    row = cons.table[i,]
+
+    if(row$Variants == "Variant"){
+      vcfRow = paste(row$Contig, row$Position , ".", row$Reference, row$`Max Non-ref Allele`,
+                     "PASS", paste("DP=",row$Coverage,";",
+                                   "AF=",row$`Max Non-ref Allele Frequency`,
+                                   sep=""),
+                     collapse = "\t")
+      lines = append(lines, vcfRow)
+    }
+    else {
+
+      if(is.na(row$`Max Non-ref Allele`)){
+        vcfRow = paste(row$Contig, row$Position , ".", row$Reference, ".",
+                       "FAIL", paste("DP=",row$Coverage,";",
+                                     "AF=",row$`Max Non-ref Allele Frequency`,
+                                     sep=""),
+                       collapse = "\t")
+        lines = append(lines, vcfRow)
+      }
+      else {
+        vcfRow = paste(row$Contig, row$Position , ".", row$Reference, row$`Max Non-ref Allele`,
+                       "FAIL", paste("DP=",row$Coverage,";",
+                                     "AF=",row$`Max Non-ref Allele Frequency`,
+                                     sep=""),
+                       collapse = "\t")
+        lines = append(lines, vcfRow)
+      }
+    }
+  }
+
+  fileConn<-file(file.path(outDir,paste(outFile,".vcf",sep="")))
+  writeLines(lines, fileConn)
+  close(fileConn)
 
   return(object)
 }
-
 
 
 
