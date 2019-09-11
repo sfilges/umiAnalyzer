@@ -2,7 +2,8 @@
 UMIsample <- setClass("UMIsample",
                       slots = list(name = "character",
                                    cons.data = "tbl_df",
-                                   summary.data = "tbl_df")
+                                   summary.data = "tbl_df",
+                                   reads = "tbl_df")
 )
 
 setOldClass(c("tbl_df", "tbl", "data.frame"))
@@ -16,6 +17,7 @@ UMIexperiment <- setClass(
   slots = list(name = "character",
                cons.data = "tbl_df",
                summary.data = "tbl_df",
+               reads = "tbl_df",
                meta.data = "data.frame",
                filters = "list",
                variants = "tbl_df",
@@ -25,6 +27,7 @@ UMIexperiment <- setClass(
   prototype = list(name = NULL,
                cons.data = NULL,
                summary.data = NULL,
+               reads = NULL,
                meta.data = data.frame(),
                filters = list(),
                variants = tibble(),
@@ -90,9 +93,12 @@ createUMIsample <- function(sample.name,sample.dir){
                                                      totalCount = .data$X6,
                                                      UMIcount = .data$X7)
 
+  reads.table = readBamFile(sample.dir = sample.dir)
+
   UMI.sample <- UMIsample(name = sample.name,
                           cons.data = cons.table,
-                          summary.data = summary.table)
+                          summary.data = summary.table,
+                          reads = reads.table)
 }
 
 #' Method for creating a UMI experiment object
@@ -117,6 +123,7 @@ createUMIexperiment <- function(experiment.name,main.dir,dir.names){
   main = main.dir
   cons.data.merged = tibble()
   summary.data.merged = tibble()
+  reads.merged = tibble()
 
   for(i in 1:length(dir.names)){
 
@@ -129,14 +136,47 @@ createUMIexperiment <- function(experiment.name,main.dir,dir.names){
     summary <- sample@summary.data
     summary$sample <- dir.names[i]
     summary.data.merged <- dplyr::bind_rows(summary.data.merged,summary)
+
+    reads = sample@reads
+    reads$sample <- dir.names[i]
+    reads.merged <- dplyr::bind_rows(reads.merged,reads)
   }
 
   UMIexperiment <- UMIexperiment(name = experiment.name,
                                  cons.data = cons.data.merged,
-                                 summary.data = summary.data.merged)
+                                 summary.data = summary.data.merged,
+                                 reads = reads.merged)
   return(UMIexperiment)
 }
 
+#' Method for reading bam files
+#' @import tibble
+#' @import magrittr
+#' @import Rsamtools
+#' @importFrom tidyr separate unite
+#' @param sample.dir Path to UMI sample
+readBamFile <- function(sample.dir){
+  bam.file <- list.files(path = sample.dir,pattern = "\\_consensus_reads.bam$")
+
+  bam <- scanBam(file.path(sample.dir, bam.file))
+
+  sequences <- tibble(qname = bam[[1]]$qname,
+                      chrom = bam[[1]]$rname,
+                      pos = bam[[1]]$pos,
+                      seq = as.data.frame(bam[[1]]$seq)$x)
+
+  sequences <- tidyr::separate(sequences,
+                               col = qname,
+                               into = c(NA, NA, NA, "barcode", "count"),
+                               sep = "_",
+                               remove = TRUE) %>%
+    tidyr::separate(col=.data$count,sep="=",into=c(NA,"count"))%>%
+    tidyr::unite(col="position",.data$chrom,.data$pos,sep=":")
+
+  sequences$count %<>% as.integer
+
+  return(sequences)
+}
 
 #' Method for filtering UMIexperiment and sample objects
 #' @export
