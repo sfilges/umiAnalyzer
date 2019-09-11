@@ -7,7 +7,13 @@
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
-generateQCplots <- function(object, do.plot = TRUE, group.by = "assay"){
+#' 
+generateQCplots <- function(
+  object, 
+  do.plot = TRUE, 
+  group.by = "assay"
+ ){
+  
   cons.table <- object@cons.data
   summary.table <- object@summary.data
 
@@ -174,6 +180,23 @@ viz_Merged_data <- function(object, do.plot = TRUE){
     facet_grid(replicate ~ Name, scales = "free_x", space = "free_x")
 
   print(plot)
+}
+
+#' Generate consensus depths plots
+#' @export
+#' @import ggplot2
+#' @param object Requires a UMI sample or UMI experiment object
+consDepthsPlot <- function(object){
+  reads <- object@reads
+  
+  cons_depth_plot <- ggplot(reads, aes(x = position, fill = sample, color = sample)) +
+    geom_histogram(binwidth=1, alpha = 0.5, position="identity") +
+    xlim(0,100) + 
+    facet_wrap(~sample) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold"))
+  
+  plot(cons_depth_plot)
 }
 
 
