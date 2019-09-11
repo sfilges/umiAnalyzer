@@ -27,7 +27,7 @@ UMIexperiment <- setClass(
   prototype = list(name = NULL,
                cons.data = NULL,
                summary.data = NULL,
-               reads = NULL,
+               reads = tibble(),
                meta.data = data.frame(),
                filters = list(),
                variants = tibble(),
@@ -41,12 +41,19 @@ UMIexperiment <- setClass(
 #' Method for creating a UMI sample
 #' @export
 #' @import readr
+#' @import tibble
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
 #' @param sample.name UMI sample object name
 #' @param sample.dir Path to UMI sample
-createUMIsample <- function(sample.name,sample.dir){
+#' @param importBam Logical. Should bam files be imported at object initilization? Default is False.
+createUMIsample <- function(
+  sample.name,
+  sample.dir,
+  importBam = FALSE
+  ){
+  
   cons.file <- list.files(path = sample.dir,pattern = "\\.cons$")
 
   cons.table <- readr::read_delim(file = file.path(sample.dir,cons.file),
@@ -92,13 +99,21 @@ createUMIsample <- function(sample.name,sample.dir){
                                                      fraction = .data$X5,
                                                      totalCount = .data$X6,
                                                      UMIcount = .data$X7)
-
-  reads.table = readBamFile(sample.dir = sample.dir)
-
-  UMI.sample <- UMIsample(name = sample.name,
-                          cons.data = cons.table,
-                          summary.data = summary.table,
-                          reads = reads.table)
+  
+  if(importBam){
+    reads.table = readBamFile(sample.dir = sample.dir)
+    
+    UMI.sample <- UMIsample(name = sample.name,
+                            cons.data = cons.table,
+                            summary.data = summary.table,
+                            reads = reads.table)
+  }
+  else{
+    UMI.sample <- UMIsample(name = sample.name,
+                            cons.data = cons.table,
+                            summary.data = summary.table,
+                            reads = tibble())
+  }
 }
 
 #' Method for creating a UMI experiment object
@@ -119,7 +134,14 @@ createUMIsample <- function(sample.name,sample.dir){
 #'
 #' exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
 #' }
-createUMIexperiment <- function(experiment.name,main.dir,dir.names){
+#' 
+createUMIexperiment <- function(
+  experiment.name,
+  main.dir,
+  dir.names,
+  importBam = FALSE
+  ){
+  
   main = main.dir
   cons.data.merged = tibble()
   summary.data.merged = tibble()
@@ -127,7 +149,9 @@ createUMIexperiment <- function(experiment.name,main.dir,dir.names){
 
   for(i in 1:length(dir.names)){
 
-    sample <- createUMIsample(dir.names[i], file.path(main,dir.names[i]))
+    sample <- createUMIsample(sample.name = dir.names[i], 
+                              sample.dir = file.path(main,dir.names[i]),
+                              importBam = importBam)
 
     cons <- sample@cons.data
     cons$sample <- dir.names[i]
@@ -150,12 +174,14 @@ createUMIexperiment <- function(experiment.name,main.dir,dir.names){
 }
 
 #' Method for reading bam files
+#' @export
 #' @import tibble
 #' @import magrittr
 #' @import Rsamtools
 #' @importFrom tidyr separate unite
 #' @param sample.dir Path to UMI sample
-readBamFile <- function(sample.dir){
+#' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
+readBamFile <- function(sample.dir, cons.depth = 0){
   bam.file <- list.files(path = sample.dir,pattern = "\\_consensus_reads.bam$")
 
   bam <- scanBam(file.path(sample.dir, bam.file))
@@ -178,6 +204,36 @@ readBamFile <- function(sample.dir){
   return(sequences)
 }
 
+#' function to parse bam files
+#' @export
+#' @import tibble
+#' @importFrom dplyr bind_rows progress_estimated
+#' @importFrom graphics plot
+#' @param main.dir Directory containing umierrorcorrect output folders.
+#' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
+parseBamFiles <- function(main.dir, cons.depth = 0){
+  
+  dir.names = list.dirs(path = main.dir)
+  seq.Data = tibble()
+  
+  pbar <- dplyr::progress_estimated(length(dir.names))
+  print("Loading bam files. This might take a while.")
+  
+  for(i in 1:length(dir.names)){
+    pbar$tick()$print()
+    graphics::plot(r1)
+    
+    seq.Table <- readBamFile(i, cons.depth = cons.depth)
+    seq.Table$sample <- dir.names[i]
+    
+    seq.Data <- dplyr::bind_rows(seq.Data, seq.Table)
+    
+  }
+  
+  return(seq.Data)
+  
+}
+
 #' Method for filtering UMIexperiment and sample objects
 #' @export
 #' @importFrom magrittr "%>%" "%<>%"
@@ -197,7 +253,14 @@ readBamFile <- function(sample.dir){
 #' data <- simsen
 #' data <- filterUMIobject(data)
 #' }
-filterUMIobject <- function(object, name, minDepth=3, minCoverage=50, minFreq=0, minCount=0){
+filterUMIobject <- function(
+  object, 
+  name, 
+  minDepth=3, 
+  minCoverage=50, 
+  minFreq=0, 
+  minCount=0
+  ){
 
   cons.table <- object@cons.data
 
