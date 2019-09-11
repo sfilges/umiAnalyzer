@@ -33,14 +33,14 @@ like, which will be saved as separate objects to access. You can filter the cons
 UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
 
-```{r example1}
+```{r example1, eval=FALSE}
 library(umiAnalyzer)
 
 main = system.file("extdata", package = "umiAnalyzer")
 
 sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-exp1 <- create.UMIexperiment(experiment.name = "exp1",
+exp1 <- createUMIexperiment(experiment.name = "exp1",
                              main.dir = main,
                              dir.names = sample.names)
 
@@ -75,7 +75,7 @@ In order to call variants using the umiAnalyzer variant caller simply load the p
 and use the callVariants function. You can then filter the resulting consensus data (cons.data) within
 the object, e.g. for significant variants.
 
-```{r example2}
+```{r example2, eval=FALSE}
 #data <- simsen
 #data <- callVariants(data)
 
@@ -89,7 +89,7 @@ design matrices or clinical parameters. This is done using the importDesign func
 simple formatted table supplied by the user as a tab separated file. It is important that the order 
 of the samples in the meta data file is the same as when building the UMIexperiment object.
 
-```{r design}
+```{r design, eval=FALSE}
 data <- simsen
 data <- callVariants(data)
 
@@ -103,7 +103,7 @@ data <- importDesign(object = data, file = metaData)
 It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
 matrix loaded with importDesign can be retrieved as follows:
 
-```{r getmetadata}
+```{r getmetadata, eval=FALSE}
 design <- getMetaData(object = data, attributeName = "design")
 
 design
@@ -111,7 +111,7 @@ design
 
 Similarly, any kind of meta data can be added and retrieved from an object using addMetaData:
 
-```{r addmetadata}
+```{r addmetadata, eval=FALSE}
 comment <- "fix this"
 data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
 

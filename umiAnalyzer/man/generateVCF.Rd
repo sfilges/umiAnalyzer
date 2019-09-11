@@ -4,12 +4,16 @@
 \alias{generateVCF}
 \title{Generate VCF file from UMI sample or UMI experiment object}
 \usage{
-generateVCF(object, outFile)
+generateVCF(object, outDir = getwd(), outFile, printAll = FALSE)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
 
+\item{outDir}{String. Output directory, defaults to wokring directory.}
+
 \item{outFile}{String. Name of the output file}
+
+\item{printAll}{Logical. Should all or only trusted variant be printed?}
 }
 \description{
 Generate VCF file from UMI sample or UMI experiment object
