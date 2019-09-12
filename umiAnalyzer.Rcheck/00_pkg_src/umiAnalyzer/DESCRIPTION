@@ -1,8 +1,8 @@
 Package: umiAnalyzer
 Type: Package
 Title: Tools for Analyzing Umierrorcorrect Output
-Version: 0.4.2
-Date: 2019-09-11
+Version: 0.4.3
+Date: 2019-09-12
 Authors@R: person("Stefan", "Filges", email = "stefan.filges@gu.se",
                   role = c("aut", "cre"))
 Author: Stefan Filges [aut, cre]
@@ -24,4 +24,4 @@ Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-09-12 07:26:08 UTC; xfilst
+Packaged: 2019-09-12 14:49:20 UTC; xfilst

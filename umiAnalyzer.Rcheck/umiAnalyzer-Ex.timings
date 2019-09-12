@@ -1,4 +1,4 @@
 name	user	system	elapsed
-callVariants	0.000	0.000	0.001	
-createUMIexperiment	0.000	0.001	0.000	
-filterUMIobject	0.000	0.000	0.001	
+callVariants	0	0	0	
+createUMIexperiment	0.000	0.000	0.001	
+filterUMIobject	0	0	0	

@@ -4,6 +4,7 @@ DebarcerSample-class    Define sample class
 UMIexperiment-class     Define experiment class
 UMIsample-class         Define sample class
 addMetaData             Add metaData
+addUmiSample            Add UMI sample to an existing experiment object
 analyzeTimeSeries       Analyze time-course data
 betaNLL                 Calculates the negative log likelihood for the
                         beta distribution.

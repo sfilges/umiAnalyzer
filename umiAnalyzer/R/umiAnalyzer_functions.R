@@ -142,6 +142,8 @@ createUMIsample <- function(sample.name,
       summary.data = summary.table,
       reads = reads.table
     )
+
+    return(UMI.sample)
   }
   else {
     UMI.sample <- UMIsample(
@@ -150,6 +152,8 @@ createUMIsample <- function(sample.name,
       summary.data = summary.table,
       reads = tibble()
     )
+
+    return(UMI.sample)
   }
 }
 
@@ -196,17 +200,19 @@ createUMIexperiment <- function(experiment.name,
     summary$sample <- dir.names[i]
     summary.data.merged <- dplyr::bind_rows(summary.data.merged, summary)
 
-    reads <- sample@reads
-    reads$sample <- dir.names[i]
-    reads.merged <- dplyr::bind_rows(reads.merged, reads)
+    if(importBam) {
+      reads <- sample@reads
+      reads$sample <- dir.names[i]
+      reads.merged <- dplyr::bind_rows(reads.merged, reads)
+    }
   }
 
   UMIexperiment <- UMIexperiment(
     name = experiment.name,
     cons.data = cons.data.merged,
     summary.data = summary.data.merged,
-    reads = reads.merged
-  )
+    reads = reads.merged)
+
   return(UMIexperiment)
 }
 
