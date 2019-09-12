@@ -1,0 +1,124 @@
+---
+title: "umiAnalyzer vignette"
+author: "Stefan Filges"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{umiAnalyzer vignette}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE}
+  knitr::opts_chunk$set(collapse = TRUE, 
+                        comment = "#>",
+                        fig.width=9, 
+                        fig.height=6)
+```
+
+# Introduction
+
+umiAnalyzer provides tools for analyzing umierrorcorrect output. 
+
+## How to make your own umiExperiment object
+
+Define a variable containing the path to the directory with all the umierrorcorrect output folders 
+belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
+you can import if you don't have any of your own.
+
+Call the create.UMIexperiment to create your umiExperiment object.
+
+The UMIexperiment object always maintains your raw data, however you can create as many filters as you
+like, which will be saved as separate objects to access. You can filter the consensus table of
+UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
+and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
+
+```{r example1, eval=FALSE}
+library(umiAnalyzer)
+
+main = system.file("extdata", package = "umiAnalyzer")
+
+sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+
+exp1 <- createUMIexperiment(experiment.name = "exp1",
+                             main.dir = main,
+                             dir.names = sample.names)
+
+#simsen <- exp1
+#save(simsen, file = "data/simsen.RData")
+
+exp1 <- generateQCplots(exp1, do.plot = TRUE, group.by = "assay")
+
+exp1 <- filterUMIobject(object = exp1, name = "myfilter", minDepth = 3, 
+                        minCoverage = 100, minFreq = 0, minCount = 0)
+
+myfilter <- getFilter(object = exp1, name = "myfilter")
+myfilter
+
+exp1 <- generateAmpliconPlots(object = exp1, filter.name = "myfilter", do.plot = TRUE)
+
+metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+exp1 <- importDesign(object = exp1, file = metaData)
+
+exp1 <- merge_technical_replicates(object = exp1, filter.name = "myfilter")
+exp1@merged.data
+
+viz_Merged_data(exp1)
+```
+
+## Calling variants
+
+umiAnalyzer comes with a build-in umiExperiment object to explore, which was generated using the code 
+above, so it can be used without creating the it first if so desired.
+
+In order to call variants using the umiAnalyzer variant caller simply load the package and test data
+and use the callVariants function. You can then filter the resulting consensus data (cons.data) within
+the object, e.g. for significant variants.
+
+```{r example2, eval=FALSE}
+#data <- simsen
+#data <- callVariants(data)
+
+#data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
+```
+
+## Importing experimental designs and statistics
+### Experimental design
+umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental 
+design matrices or clinical parameters. This is done using the importDesign function and requires a 
+simple formatted table supplied by the user as a tab separated file. It is important that the order 
+of the samples in the meta data file is the same as when building the UMIexperiment object.
+
+```{r design, eval=FALSE}
+data <- simsen
+data <- callVariants(data)
+
+metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+
+data <- importDesign(object = data, file = metaData)
+```
+
+### Working with meta data
+
+It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
+matrix loaded with importDesign can be retrieved as follows:
+
+```{r getmetadata, eval=FALSE}
+design <- getMetaData(object = data, attributeName = "design")
+
+design
+```
+
+Similarly, any kind of meta data can be added and retrieved from an object using addMetaData:
+
+```{r addmetadata, eval=FALSE}
+comment <- "fix this"
+data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
+
+myattribute <- getMetaData(object = data, attributeName = "my-comment")
+myattribute
+```
+
+
+
+

@@ -4,12 +4,14 @@
 \alias{createUMIsample}
 \title{Method for creating a UMI sample}
 \usage{
-createUMIsample(sample.name, sample.dir)
+createUMIsample(sample.name, sample.dir, importBam = FALSE)
 }
 \arguments{
 \item{sample.name}{UMI sample object name}
 
 \item{sample.dir}{Path to UMI sample}
+
+\item{importBam}{Logical. Should bam files be imported at object initilization? Default is False.}
 }
 \description{
 Method for creating a UMI sample

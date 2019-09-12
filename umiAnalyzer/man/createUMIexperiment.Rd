@@ -4,7 +4,8 @@
 \alias{createUMIexperiment}
 \title{Method for creating a UMI experiment object}
 \usage{
-createUMIexperiment(experiment.name, main.dir, dir.names)
+createUMIexperiment(experiment.name, main.dir, dir.names,
+  importBam = FALSE)
 }
 \arguments{
 \item{experiment.name}{Name of the experiment}
@@ -25,4 +26,5 @@ sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
 exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
 }
+
 }

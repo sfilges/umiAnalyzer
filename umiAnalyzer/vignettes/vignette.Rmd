@@ -36,34 +36,42 @@ and a user defined name. You can use that name to retrieve a filtered table usin
 ```{r example1, eval=FALSE}
 library(umiAnalyzer)
 
-main = system.file("extdata", package = "umiAnalyzer")
+main <- system.file("extdata", package = "umiAnalyzer")
 
 sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-exp1 <- createUMIexperiment(experiment.name = "exp1",
-                             main.dir = main,
-                             dir.names = sample.names)
+simsen <- createUMIexperiment(
+  experiment.name = "test",
+  main.dir = main,
+  dir.names = sample.names,
+  importBam = FALSE
+)
 
-#simsen <- exp1
-#save(simsen, file = "data/simsen.RData")
+# save(simsen, file = "data/simsen.RData")
 
-exp1 <- generateQCplots(exp1, do.plot = TRUE, group.by = "assay")
+reads <- parseBamFiles(main.dir = main, sample.names = sample.names, cons.depth = 10)
 
-exp1 <- filterUMIobject(object = exp1, name = "myfilter", minDepth = 3, 
-                        minCoverage = 100, minFreq = 0, minCount = 0)
+consDepthsPlot(reads)
 
-myfilter <- getFilter(object = exp1, name = "myfilter")
+simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
+
+simsen <- filterUMIobject(
+  object = simsen, name = "myfilter", minDepth = 3,
+  minCoverage = 100, minFreq = 0, minCount = 0
+)
+
+myfilter <- getFilter(object = simsen, name = "myfilter")
 myfilter
 
-exp1 <- generateAmpliconPlots(object = exp1, filter.name = "myfilter", do.plot = TRUE)
+simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
 
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-exp1 <- importDesign(object = exp1, file = metaData)
+simsen <- importDesign(object = exp1, file = metaData)
 
-exp1 <- merge_technical_replicates(object = exp1, filter.name = "myfilter")
-exp1@merged.data
+simsen <- merge_technical_replicates(object = simsen, filter.name = "myfilter")
+simsen@merged.data
 
-viz_Merged_data(exp1)
+viz_Merged_data(simsen)
 ```
 
 ## Calling variants
