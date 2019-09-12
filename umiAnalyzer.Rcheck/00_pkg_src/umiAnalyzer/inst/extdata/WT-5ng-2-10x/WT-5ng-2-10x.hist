@@ -1,0 +1,10 @@
+0	chr14:77269794-77269828		consensus_reads: 2	singletons: 4
+1	chr17:7673726-7673833	TP53_7	consensus_reads: 5692	singletons: 4590
+2	chr17:7674177-7674286	TP53_1	consensus_reads: 3990	singletons: 1734
+3	chr2:32916228-32916340		consensus_reads: 254	singletons: 280
+4	chr2:32916348-32916625		consensus_reads: 763	singletons: 396
+5	chr2:110520279-110520323		consensus_reads: 1	singletons: 1
+6	chr3:179199120-179199196	PIK3CA_123	consensus_reads: 8249	singletons: 2922
+7	chr3:179234247-179234331	PIK3CA_234	consensus_reads: 8060	singletons: 2942
+8	chr4:54727443-54727487		consensus_reads: 1	singletons: 0
+9	chr4:54733121-54733204	KIT_125	consensus_reads: 10048	singletons: 3615
