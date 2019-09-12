@@ -5,7 +5,7 @@
 * using options ‘--no-manual --as-cran’
 * checking for file ‘umiAnalyzer/DESCRIPTION’ ... OK
 * checking extension type ... Package
-* this is package ‘umiAnalyzer’ version ‘0.4.2’
+* this is package ‘umiAnalyzer’ version ‘0.4.3’
 * package encoding: UTF-8
 * checking package namespace information ... OK
 * checking package dependencies ... OK
@@ -17,9 +17,8 @@
 * checking for sufficient/correct file permissions ... OK
 * checking whether package ‘umiAnalyzer’ can be installed ... OK
 * checking installed package size ... NOTE
-  installed size is  8.5Mb
+  installed size is  8.7Mb
   sub-directories of 1Mb or more:
-    data      1.1Mb
     extdata   7.2Mb
 * checking package directory ... OK
 * checking for future file timestamps ... OK
@@ -43,11 +42,10 @@ Non-standard file/directory found at top level:
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... NOTE
-consDepthsPlot: no visible binding for global variable ‘position’
-parseBamFiles: no visible binding for global variable ‘r1’
+addUmiSample: no visible binding for global variable ‘importBam’
 readBamFile: no visible binding for global variable ‘qname’
 Undefined global functions or variables:
-  position qname r1
+  importBam qname
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -57,6 +55,9 @@ Undefined global functions or variables:
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in documentation object 'createUMIexperiment'
   ‘importBam’
+
+Undocumented arguments in documentation object 'parseBamFiles'
+  ‘sample.names’
 
 Functions with \usage entries need to have the appropriate \alias
 entries, and all their arguments documented.

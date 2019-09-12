@@ -190,23 +190,24 @@ viz_Merged_data <- function(object, do.plot = TRUE){
 #' @import ggplot2
 #' @param object Requires a UMI sample or UMI experiment object
 consDepthsPlot <- function(object) {
-  histogram_theme <- geom_histogram(binwidth = 1, alpha = 0.5, position = "identity") +
-    xlim(0, 100) +
-    facet_wrap(~sample) +
-    theme(
-      axis.text = element_text(size = 12),
-      axis.title = element_text(size = 14, face = "bold")
-    )
-
-
-  if (class(object) == "UMIexperiment") {
+  if (class(object)[1]== "UMIexperiment") {
     reads <- object@reads
 
-    cons_depth_plot <- ggplot(reads, aes(x = position, fill = sample, color = sample)) +
-      histogram_theme
+    cons_depth_plot <- ggplot(reads, aes(x = count, fill = sample, color = sample)) +
+      geom_histogram(binwidth = 1, alpha = 0.5) +
+      xlim(0, 100) +
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 14, face = "bold")
+      ) +
+      facet_wrap(~sample)
   } else {
-    cons_depth_plot <- ggplot(object, aes(x = position, fill = sample, color = sample)) +
-      histogram_theme
+    cons_depth_plot <- ggplot(object, aes(x = count, fill = sample, color = sample)) +
+      geom_histogram(binwidth = 1, alpha = 0.5) +
+      xlim(0, 100) +
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 14, face = "bold")
+      ) +
+      facet_wrap(~sample)
   }
 
   plot(cons_depth_plot)

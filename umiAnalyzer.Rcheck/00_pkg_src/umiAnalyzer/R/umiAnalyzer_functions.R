@@ -42,6 +42,30 @@ UMIexperiment <- setClass(
 
 # Add function to append UMIexperiment
 
+#' Add UMI sample to an existing experiment object
+#' @export
+#' @importFrom dplyr bind_rows
+#' @param object UMIexperiment object
+#' @param sampleName Name of new sample
+#' @param sampleDir Directory to new sample
+#' @param clearData Should other data in UMIexperiment be cleared
+addUmiSample <- function(object,
+                         sampleName,
+                         sampleDir,
+                         clearData = FALSE) {
+  new_sample <- createUMIsample(
+    sample.name = sampleName,
+    sample.dir = sampleDir,
+    importBam = importBam
+  )
+
+  new_cons_data <- new_sample@cons.data
+  new_cons_data$sample <- sampleName
+
+  object@cons.data <- dplyr::bind_rows(object@cons.data, new_cons_data)
+}
+
+
 # Add slot for plots
 
 #' Method for creating a UMI sample
@@ -118,6 +142,8 @@ createUMIsample <- function(sample.name,
       summary.data = summary.table,
       reads = reads.table
     )
+
+    return(UMI.sample)
   }
   else {
     UMI.sample <- UMIsample(
@@ -126,6 +152,8 @@ createUMIsample <- function(sample.name,
       summary.data = summary.table,
       reads = tibble()
     )
+
+    return(UMI.sample)
   }
 }
 
@@ -172,17 +200,19 @@ createUMIexperiment <- function(experiment.name,
     summary$sample <- dir.names[i]
     summary.data.merged <- dplyr::bind_rows(summary.data.merged, summary)
 
-    reads <- sample@reads
-    reads$sample <- dir.names[i]
-    reads.merged <- dplyr::bind_rows(reads.merged, reads)
+    if(importBam) {
+      reads <- sample@reads
+      reads$sample <- dir.names[i]
+      reads.merged <- dplyr::bind_rows(reads.merged, reads)
+    }
   }
 
   UMIexperiment <- UMIexperiment(
     name = experiment.name,
     cons.data = cons.data.merged,
     summary.data = summary.data.merged,
-    reads = reads.merged
-  )
+    reads = reads.merged)
+
   return(UMIexperiment)
 }
 
@@ -192,6 +222,7 @@ createUMIexperiment <- function(experiment.name,
 #' @import magrittr
 #' @import Rsamtools
 #' @importFrom tidyr separate unite
+#' @importFrom dplyr filter
 #' @param sample.dir Path to UMI sample
 #' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
 readBamFile <- function(sample.dir, cons.depth = 0) {
@@ -217,6 +248,8 @@ readBamFile <- function(sample.dir, cons.depth = 0) {
 
   sequences$count %<>% as.integer
 
+  sequences <- dplyr::filter(sequences, count >= cons.depth)
+
   return(sequences)
 }
 
@@ -228,19 +261,15 @@ readBamFile <- function(sample.dir, cons.depth = 0) {
 #' @param main.dir Directory containing umierrorcorrect output folders.
 #' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
 parseBamFiles <- function(main.dir,
+                          sample.names,
                           cons.depth = 0) {
-  dir.names <- list.dirs(path = main.dir)
+  dir.names <- list.dirs(path = main.dir, recursive = FALSE)
   seq.Data <- tibble()
 
-  pbar <- dplyr::progress_estimated(length(dir.names))
-  print("Loading bam files. This might take a while.")
-
   for (i in 1:length(dir.names)) {
-    pbar$tick()$print()
-    graphics::plot(r1)
 
-    seq.Table <- readBamFile(i, cons.depth = cons.depth)
-    seq.Table$sample <- dir.names[i]
+    seq.Table <- readBamFile(sample.dir = dir.names[i], cons.depth = cons.depth)
+    seq.Table$sample <- sample.names[i]
 
     seq.Data <- dplyr::bind_rows(seq.Data, seq.Table)
   }

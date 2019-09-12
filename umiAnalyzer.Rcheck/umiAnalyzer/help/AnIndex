@@ -1,4 +1,5 @@
 addMetaData	addMetaData
+addUmiSample	addUmiSample
 analyzeTimeSeries	analyzeTimeSeries
 betaNLL	betaNLL
 callVariants	callVariants

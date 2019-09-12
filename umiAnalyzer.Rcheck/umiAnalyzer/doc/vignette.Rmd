@@ -33,23 +33,22 @@ like, which will be saved as separate objects to access. You can filter the cons
 UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
 
-```{r example1, eval=FALSE}
+```{r example1, eval=TRUE}
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
 sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-simsen <- createUMIexperiment(
-  experiment.name = "test",
-  main.dir = main,
-  dir.names = sample.names,
-  importBam = FALSE
-)
+simsen <- createUMIexperiment(experiment.name = "test",
+                              main.dir = main,
+                              dir.names = sample.names)
 
 # save(simsen, file = "data/simsen.RData")
 
-reads <- parseBamFiles(main.dir = main)
+reads <- parseBamFiles(main.dir = main, sample.names = sample.names, cons.depth = 10)
+
+consDepthsPlot(reads)
 
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
@@ -64,9 +63,9 @@ myfilter
 simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
 
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-simsen <- importDesign(object = exp1, file = metaData)
+simsen <- importDesign(object = simsen, file = metaData)
 
-simsen <- merge_technical_replicates(object = simsen, filter.name = "myfilter")
+simsen <- mergeTechnicalReplicates(object = simsen, filter.name = "myfilter")
 simsen@merged.data
 
 viz_Merged_data(simsen)
@@ -82,10 +81,10 @@ and use the callVariants function. You can then filter the resulting consensus d
 the object, e.g. for significant variants.
 
 ```{r example2, eval=FALSE}
-#data <- simsen
-#data <- callVariants(data)
+data <- simsen
+data <- callVariants(data)
 
-#data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
+data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
 ```
 
 ## Importing experimental designs and statistics
