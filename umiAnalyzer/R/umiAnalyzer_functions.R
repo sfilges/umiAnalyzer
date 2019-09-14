@@ -23,6 +23,7 @@ UMIexperiment <- setClass(
     reads = "tbl_df",
     meta.data = "data.frame",
     filters = "list",
+    plots = "list",
     variants = "tbl_df",
     merged.data = "tbl_df"
   ),
@@ -35,12 +36,11 @@ UMIexperiment <- setClass(
     reads = tibble(),
     meta.data = data.frame(),
     filters = list(),
+    plots = list(),
     variants = tibble(),
     merged.data = tibble()
   )
 )
-
-# Add function to append UMIexperiment
 
 #' Add UMI sample to an existing experiment object
 #' @export
@@ -53,6 +53,7 @@ addUmiSample <- function(object,
                          sampleName,
                          sampleDir,
                          clearData = FALSE) {
+  
   new_sample <- createUMIsample(
     sample.name = sampleName,
     sample.dir = sampleDir,
@@ -65,9 +66,6 @@ addUmiSample <- function(object,
   object@cons.data <- dplyr::bind_rows(object@cons.data, new_cons_data)
 }
 
-
-# Add slot for plots
-
 #' Method for creating a UMI sample
 #' @export
 #' @import readr
@@ -78,9 +76,12 @@ addUmiSample <- function(object,
 #' @param sample.name UMI sample object name
 #' @param sample.dir Path to UMI sample
 #' @param importBam Logical. Should bam files be imported at object initilization? Default is False.
-createUMIsample <- function(sample.name,
-                            sample.dir,
+createUMIsample <- function(sampleName,
+                            sampleDir,
                             importBam = FALSE) {
+  sample.name <- sampleName
+  sample.dir <- sampleDir
+  
   cons.file <- list.files(path = sample.dir, pattern = "\\.cons$")
 
   cons.table <- readr::read_delim(
@@ -163,9 +164,10 @@ createUMIsample <- function(sample.name,
 #' @importFrom utils read.csv
 #' @importFrom methods new
 #' @importFrom dplyr bind_rows
-#' @param experiment.name Name of the experiment
-#' @param main.dir Main experiment directory
-#' @param dir.names List of sample names
+#' @param experimentName Name of the experiment
+#' @param mainDir Main experiment directory
+#' @param sampleNames List of sample names
+#' @param importBam Logical. Should bam files be imported on creation? Default is False.
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -176,11 +178,12 @@ createUMIsample <- function(sample.name,
 #' exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
 #' }
 #'
-createUMIexperiment <- function(experiment.name,
-                                main.dir,
-                                dir.names,
+createUMIexperiment <- function(experimentName,
+                                mainDir,
+                                sampleNames,
                                 importBam = FALSE) {
-  main <- main.dir
+  main <- mainDir
+  dir.names <- sampleNames
   cons.data.merged <- tibble()
   summary.data.merged <- tibble()
   reads.merged <- tibble()
@@ -223,12 +226,12 @@ createUMIexperiment <- function(experiment.name,
 #' @import Rsamtools
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
-#' @param sample.dir Path to UMI sample
-#' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
-readBamFile <- function(sample.dir, cons.depth = 0) {
-  bam.file <- list.files(path = sample.dir, pattern = "\\_consensus_reads.bam$")
+#' @param sampleDir Path to UMI sample
+#' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+readBamFile <- function(sampleDir, consDepth = 0) {
+  bam.file <- list.files(path = sampleDir, pattern = "\\_consensus_reads.bam$")
 
-  bam <- scanBam(file.path(sample.dir, bam.file))
+  bam <- scanBam(file.path(sampleDir, bam.file))
 
   sequences <- tibble(
     qname = bam[[1]]$qname,
@@ -238,7 +241,7 @@ readBamFile <- function(sample.dir, cons.depth = 0) {
   )
 
   sequences <- tidyr::separate(sequences,
-    col = qname,
+    col = .data$qname,
     into = c(NA, NA, NA, "barcode", "count"),
     sep = "_",
     remove = TRUE
@@ -258,23 +261,47 @@ readBamFile <- function(sample.dir, cons.depth = 0) {
 #' @import tibble
 #' @importFrom dplyr bind_rows progress_estimated
 #' @importFrom graphics plot
-#' @param main.dir Directory containing umierrorcorrect output folders.
-#' @param cons.depth Only retain consensus reads of at least cons.depth. Default is 0.
-parseBamFiles <- function(main.dir,
-                          sample.names,
-                          cons.depth = 0) {
-  dir.names <- list.dirs(path = main.dir, recursive = FALSE)
+#' @param mainDir Directory containing umierrorcorrect output folders.
+#' @param sampleNames A list of sample names.
+#' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+parseBamFiles <- function(mainDir,
+                          sampleNames,
+                          consDepth = 0) {
+  
+  dir.names <- list.dirs(path = mainDir, recursive = FALSE)
   seq.Data <- tibble()
 
   for (i in 1:length(dir.names)) {
 
-    seq.Table <- readBamFile(sample.dir = dir.names[i], cons.depth = cons.depth)
-    seq.Table$sample <- sample.names[i]
+    seq.Table <- readBamFile(sampleDir = dir.names[i], consDepth = cons.depth)
+    seq.Table$sample <- sampleNames[i]
 
     seq.Data <- dplyr::bind_rows(seq.Data, seq.Table)
   }
 
   return(seq.Data)
+}
+
+#' Find consensus reads
+#' A function to analyse consensus read tables generated with parseBamFiles or
+#' a UMIexperiment object containing reads.
+#' @export
+#' @param object Either a tibble generated with parseBamFiles or a UMIexperiment object
+#' @param pattern Regular expression
+#' @param consDepth Minimum consensus depth to keep. Default is 0.
+#' @param groupBy Should data be grouped by position, sample, both or not at all.
+#' 
+findConsensusReads <- function(
+  object, 
+  consDepth = 0, 
+  groupBy = c("none", "sample", "position", "both"), 
+  pattern = NULL) {
+  
+  if (class(object)[1] == "UMIexperiment") {
+    readsTable <- object@reads
+  } else {
+    readsTable <- object
+  }
 }
 
 #' Method for filtering UMIexperiment and sample objects
@@ -302,6 +329,7 @@ filterUMIobject <- function(object,
                             minCoverage = 50,
                             minFreq = 0,
                             minCount = 0) {
+  
   cons.table <- object@cons.data
 
   cons.table <- cons.table %>%
