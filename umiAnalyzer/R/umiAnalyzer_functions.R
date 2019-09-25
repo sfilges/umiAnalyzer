@@ -252,7 +252,16 @@ readBamFile <- function(sampleDir, consDepth = 0) {
   return(sequences)
 }
 
-#' function to parse bam files
+#' Save consensus data
+saveConsData(object, outDir, save = TRUE){
+  consData = object@cons.data
+
+  # TODO Write consData as csv file to outDir
+
+  return(consData)
+}
+
+#' Function to parse bam files
 #' @export
 #' @import tibble
 #' @importFrom dplyr bind_rows progress_estimated

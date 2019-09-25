@@ -30,7 +30,7 @@ Define a variable containing the path to the directory with all the umierrorcorr
 belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
 you can import if you don't have any of your own.
 
-Call the create.UMIexperiment to create your umiExperiment object.
+Call the createUmiExperiment to create your umiExperiment object.
 
 ```
 library(umiAnalyzer)

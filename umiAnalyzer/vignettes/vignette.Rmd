@@ -22,15 +22,15 @@ umiAnalyzer provides tools for analyzing umierrorcorrect output.
 
 ## How to make your own umiExperiment object
 
-Define a variable containing the path to the directory with all the umierrorcorrect output folders 
-belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
-you can import if you don't have any of your own.
+Define a variable containing the path to the directory with all the umierrorcorrect 
+output folders belonging to your experiment. umiAnalyzer comes with raw test data 
+generated with umierrorcorrect that you can import if you don't have any of your own.
 
 Call the createUmiExperiment to create your umiExperiment object.
 
-The UMIexperiment object always maintains your raw data, however you can create as many filters as you
+The umiExperiment object always maintains your raw data, however you can create as many filters as you
 like, which will be saved as separate objects to access. You can filter the consensus table of
-UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
+umiExperiment object with filterUmiObject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
 
 ```{r example1, eval=TRUE}
@@ -47,7 +47,16 @@ simsen <- createUmiExperiment(experimentName = "simsen",
 reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
 
 plotFamilyHistogram(reads)
+```
 
+createUmiExperiment has an optional flag importBam, which is set to FALSE by default. 
+If this is set to TRUE it will automatically call parseBamFiles and store the
+read data in the 'simsen' object which can then be passed directly to plotFamilyHistogram,
+without having to run parseBamFiles again. Note that for large experiments, 
+especially if consDepth is set lower than 10, the size of the experiment object
+may become too large. 
+
+```{r example1continued, eval=TRUE}
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
 simsen <- filterUMIobject(
