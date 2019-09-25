@@ -53,10 +53,10 @@ addUmiSample <- function(object,
                          sampleName,
                          sampleDir,
                          clearData = FALSE) {
-  
+
   new_sample <- createUMIsample(
-    sample.name = sampleName,
-    sample.dir = sampleDir,
+    sampleName = sampleName,
+    sampleDir = sampleDir,
     importBam = importBam
   )
 
@@ -81,7 +81,7 @@ createUMIsample <- function(sampleName,
                             importBam = FALSE) {
   sample.name <- sampleName
   sample.dir <- sampleDir
-  
+
   cons.file <- list.files(path = sample.dir, pattern = "\\.cons$")
 
   cons.table <- readr::read_delim(
@@ -190,8 +190,8 @@ createUMIexperiment <- function(experimentName,
 
   for (i in 1:length(dir.names)) {
     sample <- createUMIsample(
-      sample.name = dir.names[i],
-      sample.dir = file.path(main, dir.names[i]),
+      sampleName = dir.names[i],
+      sampleDir = file.path(main, dir.names[i]),
       importBam = importBam
     )
 
@@ -211,7 +211,7 @@ createUMIexperiment <- function(experimentName,
   }
 
   UMIexperiment <- UMIexperiment(
-    name = experiment.name,
+    name = experimentName,
     cons.data = cons.data.merged,
     summary.data = summary.data.merged,
     reads = reads.merged)
@@ -267,7 +267,7 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 parseBamFiles <- function(mainDir,
                           sampleNames,
                           consDepth = 0) {
-  
+
   dir.names <- list.dirs(path = mainDir, recursive = FALSE)
   seq.Data <- tibble()
 
@@ -290,13 +290,13 @@ parseBamFiles <- function(mainDir,
 #' @param pattern Regular expression
 #' @param consDepth Minimum consensus depth to keep. Default is 0.
 #' @param groupBy Should data be grouped by position, sample, both or not at all.
-#' 
+#'
 findConsensusReads <- function(
-  object, 
-  consDepth = 0, 
-  groupBy = c("none", "sample", "position", "both"), 
+  object,
+  consDepth = 0,
+  groupBy = c("none", "sample", "position", "both"),
   pattern = NULL) {
-  
+
   if (class(object)[1] == "UMIexperiment") {
     readsTable <- object@reads
   } else {
@@ -329,7 +329,7 @@ filterUMIobject <- function(object,
                             minCoverage = 50,
                             minFreq = 0,
                             minCount = 0) {
-  
+
   cons.table <- object@cons.data
 
   cons.table <- cons.table %>%
