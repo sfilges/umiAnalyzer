@@ -35,13 +35,19 @@ Call the create.UMIexperiment to create your umiExperiment object.
 ```
 library(umiAnalyzer)
 
-main = system.file("extdata", package = "umiAnalyzer")
+main <- system.file("extdata", package = "umiAnalyzer")
 
 sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-exp1 <- create.UMIexperiment(experiment.name = "exp1",
-                             main.dir = main,
-                             dir.names = sample.names)
+simsen <- createUMIexperiment(experimentName = "test",
+                              mainDir = main,
+                              sampleNames = sample.names)
+
+# save(simsen, file = "data/simsen.RData")
+
+reads <- parseBamFiles(mainDir = main, sampleNames = sample.names, consDepth = 10)
+
+consDepthsPlot(reads)
 ```
 
 A basic example

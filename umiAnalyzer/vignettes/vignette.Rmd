@@ -33,20 +33,20 @@ like, which will be saved as separate objects to access. You can filter the cons
 UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
 
-```{r example1, eval=TRUE}
+```{r example1, eval=FALSE}
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
 sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-simsen <- createUMIexperiment(experiment.name = "test",
-                              main.dir = main,
-                              dir.names = sample.names)
+simsen <- createUMIexperiment(experimentName = "test",
+                              mainDir = main,
+                              sampleNames = sample.names)
 
 # save(simsen, file = "data/simsen.RData")
 
-reads <- parseBamFiles(main.dir = main, sample.names = sample.names, cons.depth = 10)
+reads <- parseBamFiles(mainDir = main, sampleNames = sample.names, consDepth = 10)
 
 consDepthsPlot(reads)
 

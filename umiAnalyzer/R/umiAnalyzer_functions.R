@@ -53,17 +53,17 @@ addUmiSample <- function(object,
                          sampleName,
                          sampleDir,
                          clearData = FALSE) {
-  
-  new_sample <- createUMIsample(
-    sample.name = sampleName,
-    sample.dir = sampleDir,
-    importBam = importBam
+
+  newSample <- createUMIsample(
+    sampleName = sampleName,
+    sampleDir = sampleDir,
+    importBam = FALSE
   )
 
-  new_cons_data <- new_sample@cons.data
-  new_cons_data$sample <- sampleName
+  newConsData <- newSample@cons.data
+  newConsData$sample <- sampleName
 
-  object@cons.data <- dplyr::bind_rows(object@cons.data, new_cons_data)
+  object@cons.data <- dplyr::bind_rows(object@cons.data, newConsData)
 }
 
 #' Method for creating a UMI sample
@@ -73,19 +73,17 @@ addUmiSample <- function(object,
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
-#' @param sample.name UMI sample object name
-#' @param sample.dir Path to UMI sample
+#' @param sampleName UMI sample object name
+#' @param sampleDir Path to UMI sample
 #' @param importBam Logical. Should bam files be imported at object initilization? Default is False.
 createUMIsample <- function(sampleName,
                             sampleDir,
                             importBam = FALSE) {
-  sample.name <- sampleName
-  sample.dir <- sampleDir
-  
-  cons.file <- list.files(path = sample.dir, pattern = "\\.cons$")
+
+  consFile <- list.files(path = sampleDir, pattern = "\\.cons$")
 
   cons.table <- readr::read_delim(
-    file = file.path(sample.dir, cons.file),
+    file = file.path(sampleDir, consFile),
     delim = "\t",
     col_types = cols(
       `Sample Name` = col_character(),
@@ -108,10 +106,10 @@ createUMIsample <- function(sampleName,
     )
   )
 
-  summary.file <- list.files(path = sample.dir, pattern = "\\_summary_statistics.txt$")
+  summary.file <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
   summary.table <- readr::read_delim(
-    file = file.path(sample.dir, summary.file),
+    file = file.path(sampleDir, summary.file),
     delim = "\t",
     col_names = FALSE,
     col_types = cols(
@@ -135,26 +133,26 @@ createUMIsample <- function(sampleName,
     )
 
   if (importBam) {
-    reads.table <- readBamFile(sample.dir = sample.dir)
+    reads.table <- readBamFile(sampleDir = sampleDir)
 
-    UMI.sample <- UMIsample(
-      name = sample.name,
+    UMIsample <- UMIsample(
+      name = sampleName,
       cons.data = cons.table,
       summary.data = summary.table,
       reads = reads.table
     )
 
-    return(UMI.sample)
+    return(UMIsample)
   }
   else {
-    UMI.sample <- UMIsample(
-      name = sample.name,
+    UMIsample <- UMIsample(
+      name = sampleName,
       cons.data = cons.table,
       summary.data = summary.table,
       reads = tibble()
     )
 
-    return(UMI.sample)
+    return(UMIsample)
   }
 }
 
@@ -182,36 +180,35 @@ createUMIexperiment <- function(experimentName,
                                 mainDir,
                                 sampleNames,
                                 importBam = FALSE) {
-  main <- mainDir
-  dir.names <- sampleNames
+
   cons.data.merged <- tibble()
   summary.data.merged <- tibble()
   reads.merged <- tibble()
 
-  for (i in 1:length(dir.names)) {
+  for (i in 1:length(sampleNames)) {
     sample <- createUMIsample(
-      sample.name = dir.names[i],
-      sample.dir = file.path(main, dir.names[i]),
+      sampleName = sampleNames[i],
+      sampleDir= file.path(mainDir, sampleNames[i]),
       importBam = importBam
     )
 
     cons <- sample@cons.data
-    cons$sample <- dir.names[i]
+    cons$sample <- sampleNames[i]
     cons.data.merged <- dplyr::bind_rows(cons.data.merged, cons)
 
     summary <- sample@summary.data
-    summary$sample <- dir.names[i]
+    summary$sample <- sampleNames[i]
     summary.data.merged <- dplyr::bind_rows(summary.data.merged, summary)
 
     if(importBam) {
       reads <- sample@reads
-      reads$sample <- dir.names[i]
+      reads$sample <- sampleNames[i]
       reads.merged <- dplyr::bind_rows(reads.merged, reads)
     }
   }
 
   UMIexperiment <- UMIexperiment(
-    name = experiment.name,
+    name = experimentName,
     cons.data = cons.data.merged,
     summary.data = summary.data.merged,
     reads = reads.merged)
@@ -251,7 +248,7 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 
   sequences$count %<>% as.integer
 
-  sequences <- dplyr::filter(sequences, count >= cons.depth)
+  sequences <- dplyr::filter(sequences, count >= consDepth)
 
   return(sequences)
 }
@@ -267,13 +264,13 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 parseBamFiles <- function(mainDir,
                           sampleNames,
                           consDepth = 0) {
-  
+
   dir.names <- list.dirs(path = mainDir, recursive = FALSE)
   seq.Data <- tibble()
 
   for (i in 1:length(dir.names)) {
 
-    seq.Table <- readBamFile(sampleDir = dir.names[i], consDepth = cons.depth)
+    seq.Table <- readBamFile(sampleDir = dir.names[i], consDepth = consDepth)
     seq.Table$sample <- sampleNames[i]
 
     seq.Data <- dplyr::bind_rows(seq.Data, seq.Table)
@@ -290,13 +287,13 @@ parseBamFiles <- function(mainDir,
 #' @param pattern Regular expression
 #' @param consDepth Minimum consensus depth to keep. Default is 0.
 #' @param groupBy Should data be grouped by position, sample, both or not at all.
-#' 
+#'
 findConsensusReads <- function(
-  object, 
-  consDepth = 0, 
-  groupBy = c("none", "sample", "position", "both"), 
+  object,
+  consDepth = 0,
+  groupBy = c("none", "sample", "position", "both"),
   pattern = NULL) {
-  
+
   if (class(object)[1] == "UMIexperiment") {
     readsTable <- object@reads
   } else {
@@ -329,7 +326,7 @@ filterUMIobject <- function(object,
                             minCoverage = 50,
                             minFreq = 0,
                             minCount = 0) {
-  
+
   cons.table <- object@cons.data
 
   cons.table <- cons.table %>%
