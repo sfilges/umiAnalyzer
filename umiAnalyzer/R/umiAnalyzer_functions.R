@@ -734,6 +734,3 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
 
   return(object)
 }
-
-
-
