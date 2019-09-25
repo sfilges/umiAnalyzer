@@ -53,6 +53,7 @@ addUmiSample <- function(object,
                          sampleName,
                          sampleDir,
                          clearData = FALSE) {
+
   newSample <- createUmiSample(
     sampleName = sampleName,
     sampleDir = sampleDir,
@@ -188,6 +189,7 @@ createUmiExperiment <- function(experimentName,
     sample <- createUmiSample(
       sampleName = sampleNames[i],
       sampleDir= file.path(mainDir, sampleNames[i]),
+
       importBam = importBam
     )
 
