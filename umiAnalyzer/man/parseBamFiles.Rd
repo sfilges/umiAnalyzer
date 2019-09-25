@@ -4,12 +4,14 @@
 \alias{parseBamFiles}
 \title{function to parse bam files}
 \usage{
-parseBamFiles(main.dir, sample.names, cons.depth = 0)
+parseBamFiles(mainDir, sampleNames, consDepth = 0)
 }
 \arguments{
-\item{main.dir}{Directory containing umierrorcorrect output folders.}
+\item{mainDir}{Directory containing umierrorcorrect output folders.}
 
-\item{cons.depth}{Only retain consensus reads of at least cons.depth. Default is 0.}
+\item{sampleNames}{A list of sample names.}
+
+\item{consDepth}{Only retain consensus reads of at least cons.depth. Default is 0.}
 }
 \description{
 function to parse bam files

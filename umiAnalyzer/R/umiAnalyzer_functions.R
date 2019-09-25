@@ -53,8 +53,7 @@ addUmiSample <- function(object,
                          sampleName,
                          sampleDir,
                          clearData = FALSE) {
-
-  newSample <- createUMIsample(
+  newSample <- createUmiSample(
     sampleName = sampleName,
     sampleDir = sampleDir,
     importBam = FALSE
@@ -76,13 +75,13 @@ addUmiSample <- function(object,
 #' @param sampleName UMI sample object name
 #' @param sampleDir Path to UMI sample
 #' @param importBam Logical. Should bam files be imported at object initilization? Default is False.
-createUMIsample <- function(sampleName,
+createUmiSample <- function(sampleName,
                             sampleDir,
                             importBam = FALSE) {
 
   consFile <- list.files(path = sampleDir, pattern = "\\.cons$")
 
-  cons.table <- readr::read_delim(
+  consTable <- readr::read_delim(
     file = file.path(sampleDir, consFile),
     delim = "\t",
     col_types = cols(
@@ -106,10 +105,10 @@ createUMIsample <- function(sampleName,
     )
   )
 
-  summary.file <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
+  summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
-  summary.table <- readr::read_delim(
-    file = file.path(sampleDir, summary.file),
+  summaryTable <- readr::read_delim(
+    file = file.path(sampleDir, summaryFile),
     delim = "\t",
     col_names = FALSE,
     col_types = cols(
@@ -133,13 +132,13 @@ createUMIsample <- function(sampleName,
     )
 
   if (importBam) {
-    reads.table <- readBamFile(sampleDir = sampleDir)
+    readsTable <- readBamFile(sampleDir = sampleDir)
 
     UMIsample <- UMIsample(
       name = sampleName,
-      cons.data = cons.table,
-      summary.data = summary.table,
-      reads = reads.table
+      cons.data = consTable,
+      summary.data = summaryTable,
+      reads = readsTable
     )
 
     return(UMIsample)
@@ -147,8 +146,8 @@ createUMIsample <- function(sampleName,
   else {
     UMIsample <- UMIsample(
       name = sampleName,
-      cons.data = cons.table,
-      summary.data = summary.table,
+      cons.data = consTable,
+      summary.data = summaryTable,
       reads = tibble()
     )
 
@@ -171,12 +170,12 @@ createUMIsample <- function(sampleName,
 #' library(umiAnalyzer)
 #'
 #' main = system.file("extdata", package = "umiAnalyzer")
-#' sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 #'
-#' exp1 <- create.UMIexperiment(experiment.name = "exp1", main.dir = main, dir.names = sample.names)
+#' exp1 <- createUMIexperiment(experimentName = "exp1", mainDir = main, sampleNames = samples)
 #' }
 #'
-createUMIexperiment <- function(experimentName,
+createUmiExperiment <- function(experimentName,
                                 mainDir,
                                 sampleNames,
                                 importBam = FALSE) {
@@ -186,7 +185,7 @@ createUMIexperiment <- function(experimentName,
   reads.merged <- tibble()
 
   for (i in 1:length(sampleNames)) {
-    sample <- createUMIsample(
+    sample <- createUmiSample(
       sampleName = sampleNames[i],
       sampleDir= file.path(mainDir, sampleNames[i]),
       importBam = importBam
