@@ -2,10 +2,10 @@
 % Please edit documentation in R/runUmiVisualiser.R
 \name{runUmiVisualiser}
 \alias{runUmiVisualiser}
-\title{Function to run shiny app}
+\title{Function to run the umiVisualiser shiny app}
 \usage{
 runUmiVisualiser()
 }
 \description{
-Function to run shiny app
+Function to run the umiVisualiser shiny app
 }

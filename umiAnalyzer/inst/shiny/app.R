@@ -7,6 +7,15 @@
 #    http://shiny.rstudio.com/
 #
 
+if (!requireNamespace(c('tidyverse','shiny','shinyFiles','DT'), quietly = TRUE)) {
+  install.packages(c('tidyverse','shiny','shinyFiles','DT'))
+}
+
+library(tidyverse, quietly = TRUE)
+library(shiny, quietly = TRUE)
+library(shinyFiles, quietly = TRUE)
+library(DT, quietly = TRUE)
+
 options(shiny.maxRequestSize=200*1024^2)
 
 check_me <- function(list, b){
@@ -146,7 +155,7 @@ server <- function(input, output, session) {
         return(NULL)
       }
 
-      return(read_tsv(
+      return(readr::read_tsv(
         file = input$file$datapath,
         col_types = cols(
           `Sample Name` = col_character(),
@@ -179,9 +188,9 @@ server <- function(input, output, session) {
     exp1 <- tryCatch({
       #read_file(path = 'asdd')
 
-      data <- createUmiExperiment(experimentName = "exp1",
-                                  mainDir = main,
-                                  sampleNames = sample.names)
+      data <- umiAnalyzer::createUmiExperiment(experimentName = "exp1",
+                                               mainDir = main,
+                                               sampleNames = sample.names)
 
       data@cons.data
 

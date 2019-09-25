@@ -9,9 +9,9 @@ saveConsData(object, outDir, save = TRUE)
 \arguments{
 \item{object}{umiExperimet object}
 
-\item{save}{Logical. Should data be saved?}
+\item{outDir}{output directory}
 
-\item{outdir}{output directory}
+\item{save}{Logical. Should data be saved?}
 }
 \description{
 Save consensus data

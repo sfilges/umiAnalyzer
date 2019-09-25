@@ -4,7 +4,8 @@
 \alias{generateAmpliconPlots}
 \title{Generate Amplicon plots}
 \usage{
-generateAmpliconPlots(object, filter.name, do.plot = TRUE)
+generateAmpliconPlots(object, filter.name, do.plot = TRUE,
+  amplicons = NULL)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -12,6 +13,8 @@ generateAmpliconPlots(object, filter.name, do.plot = TRUE)
 \item{filter.name}{Name of the filter to be plotted.}
 
 \item{do.plot}{Logical. Should plots be shown.}
+
+\item{amplicons}{(Optional) character vector of amplicons to be plotted.}
 }
 \description{
 Generate Amplicon plots

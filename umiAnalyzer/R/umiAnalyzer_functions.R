@@ -331,9 +331,9 @@ findConsensusReads <- function(
 #' library(umiAnalyzer)
 #'
 #' data <- simsen
-#' data <- filterUMIobject(data)
+#' data <- filterUmiObject(data)
 #' }
-filterUMIobject <- function(object,
+filterUmiobject <- function(object,
                             name,
                             minDepth = 3,
                             minCoverage = 50,
@@ -414,7 +414,7 @@ callVariants <- function(object) {
     install.packages("VGAM")
   }
 
-  object <- filterUMIobject(
+  object <- filterUmiobject(
     object = object, name = "varCalls",
     minDepth = 3, # Require consensus 3
     minCoverage = 100, # Require at least 100 cons reads
@@ -612,7 +612,7 @@ analyzeTimeSeries <- function(object,
                               group.by = NULL) {
 
 
-  # data <- filterUMIobject(object = data, name = "myfilter", minDepth = 3,
+  # data <- filterUmiObject(object = data, name = "myfilter", minDepth = 3,
   #                        minCoverage = 100, minFreq = 0, minCount = 0)
   # myfilter <- getFilter(object = data, name = "myfilter")
   # metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")

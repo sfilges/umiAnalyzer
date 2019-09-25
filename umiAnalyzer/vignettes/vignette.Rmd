@@ -18,7 +18,19 @@ vignette: >
 
 # Introduction
 
-umiAnalyzer provides tools for analyzing umierrorcorrect output. 
+umiAnalyzer provides tools for analyzing umierrorcorrect output.
+
+## Using the umiVisualiser shiny app
+
+The shiny app requires the shiny, shinyFiles, tidyverse and DT packages and can
+be run using the following command:
+
+```{r runApp, eval=FALSE}
+library(umiAnalyzer)
+
+runUmiVisualiser()
+```
+
 
 ## How to make your own umiExperiment object
 
@@ -54,21 +66,41 @@ If this is set to TRUE it will automatically call parseBamFiles and store the
 read data in the 'simsen' object which can then be passed directly to plotFamilyHistogram,
 without having to run parseBamFiles again. Note that for large experiments, 
 especially if consDepth is set lower than 10, the size of the experiment object
-may become too large. 
+may become too large.
+
+Next we generate Quality Control plots and filter the umiExperiment object to
+select for consensus 3 reads.
 
 ```{r example1continued, eval=TRUE}
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
-simsen <- filterUMIobject(
+simsen <- filterUmiobject(
   object = simsen, name = "myfilter", minDepth = 3,
   minCoverage = 100, minFreq = 0, minCount = 0
 )
 
 myfilter <- getFilter(object = simsen, name = "myfilter")
 myfilter
+```
 
+Next we generate plots for the amplicons and samples in the umiExperiment object.
+
+If generateAmpliconPlots is called and the number of amplicons and samples is too
+large to plot all of them individually in a single plot the data is shown in
+summarised form. The user can specify amplicons and or samples optionally to
+plot only the selection.
+
+```{r ampliconPlots, eval=TRUE}
 simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
 
+simsen <- generateAmpliconPlots(object = simsen, 
+                                filter.name = "myfilter", 
+                                do.plot = TRUE, 
+                                amplicons = c("PIK3CA_123", "PIK3CA_234"), 
+                                samples = "VAF-1-5ng-1-10x")
+```
+
+```{r replicates, eval=TRUE}
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 simsen <- importDesign(object = simsen, file = metaData)
 

@@ -4,6 +4,11 @@
                         fig.width=9, 
                         fig.height=6)
 
+## ----runApp, eval=FALSE--------------------------------------------------
+#  library(umiAnalyzer)
+#  
+#  runUmiVisualiser()
+
 ## ----example1, eval=TRUE-------------------------------------------------
 library(umiAnalyzer)
 
@@ -19,9 +24,10 @@ reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
 
 plotFamilyHistogram(reads)
 
+## ----example1continued, eval=TRUE----------------------------------------
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
-simsen <- filterUMIobject(
+simsen <- filterUmiobject(
   object = simsen, name = "myfilter", minDepth = 3,
   minCoverage = 100, minFreq = 0, minCount = 0
 )
@@ -29,8 +35,16 @@ simsen <- filterUMIobject(
 myfilter <- getFilter(object = simsen, name = "myfilter")
 myfilter
 
+## ----ampliconPlots, eval=TRUE--------------------------------------------
 simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
 
+simsen <- generateAmpliconPlots(object = simsen, 
+                                filter.name = "myfilter", 
+                                do.plot = TRUE, 
+                                amplicons = c("PIK3CA_123", "PIK3CA_234"), 
+                                samples = "VAF-1-5ng-1-10x")
+
+## ----replicates, eval=TRUE-----------------------------------------------
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 simsen <- importDesign(object = simsen, file = metaData)
 
