@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting_functions.R
 \name{viz_Merged_data}
 \alias{viz_Merged_data}
-\title{Generate Amplicon plots}
+\title{Generate Merged data plots}
 \usage{
 viz_Merged_data(object, do.plot = TRUE)
 }
@@ -12,5 +12,5 @@ viz_Merged_data(object, do.plot = TRUE)
 \item{do.plot}{Logical. Should plots be shown.}
 }
 \description{
-Generate Amplicon plots
+Generate Merged data plots
 }
