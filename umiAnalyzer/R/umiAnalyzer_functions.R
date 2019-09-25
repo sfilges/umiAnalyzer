@@ -253,10 +253,13 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 }
 
 #' Save consensus data
-saveConsData(object, outDir, save = TRUE){
-  consData = object@cons.data
+#' @export
+#' @param object umiExperimet object
+#' @param outDir output directory
+#' @param save Logical. Should data be saved?
+saveConsData <- function(object, outDir, save = TRUE){
 
-  # TODO Write consData as csv file to outDir
+  consData = object@cons.data
 
   return(consData)
 }

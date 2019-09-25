@@ -2,7 +2,7 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{parseBamFiles}
 \alias{parseBamFiles}
-\title{function to parse bam files}
+\title{Function to parse bam files}
 \usage{
 parseBamFiles(mainDir, sampleNames, consDepth = 0)
 }
@@ -14,5 +14,5 @@ parseBamFiles(mainDir, sampleNames, consDepth = 0)
 \item{consDepth}{Only retain consensus reads of at least cons.depth. Default is 0.}
 }
 \description{
-function to parse bam files
+Function to parse bam files
 }
