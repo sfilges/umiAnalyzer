@@ -4,12 +4,12 @@
 \alias{readBamFile}
 \title{Method for reading bam files}
 \usage{
-readBamFile(sample.dir, cons.depth = 0)
+readBamFile(sampleDir, consDepth = 0)
 }
 \arguments{
-\item{sample.dir}{Path to UMI sample}
+\item{sampleDir}{Path to UMI sample}
 
-\item{cons.depth}{Only retain consensus reads of at least cons.depth. Default is 0.}
+\item{consDepth}{Only retain consensus reads of at least cons.depth. Default is 0.}
 }
 \description{
 Method for reading bam files

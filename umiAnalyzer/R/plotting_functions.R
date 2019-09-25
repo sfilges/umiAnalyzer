@@ -189,7 +189,7 @@ viz_Merged_data <- function(object, do.plot = TRUE){
 #' @export
 #' @import ggplot2
 #' @param object Requires a UMI sample or UMI experiment object
-consDepthsPlot <- function(object) {
+plotFamilyHistogram <- function(object) {
   if (class(object)[1]== "UMIexperiment") {
     reads <- object@reads
 

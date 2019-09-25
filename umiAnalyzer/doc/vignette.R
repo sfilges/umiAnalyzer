@@ -9,17 +9,15 @@ library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-sample.names <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-simsen <- createUMIexperiment(experiment.name = "test",
-                              main.dir = main,
-                              dir.names = sample.names)
+simsen <- createUmiExperiment(experimentName = "simsen",
+                              mainDir = main,
+                              sampleNames = samples)
 
-# save(simsen, file = "data/simsen.RData")
+reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
 
-reads <- parseBamFiles(main.dir = main, sample.names = sample.names, cons.depth = 10)
-
-consDepthsPlot(reads)
+plotFamilyHistogram(reads)
 
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
