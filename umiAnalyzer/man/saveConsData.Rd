@@ -2,17 +2,26 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{saveConsData}
 \alias{saveConsData}
-\title{Save consensus data}
+\title{Save consensus data
+If save is set to TRUE data will be written to a csv file otherwise consensu data will
+be returned as a tibble.}
 \usage{
-saveConsData(object, outDir, save = TRUE)
+saveConsData(object, save = FALSE, fileName = "consensus_data.csv",
+  outDir = getwd(), delim = ";")
 }
 \arguments{
 \item{object}{umiExperimet object}
 
-\item{outDir}{output directory}
+\item{save}{Logical. Should data be saved to file? Default is FALSE.}
 
-\item{save}{Logical. Should data be saved?}
+\item{fileName}{String. Name of the file to be saved. Default is 'consensus_data.csv'}
+
+\item{outDir}{output directory, defaults to working directory}
+
+\item{delim}{Single character string, either ';' or ',' or tab}
 }
 \description{
 Save consensus data
+If save is set to TRUE data will be written to a csv file otherwise consensu data will
+be returned as a tibble.
 }

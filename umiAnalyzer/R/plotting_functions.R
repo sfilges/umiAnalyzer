@@ -120,7 +120,7 @@ generateAmpliconPlots <- function(object,
 
   # Check if variant caller has been run on object
   if (identical(dim(object@variants), dim(tibble()))) {
-    cons.table <- getFilter(object = object, name = filter.name)
+    cons.table <- getFilterdData(object = object, name = filter.name)
     cons.table <- cons.table[[1]]
 
     cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant", "Background")
@@ -192,14 +192,20 @@ generateAmpliconPlots <- function(object,
 #' Generate Merged data plots
 #' @export
 #' @import ggplot2
+#' @importFrom dplyr filter
 #' @importFrom magrittr "%>%" "%<>%"
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
-viz_Merged_data <- function(object, do.plot = TRUE){
+#' @param amplicons (Optional) character vector of amplicons to plot.
+vizMergedData <- function(object, amplicons = NULL, do.plot = TRUE){
 
   # Plotting maximum alternate alle count on merged data
   data <- object@merged.data
   data$Position %<>% as.factor
+
+  if (!is.null(amplicons)) {
+    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
+  }
 
   data$Variants <- ifelse(data$avg.MaxAC > 5, "Variant","Background")
 

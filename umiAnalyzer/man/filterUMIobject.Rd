@@ -33,4 +33,5 @@ library(umiAnalyzer)
 data <- simsen
 data <- filterUmiObject(data)
 }
+
 }

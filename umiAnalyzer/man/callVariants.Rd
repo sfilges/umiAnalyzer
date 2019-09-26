@@ -8,10 +8,14 @@ of the beta distribution is then used to define the shape of a beta-binomial dis
 to estimate variant P-Values. This can be interpreted as a probability for a variant to not have
 arisen by chance}
 \usage{
-callVariants(object)
+callVariants(object, minDepth = 3, minCoverage = 100)
 }
 \arguments{
 \item{object}{A UMierrorcorrect object.}
+
+\item{minDepth}{Minimum consensus depth required fedault is 3}
+
+\item{minCoverage}{Minimum Coverage to use, default is 100 reads.}
 }
 \value{
 Object containing raw and FDR-adjusted P-Values
@@ -30,4 +34,5 @@ library(umiAnalyzer)
 data <- simsen
 data <- callVariants(data)
 }
+
 }

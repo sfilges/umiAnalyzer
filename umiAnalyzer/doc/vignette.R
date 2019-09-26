@@ -32,11 +32,13 @@ simsen <- filterUmiobject(
   minCoverage = 100, minFreq = 0, minCount = 0
 )
 
-myfilter <- getFilter(object = simsen, name = "myfilter")
+myfilter <- getFilterdData(object = simsen, name = "myfilter")
 myfilter
 
 ## ----ampliconPlots, eval=TRUE--------------------------------------------
-simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
+simsen <- generateAmpliconPlots(object = simsen, 
+                                filter.name = "myfilter", 
+                                do.plot = TRUE)
 
 simsen <- generateAmpliconPlots(object = simsen, 
                                 filter.name = "myfilter", 
@@ -51,7 +53,7 @@ simsen <- importDesign(object = simsen, file = metaData)
 simsen <- mergeTechnicalReplicates(object = simsen, filter.name = "myfilter")
 simsen@merged.data
 
-viz_Merged_data(simsen)
+vizMergedData(simsen)
 
 ## ----example2, eval=FALSE------------------------------------------------
 #  data <- simsen
@@ -60,12 +62,9 @@ viz_Merged_data(simsen)
 #  data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
 
 ## ----design, eval=FALSE--------------------------------------------------
-#  data <- simsen
-#  data <- callVariants(data)
-#  
 #  metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 #  
-#  data <- importDesign(object = data, file = metaData)
+#  data <- importDesign(object = simsen, file = metaData)
 
 ## ----getmetadata, eval=FALSE---------------------------------------------
 #  design <- getMetaData(object = data, attributeName = "design")
@@ -78,4 +77,13 @@ viz_Merged_data(simsen)
 #  
 #  myattribute <- getMetaData(object = data, attributeName = "my-comment")
 #  myattribute
+
+## ----vcf, eval=FALSE-----------------------------------------------------
+#  generateVCF(object = simsen, outFile = 'simsen.vcf', printAll = FALSE, save = FALSE)
+
+## ----csv, eval=FALSE-----------------------------------------------------
+#  consensus_data <- saveConsData(object = simsen)
+#  
+#  outDir <- "~/Documents/"
+#  saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
 
