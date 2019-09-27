@@ -92,7 +92,7 @@ generateQCplots <- function(object,
 
   if (do.plot) {
     print(depth_plot)
-    print(avg.depths_plot)
+    #print(avg.depths_plot)
     object <- addMetaData(object = object, attributeName = "depth_plot", depth_plot)
   }
   else {

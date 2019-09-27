@@ -259,7 +259,7 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 #' If save is set to TRUE data will be written to a csv file otherwise consensu data will
 #' be returned as a tibble.
 #' @export
-#' @importFrom readr write_excel_csv2 write_excel_csv write_delim
+#' @importFrom readr write_excel_csv write_delim
 #' @param object umiExperimet object
 #' @param outDir output directory, defaults to working directory
 #' @param save Logical. Should data be saved to file? Default is FALSE.
@@ -272,7 +272,7 @@ saveConsData <- function(object, save = FALSE, fileName = 'consensus_data.csv', 
   if (save) {
     path <- file.path(outDir,fileName)
     if (delim == ';') {
-      readr::write_excel_csv2(consData, path)
+      readr::write_excel_csv(consData, path, delim = ';')
     } else if (delim == ',') {
       readr::write_excel_csv(consData, path)
     } else if (delim == '\t') {
@@ -377,7 +377,7 @@ filterUmiobject <- function(object,
 
 #' Method for retrieving filtered data
 #' @export
-#' @importFrom readr write_excel_csv write_excel_csv2 write_delim
+#' @importFrom readr write_excel_csv write_delim
 #' @param object Requires a UMI sample or UMI experiment object.
 #' @param name String. Name of the filter.
 #' @param save Logical, should data be saved as csv file? Default is FALSE.
@@ -398,7 +398,7 @@ getFilterdData <- function(object, name, save = FALSE, outDir = getwd(), fileNam
   if (save) {
     path <- file.path(outDir, outFile)
     if (delim == ';') {
-      readr::write_excel_csv2(filter, path)
+      readr::write_excel_csv(filter, path, delim = ';')
     } else if (delim == ',') {
       readr::write_excel_csv(filter, path)
     } else {
