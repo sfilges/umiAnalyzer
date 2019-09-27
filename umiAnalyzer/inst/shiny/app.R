@@ -14,7 +14,7 @@ options(shiny.maxRequestSize=200*1024^2)
 
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Visualise UMI data"),
+  dashboardHeader(title = "umiVisualiser"),
 
   dashboardSidebar(
     sidebarMenu(
@@ -56,8 +56,6 @@ ui <- dashboardPage(
 
           mainPanel(
 
-            verbatimTextOutput('directorypath'),
-
             # Output: Tabset w/ plot, summary, and table ----
             tabsetPanel(
               type = "tabs",
@@ -88,11 +86,15 @@ server <- function(input, output, session) {
                  session = session,
                  restrictions = system.file(package = "base"))
 
-
+  # Set up a reactive umiExperiment object
   experiment <- reactive({
 
+    # Path selected by the user
     main <- parseDirPath(volumes, input$dir)
 
+    # If importTest is pressed the test data from the umianalyzer package
+    # will be loaded.
+    # TODO fix so this can't override user data
     test <- eventReactive(input$importTest,{
 
       main <- system.file("extdata", package = "umiAnalyzer")
@@ -103,6 +105,7 @@ server <- function(input, output, session) {
       main <- test()
     }
 
+    # Create umiExperiment object
     if (identical(main, character(0))) {
       return(NULL)
     } else {
@@ -115,6 +118,9 @@ server <- function(input, output, session) {
     }
   })
 
+  # filteredData returns an updated version of the experimen() object containing
+  # a single filter called "user_filter" which is used downstream
+  # TODO allow more user interaction, e.g. setting minFreq and minCount
   filteredData <- reactive({
 
     if (is.null(experiment())){
@@ -131,19 +137,17 @@ server <- function(input, output, session) {
     )
 
     return(data)
-
-    #filter <- umiAnalyzer::getFilterdData(object = data, name = "user_filter")
-    #return(filter['user_filter'][[1]])
-
   })
 
+  # Update assay and sample list based on initially loaded object, meaning that
+  # the lists will be visible even if filter are applied
   observe({
 
     if (is.null(experiment())){
       return(NULL)
     }
 
-    data <- saveConsData( experiment() )
+    data <- umiAnalyzer::saveConsData( experiment() )
 
     updateSelectInput(session,
                       inputId = 'assays',
@@ -157,8 +161,8 @@ server <- function(input, output, session) {
 
   })
 
-  #output$directorypath = renderPrint({  unique(saveConsData( experiment() )$`Sample Name`)  })
-
+  # Output the consensus data to screen, this will change depending on user input
+  # TODO fix getFilterdData function to return a tibble and not a list!
   output$dataTable <- DT::renderDataTable({
 
     if (is.null(filteredData())){
@@ -178,6 +182,9 @@ server <- function(input, output, session) {
     lengthMenu = c(10, 50, 100)
   ))
 
+
+  # Generate amplicon plots using umiAnalyzer
+  # TODO prettify output on generateAmpliconPlots
   output$amplicon_plot <- renderPlot({
 
 
@@ -185,7 +192,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
 
-    generateAmpliconPlots(object = filteredData(),
+    umiAnalyzer::generateAmpliconPlots(object = filteredData(),
                           filter.name = "user_filter",
                           do.plot = TRUE,
                           amplicons = input$assays,
@@ -193,17 +200,24 @@ server <- function(input, output, session) {
 
   })
 
+  # Output the QC plot
+  # TODO QC plots need a lot more attention. Also consider adding raw read data if available
   output$qcPlot <- renderPlot({
-
 
     if(is.null(experiment())){
       return(NULL)
     }
 
-    generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
+    umiAnalyzer::generateQCplots(object = experiment(),
+                                 do.plot = TRUE,
+                                 group.by = "assay")
 
   })
 
+  # Import consensus read bam file upon button click to generate histograms
+  # of barcode distribution. It is possible to import directly into the umiExperiment object
+  # by setting the importBam flag, but file and this might become very large, so this
+  # function is outsourced to parseBamFiles
   observeEvent(input$importBam, {
 
     main <- parseDirPath(volumes, input$dir)
@@ -211,19 +225,21 @@ server <- function(input, output, session) {
     if (identical(main, character(0))) {
       return(NULL)
     } else {
-      samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+      samples <- list.dirs(path = main,
+                           full.names = FALSE,
+                           recursive = FALSE)
 
-      reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 0)
+      reads <- umiAnalyzer::parseBamFiles(mainDir = main,
+                                          sampleNames = samples,
+                                          consDepth = 0)
 
       output$histogram <- renderPlot({
 
-        plotFamilyHistogram(object = reads)
+        umiAnalyzer::plotFamilyHistogram(object = reads)
 
       })
     }
-
   })
-
 }
 
 # Run the application

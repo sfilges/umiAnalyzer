@@ -145,7 +145,7 @@ generateAmpliconPlots <- function(object,
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
-  if (length(unique(cons.table$Name)) > 3) {
+  if (length(unique(cons.table$`Sample Name`)) > 6) {
     amplicon_plot <- ggplot(cons.table, aes_(
       x = ~Name,
       y = ~ (100 * `Max Non-ref Allele Frequency`)
