@@ -73,7 +73,7 @@ select for consensus 3 reads. Most downstream functions use filtered data, each 
 data set receives a name, making it possible to apply multiple filters on the same object as the
 original data is maintained and can always be retrieved with saveConsData (see below). Each filtered
 data set can be retrieved using getFilteredData and assigned to a new variable or be saved as a csv file
-with the optional parameter save = TRUE, which is set to FALSE by default.
+with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
