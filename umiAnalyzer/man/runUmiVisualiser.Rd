@@ -4,7 +4,7 @@
 \alias{runUmiVisualiser}
 \title{Function to run the umiVisualiser shiny app}
 \usage{
-runUmiVisualiser()
+runUmiVisualiser(docker = FALSE)
 }
 \description{
 Function to run the umiVisualiser shiny app

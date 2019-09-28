@@ -7,12 +7,14 @@
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
+#' @param plotDepth Which consensus depth to plot
 #' @param assays (Optional) user-supllied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supllied list of samples to plot. Default is all.
 #'
 generateQCplots <- function(object,
                             do.plot = TRUE,
                             group.by = "assay",
+                            plotdepth = 3,
                             assays = NULL,
                             samples = NULL) {
 
@@ -23,7 +25,7 @@ generateQCplots <- function(object,
 
   cdepths <- summary.table %>% dplyr::filter(
     .data$assay != "",
-    .data$depth == 3
+    .data$depth == plotDepth
   )
 
   if (!is.null(assays)) {
@@ -116,6 +118,59 @@ generateQCplots <- function(object,
 
   return(object)
 }
+
+#' Plot UMI counts
+#' @export
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom stats median
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param do.plot Logical. Should plots be shown.
+#' @param assays (Optional) user-supplied list of assays to plot. Default is all.
+#' @param samples (Optional) user-supplied list of samples to plot. Default is all.
+#'
+plotUmiCounts <- function(object,
+                          do.plot = TRUE,
+                          amplicons = NULL,
+                          samples = NULL) {
+
+  # Read summary data from object
+  data <- object@summary.data %>%
+    dplyr::filter(!is.na(.data$assay),
+                  .data$depth > 0)
+
+  # Select amplicons
+  if (!is.null(amplicons)) {
+    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
+  }
+
+  # Select samples
+  if (!is.null(samples)) {
+    data <- data %>% dplyr::filter(.data$`Sample Name` %in% samples)
+  }
+
+  # Generate ggplot object
+  data$depth %<>% as.factor
+
+  plot <- ggplot(data, aes(x=depth, y=UMIcount, fill=sample)) +
+    geom_col(alpha=0.6) +
+    facet_grid(assay ~ sample)
+
+  # Return plot
+  if(do.plot){
+
+    plot(plot)
+    return(object)
+
+  } else {
+
+    return(object)
+
+  }
+
+}
+
 
 #' Generate Amplicon plots
 #' @export
