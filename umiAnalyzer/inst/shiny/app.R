@@ -99,11 +99,13 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
 
+  #Define avalible volumes for shinyFiles
+
   volumes <- c(Home = fs::path_home(),
                "R Installation" = R.home(),
                getVolumes()())
 
-  path <- shinyDirChoose(input, 'dir',
+  shinyDirChoose(input, 'dir',
                  roots = volumes,
                  session = session,
                  restrictions = system.file(package = "base"))
@@ -131,36 +133,46 @@ server <- function(input, output, session) {
     }
   })
 
-  # Set up a reactive umiExperiment object
-  experiment <- reactive({
+  # Set up user_data_main
+
+  user_data_main <- reactive({
 
     # Path selected by the user
     main <- parseDirPath(volumes, input$dir)
 
-    # If importTest is pressed the test data from the umianalyzer package
-    # will be loaded.
-    # TODO fix so this can't override user data
-    test <- eventReactive(input$importTest,{
+    # Create umiExperiment object
+    if (identical(main, character(0))){
+      return(NULL)} else {main}
+  })
 
-      main <- system.file("extdata", package = "umiAnalyzer")
+  # Set up a test_data main
 
-    })
+  test_data_main <- eventReactive(input$importTest,{
+    system.file("extdata", package = "umiAnalyzer")
+  })
 
-    if(!is.null(test())){
-      main <- test()
+  # Create experiment
+
+  experiment <- reactive({
+
+    # select between main
+
+    if(!is.null(user_data_main())){
+      main <- user_data_main()
+    } else {
+      main <- test_data_main()
     }
 
-    # Create umiExperiment object
-    if (identical(main, character(0))) {
+    if (is.null(main)) {
       return(NULL)
     } else {
+
       samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-      simsen <- umiAnalyzer::createUmiExperiment(experimentName = "simsen",
-                                                 mainDir = main,
-                                                 sampleNames = samples)
-      return(simsen)
-    }
+      umiAnalyzer::createUmiExperiment(experimentName = "simsen",
+                                       mainDir = main,
+                                       sampleNames = samples)}
+
   })
 
   # filteredData returns an updated version of the experimen() object containing
