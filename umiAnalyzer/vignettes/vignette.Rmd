@@ -9,6 +9,16 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
 
+```{css, echo=FALSE}
+body .main-container {
+  max-width: 1600px !important;
+  width: 1280px !important;
+}
+body {
+  max-width: 1600px !important;
+}
+```
+
 ```{r, echo = FALSE}
   knitr::opts_chunk$set(collapse = TRUE, 
                         comment = "#>",

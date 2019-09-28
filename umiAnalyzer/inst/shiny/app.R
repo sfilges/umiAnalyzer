@@ -51,7 +51,24 @@ ui <- dashboardPage(
             selectInput('assays',
                         label = 'Assays:',
                         choices = '',
-                        multiple = T)
+                        multiple = T),
+
+            fileInput('file',
+                      'Choose a File containing sample info',
+                      multiple = F,
+                      accept = c('.txt','.csv','.tsv'))
+          ),
+          box(
+
+            sliderInput("minFreq", "Minimum Variant allele frequency:",
+                        min = 0, max = 1,
+                        value = 0, step = 0.01,
+                        post = "%", sep = ","),
+
+            sliderInput("minCount", "Minimum Variant allele count:",
+                        min = 0, max = 10,
+                        value = 0, step = 1,
+                        post = " reads", sep = ",")
           ),
 
           mainPanel(
@@ -61,14 +78,19 @@ ui <- dashboardPage(
               type = "tabs",
               tabPanel("Amplicons", plotOutput("amplicon_plot", width = "1024px", height = "800px")),
               tabPanel("Data", DT::dataTableOutput("dataTable")),
-              tabPanel("qcPlot", plotOutput("qcPlot", width = "1024px", height = "800px")),
+              tabPanel("Sample info", DT::dataTableOutput("metaDataTable")),
+              tabPanel("QC Plot", plotOutput("qcPlot", width = "1024px", height = "800px")),
               tabPanel("Histogram", plotOutput("histogram", width = "1024px", height = "800px"))
             )
           )
         )
       ),
+
+      # Including html vignette causes some issues as it seems the app size becomes
+      # fixed to the size of vignette...
       tabItem(tabName = "vignette",
               h4("Include vignette")
+              #includeHTML(path = system.file("shiny", "vignette.html", package = "umiAnalyzer"))
       )
     )
   )
@@ -85,6 +107,29 @@ server <- function(input, output, session) {
                  roots = volumes,
                  session = session,
                  restrictions = system.file(package = "base"))
+
+  shinyFileChoose(input, 'file', root=volumes, filetypes=c('.csv','.txt','.tsv'))
+
+  metaData <- reactive({
+
+    if(is.null(experiment())){
+      return(NULL)
+    }
+
+    metaData <- input$file$datapath
+
+    if (identical(metaData, character(0))) {
+      return(NULL)
+    } else {
+
+      data <- umiAnalyzer::importDesign(object = experiment(), file = metaData)
+
+      design <- umiAnalyzer::getMetaData(object = data, attributeName = "design")
+
+      return(design)
+
+    }
+  })
 
   # Set up a reactive umiExperiment object
   experiment <- reactive({
@@ -112,15 +157,14 @@ server <- function(input, output, session) {
       samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
       simsen <- umiAnalyzer::createUmiExperiment(experimentName = "simsen",
-                                    mainDir = main,
-                                    sampleNames = samples)
+                                                 mainDir = main,
+                                                 sampleNames = samples)
       return(simsen)
     }
   })
 
   # filteredData returns an updated version of the experimen() object containing
   # a single filter called "user_filter" which is used downstream
-  # TODO allow more user interaction, e.g. setting minFreq and minCount
   filteredData <- reactive({
 
     if (is.null(experiment())){
@@ -132,8 +176,8 @@ server <- function(input, output, session) {
       name = "user_filter",
       minDepth = input$consensus,
       minCoverage = 100,
-      minFreq = 0,
-      minCount = 0
+      minFreq = input$minFreq/100,
+      minCount = input$minCount
     )
 
     return(data)
@@ -182,6 +226,20 @@ server <- function(input, output, session) {
     lengthMenu = c(10, 50, 100)
   ))
 
+  output$metaDataTable <- DT::renderDataTable({
+
+    if (is.null(metaData())){
+      return(NULL)
+    }
+
+    metaData()
+
+  }, options = list(
+    orderClasses = T,
+    pageLenght = 50,
+    lengthMenu = c(10, 50, 100)
+  ))
+
 
   # Generate amplicon plots using umiAnalyzer
   # TODO prettify output on generateAmpliconPlots
@@ -210,7 +268,9 @@ server <- function(input, output, session) {
 
     umiAnalyzer::generateQCplots(object = experiment(),
                                  do.plot = TRUE,
-                                 group.by = "assay")
+                                 group.by = "assay",
+                                 assays = input$assays,
+                                 samples = input$samples)
 
   })
 
@@ -221,6 +281,16 @@ server <- function(input, output, session) {
   observeEvent(input$importBam, {
 
     main <- parseDirPath(volumes, input$dir)
+
+    test2 <- eventReactive(input$importTest,{
+
+      main <- system.file("extdata", package = "umiAnalyzer")
+
+    })
+
+    if(!is.null(test2())){
+      main <- test2()
+    }
 
     if (identical(main, character(0))) {
       return(NULL)

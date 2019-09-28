@@ -7,10 +7,14 @@
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
+#' @param assays (Optional) user-supllied list of assays to plot. Default is all.
+#' @param samples (Optional) user-supllied list of samples to plot. Default is all.
 #'
 generateQCplots <- function(object,
                             do.plot = TRUE,
-                            group.by = "assay") {
+                            group.by = "assay",
+                            assays = NULL,
+                            samples = NULL) {
 
   cons.table <- object@cons.data
   summary.table <- object@summary.data
@@ -22,8 +26,17 @@ generateQCplots <- function(object,
     .data$depth == 3
   )
 
+  if (!is.null(assays)) {
+    cdepths <- cdepths %>% dplyr::filter(.data$assay %in% assays)
+  }
+
+  if (!is.null(samples)) {
+    cdepths <- cdepths %>% dplyr::filter(.data$sample %in% samples)
+  }
+
   cdepths$assay %<>% as.factor
   cdepths$sample %<>% as.factor
+
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -35,7 +48,9 @@ generateQCplots <- function(object,
   if (group.by == "assay") {
     depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount)) +
       geom_boxplot(outlier.colour = "black", outlier.shape = 10, outlier.size = 3) +
-      theme(axis.text.x = element_text(angle = 90)) +
+      geom_jitter(size = 8,shape = 16, position = position_jitter(0.2)) +
+      theme(axis.text.x = element_text(size = 14, angle = 90),
+            axis.text.y = element_text(size = 14)) +
       geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
       geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
       labs(
