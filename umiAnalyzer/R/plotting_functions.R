@@ -14,7 +14,7 @@
 generateQCplots <- function(object,
                             do.plot = TRUE,
                             group.by = "assay",
-                            plotdepth = 3,
+                            plotDepth = 3,
                             assays = NULL,
                             samples = NULL) {
 
@@ -129,7 +129,6 @@ generateQCplots <- function(object,
 #' @param do.plot Logical. Should plots be shown.
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
-#'
 plotUmiCounts <- function(object,
                           do.plot = TRUE,
                           amplicons = NULL,
@@ -160,7 +159,7 @@ plotUmiCounts <- function(object,
   # Return plot
   if(do.plot){
 
-    plot(plot)
+    print(plot)
     return(object)
 
   } else {

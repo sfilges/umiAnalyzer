@@ -72,14 +72,14 @@ ui <- dashboardPage(
           ),
 
           mainPanel(
-
             # Output: Tabset w/ plot, summary, and table ----
-            tabsetPanel(
-              type = "tabs",
+            tabBox(
+              type = "tabs", width = "1024px", height = "800px",
               tabPanel("Amplicons", plotOutput("amplicon_plot", width = "1024px", height = "800px")),
               tabPanel("Data", DT::dataTableOutput("dataTable")),
               tabPanel("Sample info", DT::dataTableOutput("metaDataTable")),
               tabPanel("QC Plot", plotOutput("qcPlot", width = "1024px", height = "800px")),
+              tabPanel("UMI counts", plotOutput("umiCounts",width = "1024px",height = "800px")),
               tabPanel("Histogram", plotOutput("histogram", width = "1024px", height = "800px"))
             )
           )
@@ -281,8 +281,19 @@ server <- function(input, output, session) {
     umiAnalyzer::generateQCplots(object = experiment(),
                                  do.plot = TRUE,
                                  group.by = "assay",
+                                 plotDepth = input$consensus,
                                  assays = input$assays,
                                  samples = input$samples)
+
+  })
+
+  output$umiCounts <- renderPlot({
+
+    if(is.null(experiment())){
+      return(NULL)
+    }
+
+    umiAnalyzer::plotUmiCounts(object = experiment(),do.plot = TRUE)
 
   })
 
