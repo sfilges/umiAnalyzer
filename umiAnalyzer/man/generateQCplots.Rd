@@ -4,7 +4,8 @@
 \alias{generateQCplots}
 \title{Generate QC plots}
 \usage{
-generateQCplots(object, do.plot = TRUE, group.by = "assay")
+generateQCplots(object, do.plot = TRUE, group.by = "assay",
+  plotDepth = 3, assays = NULL, samples = NULL)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -12,6 +13,12 @@ generateQCplots(object, do.plot = TRUE, group.by = "assay")
 \item{do.plot}{Logical. Should plots be shown.}
 
 \item{group.by}{String. Which variable should be used as a factor on the x-axis. Default is assay.}
+
+\item{plotDepth}{Which consensus depth to plot}
+
+\item{assays}{(Optional) user-supllied list of assays to plot. Default is all.}
+
+\item{samples}{(Optional) user-supllied list of samples to plot. Default is all.}
 }
 \description{
 Generate QC plots

@@ -221,15 +221,16 @@ createUmiExperiment <- function(experimentName,
 #' @export
 #' @import tibble
 #' @import magrittr
-#' @import Rsamtools
+#' @importFrom Rsamtools scanBam
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
 #' @param sampleDir Path to UMI sample
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+#'
 readBamFile <- function(sampleDir, consDepth = 0) {
   bam.file <- list.files(path = sampleDir, pattern = "\\_consensus_reads.bam$")
 
-  bam <- scanBam(file.path(sampleDir, bam.file))
+  bam <- Rsamtools::scanBam(file.path(sampleDir, bam.file))
 
   sequences <- tibble(
     qname = bam[[1]]$qname,
@@ -240,12 +241,12 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 
   sequences <- tidyr::separate(sequences,
     col = .data$qname,
-    into = c(NA, NA, NA, "barcode", "count"),
-    sep = "_",
+    into = c(NA, NA, NA, 'barcode', 'count'),
+    sep = '_',
     remove = TRUE
   ) %>%
-    tidyr::separate(col = .data$count, sep = "=", into = c(NA, "count")) %>%
-    tidyr::unite(col = "position", .data$chrom, .data$pos, sep = ":")
+    tidyr::separate(col = .data$count, sep = '=', into = c(NA, 'count')) %>%
+    tidyr::unite(col = 'position', .data$chrom, .data$pos, sep = ':')
 
   sequences$count %<>% as.integer
 
@@ -255,12 +256,31 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 }
 
 #' Save consensus data
-saveConsData(object, outDir, save = TRUE){
-  consData = object@cons.data
+#' If save is set to TRUE data will be written to a csv file otherwise consensu data will
+#' be returned as a tibble.
+#' @export
+#' @importFrom readr write_excel_csv write_delim
+#' @param object umiExperimet object
+#' @param outDir output directory, defaults to working directory
+#' @param save Logical. Should data be saved to file? Default is FALSE.
+#' @param delim Single character string, either ';' or ',' or tab
+#' @param fileName String. Name of the file to be saved. Default is 'consensus_data.csv'
+#'
+saveConsData <- function(object, save = FALSE, fileName = 'consensus_data.csv', outDir = getwd(), delim = ';') {
+  consData <- object@cons.data
 
-  # TODO Write consData as csv file to outDir
-
-  return(consData)
+  if (save) {
+    path <- file.path(outDir,fileName)
+    if (delim == ';') {
+      readr::write_excel_csv(consData, path, delim = ';')
+    } else if (delim == ',') {
+      readr::write_excel_csv(consData, path)
+    } else if (delim == '\t') {
+      readr::write_delim(consData, path, delim = delim)
+    }
+  } else {
+    return(consData)
+  }
 }
 
 #' Function to parse bam files
@@ -271,6 +291,7 @@ saveConsData(object, outDir, save = TRUE){
 #' @param mainDir Directory containing umierrorcorrect output folders.
 #' @param sampleNames A list of sample names.
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+#'
 parseBamFiles <- function(mainDir,
                           sampleNames,
                           consDepth = 0) {
@@ -328,9 +349,10 @@ findConsensusReads <- function(
 #' library(umiAnalyzer)
 #'
 #' data <- simsen
-#' data <- filterUMIobject(data)
+#' data <- filterUmiObject(data)
 #' }
-filterUMIobject <- function(object,
+#'
+filterUmiobject <- function(object,
                             name,
                             minDepth = 3,
                             minCoverage = 50,
@@ -355,12 +377,36 @@ filterUMIobject <- function(object,
 
 #' Method for retrieving filtered data
 #' @export
+#' @importFrom readr write_excel_csv write_delim
 #' @param object Requires a UMI sample or UMI experiment object.
 #' @param name String. Name of the filter.
+#' @param save Logical, should data be saved as csv file? Default is FALSE.
+#' @param outDir Output directory
+#' @param fileName Filename to be used, default is the same as 'name'
+#' @param delim Character string denoting delimiter to be used, default is ';'.
 #' @return A filtered consensus table, as a tibble.
-getFilter <- function(object, name){
+#'
+getFilterdData <- function(object, name, save = FALSE, outDir = getwd(), fileName = NULL, delim = ';') {
   filter <- object@filters[name]
-  return(filter)
+
+  if (is.null(fileName)) {
+    outFile <- paste(name, ".csv", sep = '')
+  } else {
+    outFile <- paste(fileName, ".csv", sep = '')
+  }
+
+  if (save) {
+    path <- file.path(outDir, outFile)
+    if (delim == ';') {
+      readr::write_excel_csv(filter, path, delim = ';')
+    } else if (delim == ',') {
+      readr::write_excel_csv(filter, path)
+    } else {
+      readr::write_delim(filter, path, delim = delim)
+    }
+  } else {
+    return(filter)
+  }
 }
 
 
@@ -369,6 +415,7 @@ getFilter <- function(object, name){
 #' @param params Non-negative parameters of the Beta distribution.
 #' @param data consensus.data table of a UMisample or UMIexperiment object.
 #' @return Negative log-likelihood for beta distribution.
+#'
 betaNLL <- function(params, data) {
   a <- params[1]
   b <- params[2]
@@ -392,6 +439,8 @@ betaNLL <- function(params, data) {
 #' @importFrom utils install.packages
 #' @importFrom graphics plot
 #' @param object A UMierrorcorrect object.
+#' @param minDepth Minimum consensus depth required fedault is 3
+#' @param minCoverage Minimum Coverage to use, default is 100 reads.
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @examples
 #' \dontrun{
@@ -400,24 +449,16 @@ betaNLL <- function(params, data) {
 #' data <- simsen
 #' data <- callVariants(data)
 #' }
-callVariants <- function(object) {
-  if ("filter" %in% names(attributes(object))) {
-    warning("It appears the UMI experiment object has been filtered. Consider
-            running callVariants on an unfiltered object instead.")
-    print(attributes(object)$filter)
-  }
+#'
+callVariants <- function(object, minDepth = 3, minCoverage = 100) {
 
-  if (!requireNamespace("VGAM", quietly = TRUE)) {
-    install.packages("VGAM")
-  }
-
-  object <- filterUMIobject(
+  object <- filterUmiobject(
     object = object, name = "varCalls",
-    minDepth = 3, # Require consensus 3
-    minCoverage = 100, # Require at least 100 cons reads
-    minFreq = 0, # no minimum allele freq
-    minCount = 0
-  ) # no minimum variant allele count
+    minDepth = minDepth,       # Require minDepth
+    minCoverage = minCoverage, # Require at least minCoverage cons reads
+    minFreq = 0,               # no minimum allele freq
+    minCount = 0               # no minimum variant allele count
+  )
 
   cons.table <- object@filters["varCalls"][[1]]
 
@@ -471,6 +512,7 @@ callVariants <- function(object) {
 #' @param p.adjust Numeric. Adjusted p value (FDR). Default is 0.2.
 #' @param minVarCount Integer. Minimum variant allele count. Default is 5.
 #' @return A UMIexperiment object with filtered variants. Can be used to generate vcf files.
+#'
 filterVariants <- function(
                            object,
                            p.adjust = 0.2,
@@ -517,6 +559,7 @@ filterVariants <- function(
 #' @param object UMI.experiment to which to add metadata
 #' @param file File containing meta data
 #' @param sep Column separator. Default is tab.
+#'
 importDesign <- function(object,file,sep="\t"){
   mData <- read.table(file = file, sep = sep, header = TRUE)
 
@@ -537,9 +580,10 @@ importDesign <- function(object,file,sep="\t"){
 #' @importFrom stats sd
 #' @param object UMI.experiment to which to add metadata
 #' @param filter.name Name of the filter to use.
+#'
 mergeTechnicalReplicates <- function(object, filter.name) {
 
-  consData <- getFilter(object = object, name = filter.name)
+  consData <- getFilterdData(object = object, name = filter.name)
   consData <- consData[[1]]
   consData$Position %<>% as.factor
 
@@ -602,6 +646,7 @@ mergeTechnicalReplicates <- function(object, filter.name) {
 #' @param time.var String. Name of thethe time variable. Default is "time"
 #' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
 #' @param group.by String. Variable for grouping data, eg.g. replicates. Default is NULL.
+#'
 analyzeTimeSeries <- function(object,
                               filter.name,
                               time.var = "time",
@@ -609,7 +654,7 @@ analyzeTimeSeries <- function(object,
                               group.by = NULL) {
 
 
-  # data <- filterUMIobject(object = data, name = "myfilter", minDepth = 3,
+  # data <- filterUmiObject(object = data, name = "myfilter", minDepth = 3,
   #                        minCoverage = 100, minFreq = 0, minCount = 0)
   # myfilter <- getFilter(object = data, name = "myfilter")
   # metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
@@ -617,7 +662,7 @@ analyzeTimeSeries <- function(object,
 
   # Check if variant caller has been run on object
   if (use.variants == FALSE) {
-    consData <- getFilter(object = object, name = filter.name)
+    consData <- getFilterdData(object = object, name = filter.name)
     consData <- consData[[1]]
     consData$Position %<>% as.factor
 
@@ -648,6 +693,7 @@ analyzeTimeSeries <- function(object,
 #' @param object R object to which meta data should be added
 #' @param attributeName Name of the meta data attribute.
 #' @param attributeValue Meta data to be saved.
+#'
 addMetaData <- function(object,attributeName,attributeValue){
   attr(x = object, attributeName) <- attributeValue
   return(object)
@@ -657,6 +703,7 @@ addMetaData <- function(object,attributeName,attributeValue){
 #' @export
 #' @param object R object from which to get meta data.
 #' @param attributeName Name of the meta data attribute.
+#'
 getMetaData <- function(object,attributeName){
   if(attributeName %in% names(attributes(object))){
     value <- attributes(object)[names(attributes(object)) == attributeName][[1]]
@@ -674,6 +721,7 @@ getMetaData <- function(object,attributeName){
 #' @param outDir String. Output directory, defaults to wokring directory.
 #' @param outFile String. Name of the output file
 #' @param printAll Logical. Should all or only trusted variant be printed?
+#'
 generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   cons.table <- object@cons.table
   cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant", "Background")
@@ -741,6 +789,4 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   fileConn <- file(file.path(outDir, paste(outFile, ".vcf", sep = "")))
   writeLines(lines, fileConn)
   close(fileConn)
-
-  return(object)
 }

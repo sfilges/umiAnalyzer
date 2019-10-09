@@ -2,13 +2,17 @@
 % Please edit documentation in R/plotting_functions.R
 \name{plotFamilyHistogram}
 \alias{plotFamilyHistogram}
-\title{Generate consensus depths plots}
+\title{Generate consensus depth histograms}
 \usage{
-plotFamilyHistogram(object)
+plotFamilyHistogram(object, xMin = 0, xMax = 100)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
+
+\item{xMin}{Minimum consensus family size to plot, default is 0.}
+
+\item{xMax}{Maximum consensus family size to plot. Default is 100.}
 }
 \description{
-Generate consensus depths plots
+Generate consensus depth histograms
 }

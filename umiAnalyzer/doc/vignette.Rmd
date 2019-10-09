@@ -9,6 +9,16 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
 
+```{css, echo=FALSE}
+body .main-container {
+  max-width: 1600px !important;
+  width: 1280px !important;
+}
+body {
+  max-width: 1600px !important;
+}
+```
+
 ```{r, echo = FALSE}
   knitr::opts_chunk$set(collapse = TRUE, 
                         comment = "#>",
@@ -18,19 +28,31 @@ vignette: >
 
 # Introduction
 
-umiAnalyzer provides tools for analyzing umierrorcorrect output. 
+umiAnalyzer provides tools for analyzing umierrorcorrect output.
+
+## Using the umiVisualiser shiny app
+
+The shiny app requires the shiny, shinyFiles, tidyverse and DT packages and can
+be run using the following command:
+
+```{r runApp, eval=FALSE}
+library(umiAnalyzer)
+
+runUmiVisualiser()
+```
+
 
 ## How to make your own umiExperiment object
 
-Define a variable containing the path to the directory with all the umierrorcorrect output folders 
-belonging to your experiment. umiAnalyzer comes with raw test data generated with umierrorcorrect that 
-you can import if you don't have any of your own.
+Define a variable containing the path to the directory with all the umierrorcorrect 
+output folders belonging to your experiment. umiAnalyzer comes with raw test data 
+generated with umierrorcorrect that you can import if you don't have any of your own.
 
-Call the create.UMIexperiment to create your umiExperiment object.
+Call the createUmiExperiment to create your umiExperiment object.
 
-The UMIexperiment object always maintains your raw data, however you can create as many filters as you
+The umiExperiment object always maintains your raw data, however you can create as many filters as you
 like, which will be saved as separate objects to access. You can filter the consensus table of
-UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
+umiExperiment object with filterUmiObject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
 
 ```{r example1, eval=TRUE}
@@ -47,29 +69,64 @@ simsen <- createUmiExperiment(experimentName = "simsen",
 reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
 
 plotFamilyHistogram(reads)
+```
 
+createUmiExperiment has an optional flag importBam, which is set to FALSE by default. 
+If this is set to TRUE it will automatically call parseBamFiles and store the
+read data in the 'simsen' object which can then be passed directly to plotFamilyHistogram,
+without having to run parseBamFiles again. Note that for large experiments, 
+especially if consDepth is set lower than 10, the size of the experiment object
+may become too large.
+
+Next we generate Quality Control plots and filter the umiExperiment object to
+select for consensus 3 reads. Most downstream functions use filtered data, each each filtered 
+data set receives a name, making it possible to apply multiple filters on the same object as the
+original data is maintained and can always be retrieved with saveConsData (see below). Each filtered
+data set can be retrieved using getFilteredData and assigned to a new variable or be saved as a csv file
+with the optional parameter save = TRUE, which is set to FALSE by 
+
+```{r example1continued, eval=TRUE}
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
-simsen <- filterUMIobject(
+simsen <- filterUmiobject(
   object = simsen, name = "myfilter", minDepth = 3,
   minCoverage = 100, minFreq = 0, minCount = 0
 )
 
-myfilter <- getFilter(object = simsen, name = "myfilter")
+myfilter <- getFilterdData(object = simsen, name = "myfilter")
 myfilter
+```
 
-simsen <- generateAmpliconPlots(object = simsen, filter.name = "myfilter", do.plot = TRUE)
+Next we generate plots for the amplicons and samples in the umiExperiment object.
 
+If generateAmpliconPlots is called and the number of amplicons and samples is too
+large to plot all of them individually in a single plot the data is shown in
+summarised form. The user can specify amplicons and or samples optionally to
+plot only the selection.
+
+```{r ampliconPlots, eval=TRUE}
+simsen <- generateAmpliconPlots(object = simsen, 
+                                filter.name = "myfilter", 
+                                do.plot = TRUE)
+
+simsen <- generateAmpliconPlots(object = simsen, 
+                                filter.name = "myfilter", 
+                                do.plot = TRUE, 
+                                amplicons = c("PIK3CA_123", "PIK3CA_234"), 
+                                samples = "VAF-1-5ng-1-10x")
+```
+
+```{r replicates, eval=TRUE}
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 simsen <- importDesign(object = simsen, file = metaData)
 
 simsen <- mergeTechnicalReplicates(object = simsen, filter.name = "myfilter")
 simsen@merged.data
 
-viz_Merged_data(simsen)
+vizMergedData(simsen)
 ```
 
-## Calling variants
+# Calling variants
 
 umiAnalyzer comes with a build-in umiExperiment object to explore, which was generated using the code 
 above, so it can be used without creating the it first if so desired.
@@ -85,23 +142,20 @@ data <- callVariants(data)
 data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
 ```
 
-## Importing experimental designs and statistics
-### Experimental design
+# Importing experimental designs and statistics
+## Experimental design
 umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental 
 design matrices or clinical parameters. This is done using the importDesign function and requires a 
 simple formatted table supplied by the user as a tab separated file. It is important that the order 
 of the samples in the meta data file is the same as when building the UMIexperiment object.
 
 ```{r design, eval=FALSE}
-data <- simsen
-data <- callVariants(data)
-
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
-data <- importDesign(object = data, file = metaData)
+data <- importDesign(object = simsen, file = metaData)
 ```
 
-### Working with meta data
+## Working with meta data
 
 It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
 matrix loaded with importDesign can be retrieved as follows:
@@ -120,6 +174,27 @@ data <- addMetaData(object = data, attributeName = "my-comment", attributeValue 
 
 myattribute <- getMetaData(object = data, attributeName = "my-comment")
 myattribute
+```
+
+# Other functions (experimental)
+
+## Writing a Variant Call file (vcf)
+
+```{r vcf, eval=FALSE}
+generateVCF(object = simsen, outFile = 'simsen.vcf', printAll = FALSE, save = FALSE)
+```
+
+## Saving consensus data as a csv file
+
+It is possible to retrieve consensus data as a tibble using saveConsData. This function can also be used to to save the data
+as a csv file with delimiters either ',', ';' or tab. This requires the user to set the save parameter to TRUE and to specify an
+output directory (default is the working directory), filename (default is 'consensus_data.csv') and delimiter (default is ';').
+
+```{r csv, eval=FALSE}
+consensus_data <- saveConsData(object = simsen)
+
+outDir <- "~/Documents/"
+saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
 ```
 
 

@@ -7,10 +7,17 @@
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
+#' @param plotDepth Which consensus depth to plot
+#' @param assays (Optional) user-supllied list of assays to plot. Default is all.
+#' @param samples (Optional) user-supllied list of samples to plot. Default is all.
 #'
 generateQCplots <- function(object,
                             do.plot = TRUE,
-                            group.by = "assay") {
+                            group.by = "assay",
+                            plotDepth = 3,
+                            assays = NULL,
+                            samples = NULL) {
+
   cons.table <- object@cons.data
   summary.table <- object@summary.data
 
@@ -18,11 +25,20 @@ generateQCplots <- function(object,
 
   cdepths <- summary.table %>% dplyr::filter(
     .data$assay != "",
-    .data$depth == 3
+    .data$depth == plotDepth
   )
+
+  if (!is.null(assays)) {
+    cdepths <- cdepths %>% dplyr::filter(.data$assay %in% assays)
+  }
+
+  if (!is.null(samples)) {
+    cdepths <- cdepths %>% dplyr::filter(.data$sample %in% samples)
+  }
 
   cdepths$assay %<>% as.factor
   cdepths$sample %<>% as.factor
+
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -34,7 +50,9 @@ generateQCplots <- function(object,
   if (group.by == "assay") {
     depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount)) +
       geom_boxplot(outlier.colour = "black", outlier.shape = 10, outlier.size = 3) +
-      theme(axis.text.x = element_text(angle = 90)) +
+      geom_jitter(size = 8,shape = 16, position = position_jitter(0.2)) +
+      theme(axis.text.x = element_text(size = 14, angle = 90),
+            axis.text.y = element_text(size = 14)) +
       geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
       geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
       labs(
@@ -91,7 +109,7 @@ generateQCplots <- function(object,
 
   if (do.plot) {
     print(depth_plot)
-    print(avg.depths_plot)
+    #print(avg.depths_plot)
     object <- addMetaData(object = object, attributeName = "depth_plot", depth_plot)
   }
   else {
@@ -101,6 +119,58 @@ generateQCplots <- function(object,
   return(object)
 }
 
+#' Plot UMI counts
+#' @export
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom stats median
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param do.plot Logical. Should plots be shown.
+#' @param assays (Optional) user-supplied list of assays to plot. Default is all.
+#' @param samples (Optional) user-supplied list of samples to plot. Default is all.
+plotUmiCounts <- function(object,
+                          do.plot = TRUE,
+                          amplicons = NULL,
+                          samples = NULL) {
+
+  # Read summary data from object
+  data <- object@summary.data %>%
+    dplyr::filter(!is.na(.data$assay),
+                  .data$depth > 0)
+
+  # Select amplicons
+  if (!is.null(amplicons)) {
+    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
+  }
+
+  # Select samples
+  if (!is.null(samples)) {
+    data <- data %>% dplyr::filter(.data$`Sample Name` %in% samples)
+  }
+
+  # Generate ggplot object
+  data$depth %<>% as.factor
+
+  plot <- ggplot(data, aes(x=depth, y=UMIcount, fill=sample)) +
+    geom_col(alpha=0.6) +
+    facet_grid(assay ~ sample)
+
+  # Return plot
+  if(do.plot){
+
+    print(plot)
+    return(object)
+
+  } else {
+
+    return(object)
+
+  }
+
+}
+
+
 #' Generate Amplicon plots
 #' @export
 #' @import ggplot2
@@ -109,70 +179,101 @@ generateQCplots <- function(object,
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown.
-generateAmpliconPlots <- function(object,filter.name, do.plot = TRUE){
+#' @param amplicons (Optional) character vector of amplicons to be plotted.
+#' @param samples (Optional) character vector of samples to be plotted.
+generateAmpliconPlots <- function(object,
+                                  filter.name,
+                                  do.plot = TRUE,
+                                  amplicons = NULL,
+                                  samples = NULL) {
 
   # Check if variant caller has been run on object
-  if( identical(dim(object@variants),dim(tibble())) ) {
-    cons.table <- getFilter(object = object, name = filter.name)
+  if (identical(dim(object@variants), dim(tibble()))) {
+    cons.table <- getFilterdData(object = object, name = filter.name)
     cons.table <- cons.table[[1]]
 
-    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant","Background")
+    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant", "Background")
   }
-  else{
+  else {
     cons.table <- object@variants
-    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant","Background")
+    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
   }
 
+  cons.table$`Sample Name` %<>% as.factor
   cons.table$Position %<>% as.factor
   cons.table$Name %<>% as.factor
   cons.table$sample %<>% as.factor
 
+  if (!is.null(amplicons)) {
+    cons.table <- cons.table %>% dplyr::filter(.data$Name %in% amplicons)
+  }
+
+  if (!is.null(samples)) {
+    cons.table <- cons.table %>% dplyr::filter(.data$`Sample Name` %in% samples)
+  }
+
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
-  if(length(unique(cons.table$Name)) > 3){
-
-    amplicon_plot <- ggplot(cons.table, aes_(x=~Name,
-                                             y=~(100 * `Max Non-ref Allele Frequency`) )) +
-      geom_point(aes(col=.data$Variants, size = .data$`Max Non-ref Allele Count`)) + theme_bw() +
+  if (length(unique(cons.table$`Sample Name`)) > 6) {
+    amplicon_plot <- ggplot(cons.table, aes_(
+      x = ~Name,
+      y = ~ (100 * `Max Non-ref Allele Frequency`)
+    )) +
+      geom_point(aes(col = .data$Variants, size = .data$`Max Non-ref Allele Count`)) +
+      theme_bw() +
       theme(axis.text.x = element_text(size = 8, angle = 90)) +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
-      labs(title = "Maximum variant allele frequency by assay",
-           caption = "Each dot represenst a position. All samples are included.
-           Blue dots represent positions with at least 5 variant alleles.")
-  }
-  else{
-    amplicon_plot <- ggplot(cons.table, aes_(x=~Position,
-                                             y=~`Max Non-ref Allele Frequency`,
-                                             fill=~Variants)) +
-      geom_bar(stat="identity") +
-      theme(axis.text.x = element_text(size = 2, angle = 90)) +
+      labs(
+        title = "Maximum variant allele frequency by assay",
+        caption = "Each dot represenst a position. All samples are included.
+           Blue dots represent positions with at least 5 variant alleles."
+      )
+  } else {
+    amplicon_plot <- ggplot(cons.table, aes_(
+      x = ~Position,
+      y = ~ (100 * `Max Non-ref Allele Frequency`),
+      fill = ~Variants
+    )) +
+      geom_bar(stat = "identity") +
+      theme(axis.text.x = element_text(size = 6, angle = 90)) +
+      ylab("Variant Allele Frequency (%)") +
+      xlab("Assay") +
       facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
-
   }
 
   # Show plot and add ggplot object to the UMIexperiment
-  if(do.plot){
+  if (do.plot) {
     print(amplicon_plot)
-    object <- addMetaData(object = object, attributeName = "amplicon_plot", amplicon_plot)
+    object <- addMetaData(object = object,
+                          attributeName = "amplicon_plot",
+                          amplicon_plot)
   }
-  else{
-    object <- addMetaData(object = object, attributeName = "amplicon_plot", amplicon_plot)
+  else {
+    object <- addMetaData(object = object,
+                          attributeName = "amplicon_plot",
+                          amplicon_plot)
   }
   return(object)
 }
 
-#' Generate Amplicon plots
+#' Generate Merged data plots
 #' @export
 #' @import ggplot2
+#' @importFrom dplyr filter
 #' @importFrom magrittr "%>%" "%<>%"
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
-viz_Merged_data <- function(object, do.plot = TRUE){
+#' @param amplicons (Optional) character vector of amplicons to plot.
+vizMergedData <- function(object, amplicons = NULL, do.plot = TRUE){
 
   # Plotting maximum alternate alle count on merged data
   data <- object@merged.data
   data$Position %<>% as.factor
+
+  if (!is.null(amplicons)) {
+    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
+  }
 
   data$Variants <- ifelse(data$avg.MaxAC > 5, "Variant","Background")
 
@@ -185,17 +286,19 @@ viz_Merged_data <- function(object, do.plot = TRUE){
   print(plot)
 }
 
-#' Generate consensus depths plots
+#' Generate consensus depth histograms
 #' @export
 #' @import ggplot2
 #' @param object Requires a UMI sample or UMI experiment object
-plotFamilyHistogram <- function(object) {
+#' @param xMin Minimum consensus family size to plot, default is 0.
+#' @param xMax Maximum consensus family size to plot. Default is 100.
+plotFamilyHistogram <- function(object, xMin = 0, xMax = 100) {
   if (class(object)[1]== "UMIexperiment") {
     reads <- object@reads
 
     cons_depth_plot <- ggplot(reads, aes(x = count, fill = sample, color = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
-      xlim(0, 100) +
+      xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
       ) +
@@ -203,7 +306,7 @@ plotFamilyHistogram <- function(object) {
   } else {
     cons_depth_plot <- ggplot(object, aes(x = count, fill = sample, color = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
-      xlim(0, 100) +
+      xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
       ) +
@@ -301,5 +404,4 @@ viz_stacked_counts <- function(cons.data){
 
   return(stacked)
 }
-
 
