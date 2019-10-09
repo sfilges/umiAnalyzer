@@ -1,8 +1,4 @@
 
-if (!requireNamespace(c('tidyverse','shiny','shinyFiles','DT', 'shinydashboard'), quietly = TRUE)) {
-  install.packages(c('tidyverse','shiny','shinyFiles','DT', 'shinydashboard'))
-}
-
 library(tidyverse, quietly = TRUE)
 library(shiny, quietly = TRUE)
 library(shinyFiles, quietly = TRUE)
@@ -16,6 +12,7 @@ options(shiny.maxRequestSize=200*1024^2)
 ui <- dashboardPage(
   dashboardHeader(title = "umiVisualiser"),
 
+  # Define menu items on the sidebar
   dashboardSidebar(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
@@ -23,8 +20,11 @@ ui <- dashboardPage(
     )
   ),
 
+  # Define main windows
   dashboardBody(
+    # List tab items ...
     tabItems(
+      # ... each tab-item correponds to a menu-item in the sidebar
       tabItem(tabName = "dashboard",
         fluidRow(
           box(
@@ -40,7 +40,7 @@ ui <- dashboardPage(
 
             selectInput('consensus',
                         label = 'Consensus Depth:',
-                        choices = c(1,2,3,4,5,10,15,20,30),
+                        choices = c(1,2,3,4,5,10,20,30),
                         selected = 3),
 
             selectInput('samples',
@@ -73,8 +73,8 @@ ui <- dashboardPage(
 
           mainPanel(
             # Output: Tabset w/ plot, summary, and table ----
-            tabBox(
-              type = "tabs", width = "1024px", height = "800px",
+            tabsetPanel(
+              type = "tabs",
               tabPanel("Amplicons", plotOutput("amplicon_plot", width = "1024px", height = "800px")),
               tabPanel("Data", DT::dataTableOutput("dataTable")),
               tabPanel("Sample info", DT::dataTableOutput("metaDataTable")),
@@ -99,8 +99,7 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
 
-  #Define avalible volumes for shinyFiles
-
+  # Define avalible volumes for shinyFiles
   volumes <- c(Home = fs::path_home(),
                "R Installation" = R.home(),
                getVolumes()())
@@ -134,7 +133,6 @@ server <- function(input, output, session) {
   })
 
   # Set up user_data_main
-
   user_data_main <- reactive({
 
     # Path selected by the user
@@ -142,13 +140,17 @@ server <- function(input, output, session) {
 
     # Create umiExperiment object
     if (identical(main, character(0))){
-      return(NULL)} else {main}
+        return(NULL)
+      } else {
+        return(main)
+      }
   })
 
   # Set up a test_data main
 
   test_data_main <- eventReactive(input$importTest,{
-    system.file("extdata", package = "umiAnalyzer")
+    main <- system.file("extdata", package = "umiAnalyzer")
+    return(main)
   })
 
   # Create experiment
@@ -156,7 +158,6 @@ server <- function(input, output, session) {
   experiment <- reactive({
 
     # select between main
-
     if(!is.null(user_data_main())){
       main <- user_data_main()
     } else {
@@ -169,9 +170,16 @@ server <- function(input, output, session) {
 
       samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-      umiAnalyzer::createUmiExperiment(experimentName = "simsen",
-                                       mainDir = main,
-                                       sampleNames = samples)}
+      data <- umiAnalyzer::createUmiExperiment(
+        experimentName = "simsen",
+        mainDir = main,
+        sampleNames = samples)
+
+      print(class(data))
+      print(data@cons.data)
+
+      return(data)
+      }
 
   })
 
@@ -208,7 +216,7 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       inputId = 'assays',
                       choices = unlist(strsplit(unique(data$Name), split = ',')),
-                      selected = head(unlist(strsplit(unique(data$Name), split = ',')),2))
+                      selected = head(unlist(strsplit(unique(data$Name), split = ',')),1))
 
     updateSelectInput(session,
                       inputId = 'samples',

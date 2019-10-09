@@ -229,8 +229,7 @@ generateAmpliconPlots <- function(object,
         caption = "Each dot represenst a position. All samples are included.
            Blue dots represent positions with at least 5 variant alleles."
       )
-  }
-  else {
+  } else {
     amplicon_plot <- ggplot(cons.table, aes_(
       x = ~Position,
       y = ~ (100 * `Max Non-ref Allele Frequency`),
