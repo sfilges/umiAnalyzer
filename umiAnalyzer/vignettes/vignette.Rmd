@@ -2,7 +2,13 @@
 title: "umiAnalyzer vignette"
 author: "Stefan Filges"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  html_document:
+    toc: true # table of content true
+    toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+    theme: united
+    highlight: tango
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{umiAnalyzer vignette}

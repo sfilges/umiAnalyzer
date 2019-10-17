@@ -153,6 +153,7 @@ plotUmiCounts <- function(object,
   data$depth %<>% as.factor
 
   plot <- ggplot(data, aes(x=depth, y=UMIcount, fill=sample)) +
+    theme_classic() +
     geom_col(alpha=0.6) +
     facet_grid(assay ~ sample)
 
@@ -215,10 +216,11 @@ generateAmpliconPlots <- function(object,
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
   if (length(unique(cons.table$`Sample Name`)) > 6) {
-    amplicon_plot <- ggplot(cons.table, aes_(
-      x = ~Name,
-      y = ~ (100 * `Max Non-ref Allele Frequency`)
-    )) +
+    amplicon_plot <- ggplot(
+      cons.table, aes_(
+        x = ~Name,
+        y = ~ (100 * `Max Non-ref Allele Frequency`))
+      ) +
       geom_point(aes(col = .data$Variants, size = .data$`Max Non-ref Allele Count`)) +
       theme_bw() +
       theme(axis.text.x = element_text(size = 8, angle = 90)) +
@@ -233,8 +235,9 @@ generateAmpliconPlots <- function(object,
     amplicon_plot <- ggplot(cons.table, aes_(
       x = ~Position,
       y = ~ (100 * `Max Non-ref Allele Frequency`),
-      fill = ~Variants
-    )) +
+      fill = ~Variants)
+      ) +
+      theme_bw() +
       geom_bar(stat = "identity") +
       theme(axis.text.x = element_text(size = 6, angle = 90)) +
       ylab("Variant Allele Frequency (%)") +
@@ -245,14 +248,16 @@ generateAmpliconPlots <- function(object,
   # Show plot and add ggplot object to the UMIexperiment
   if (do.plot) {
     print(amplicon_plot)
-    object <- addMetaData(object = object,
-                          attributeName = "amplicon_plot",
-                          amplicon_plot)
+    object <- addMetaData(
+      object = object,
+      attributeName = "amplicon_plot",
+      amplicon_plot)
   }
   else {
-    object <- addMetaData(object = object,
-                          attributeName = "amplicon_plot",
-                          amplicon_plot)
+    object <- addMetaData(
+      object = object,
+      attributeName = "amplicon_plot",
+      amplicon_plot)
   }
   return(object)
 }
@@ -292,20 +297,34 @@ vizMergedData <- function(object, amplicons = NULL, do.plot = TRUE){
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
-plotFamilyHistogram <- function(object, xMin = 0, xMax = 100) {
+#' @param samples List of samples to be shown.
+plotFamilyHistogram <- function(object, xMin = 0, xMax = 100, samples = NULL) {
+
+  # check if object is a UMIexperiment
   if (class(object)[1]== "UMIexperiment") {
     reads <- object@reads
 
+    if (!is.null(samples)) {
+      reads <- reads %>% dplyr::filter(.data$sample %in% samples)
+    }
+
     cons_depth_plot <- ggplot(reads, aes(x = count, fill = sample, color = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
+      theme_classic() +
       xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
       ) +
       facet_wrap(~sample)
   } else {
+    # a tibble containing read info is passed directly
+    if (!is.null(samples)) {
+      object <- object %>% dplyr::filter(.data$sample %in% samples)
+    }
+
     cons_depth_plot <- ggplot(object, aes(x = count, fill = sample, color = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
+      theme_classic() +
       xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
