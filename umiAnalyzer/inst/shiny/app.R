@@ -1,4 +1,14 @@
+#----------------------------// UmiVisualiser //--------------------------------
+#
+# A Shiny app for visualising data generated with the umierrorcorrect pipeline:
+# https://github.com/tobbeost/umierrorcorrect
+#
+# This app uses and comes supplied with the umiAnalyzer package:
+# https://github.com/ozimand1as/umiAnalyzer
+#
+#
 
+# Quietly import required packages
 library(tidyverse, quietly = TRUE)
 library(shiny, quietly = TRUE)
 library(shinyFiles, quietly = TRUE)
@@ -9,16 +19,31 @@ library(umiAnalyzer, quietly = TRUE)
 
 options(shiny.maxRequestSize=200*1024^2)
 
-
+# Define user interface
 ui <- dashboardPage(
-  dashboardHeader(title = "umiVisualiser"),
+
+  dashboardHeader(
+    title = "umiVisualiser"
+  ),
 
   # Define menu items on the sidebar
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Dashboard", tabName = "dashboard", icon = icon("dna")),
-      menuItem("Advanced", tabName = "advanced", icon = icon("magic")),
-      menuItem("User Guide", tabName = "vignette", icon = icon("book"))
+      menuItem(
+        text = "Dashboard",
+        tabName = "dashboard",
+        icon = icon("dna")
+      ),
+      menuItem(
+        text = "Advanced",
+        tabName = "advanced",
+        icon = icon("magic")
+      ),
+      menuItem(
+        text = "User Guide",
+        tabName = "vignette",
+        icon = icon("book")
+      )
     )
   ),
 
@@ -29,66 +54,112 @@ ui <- dashboardPage(
       # ... each tab-item correponds to a menu-item in the sidebar
       tabItem(tabName = "dashboard",
         fluidRow(
-          box(title = "Input",status = "primary", solidHeader = TRUE, collapsible = FALSE,
-              height = 420,
+          # Box for primary data upload and selection
+          box(
+            title = "Input",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            height = 420,
+            # Tab box with two panels
+            tabBox(
+              type = "tabs",
+              width = 12,
+              # Panel 1: Data upload widgets
+              # TODO fix processing of zip files on server
+              # TODO add options for cloud services?
+              tabPanel(
+                title = "Upload data",
+                icon = icon("upload"),
+                # Encase i/o buttons in a fluid row environment
+                fluidRow(
+                  fileInput(
+                    inputId = 'zipFile',
+                    label = 'Choose a zip file',
+                    multiple = FALSE,
+                    accept = c('.zip')
+                  ),
+                  fileInput(
+                    inputId = 'file',
+                    label = 'Choose a File containing sample info',
+                    multiple = FALSE,
+                    accept = c('.txt','.csv','.tsv')
+                  ),
+                  shinyDirButton(
+                    id = 'dir',
+                    label = 'Choose directory',
+                    title = 'Upload',
+                    icon = icon("folder-open")
+                  ),
+                  actionButton(
+                    inputId = "importBam",
+                    label = "Import .bam files"
+                  ),
+                  actionButton(
+                    inputId = "importTest",
+                    label = "Load test data"),
+                  downloadButton(
+                    outputId = "report",
+                    label = "Print Report"
+                  )
+                )
+              ),
+              # Panel 2: Data selection - the user chooses consensus depth for
+              # filtering and which samples and assays to show.
+              tabPanel(
+                title = "Data selection",
+                icon = icon("edit"),
 
-            shinyDirButton('dir',
-                           'Choose directory',
-                           'Upload'),
-
-            actionButton("importBam", "Import BAM files"),
-
-            actionButton("importTest", "Import test data"),
-
-            downloadButton("report", label = "Print Report"),
-
-            br(),
-
-            selectInput('consensus',
-                        label = 'Consensus Depth:',
-                        choices = c(1,2,3,4,5,10,20,30),
-                        selected = 3),
-
-            selectInput('samples',
-                        label = 'Samples:',
-                        choices = '',
-                        multiple = T),
-
-            selectInput('assays',
-                        label = 'Assays:',
-                        choices = '',
-                        multiple = T),
-
-            fileInput('file',
-                      'Choose a File containing sample info',
-                      multiple = F,
-                      accept = c('.txt','.csv','.tsv'))
+                selectInput('consensus',
+                            label = 'Consensus Depth:',
+                            choices = c(1,2,3,4,5,10,20,30),
+                            selected = 3),
+                selectInput('samples',
+                            label = 'Samples:',
+                            choices = '',
+                            multiple = TRUE),
+                selectInput('assays',
+                            label = 'Assays:',
+                            choices = '',
+                            multiple = TRUE)
+              )
+            )
           ),
-          box(title = "Parameters",status = "primary", solidHeader = TRUE, collapsible = FALSE,
-              height = 420,
-
-            sliderInput("minFreq", "Minimum Variant allele frequency:",
-                        min = 0, max = 1,
-                        value = 0, step = 0.01,
-                        post = "%", sep = ","),
-
-            sliderInput("minCount", "Minimum Variant allele count:",
-                        min = 0, max = 10,
-                        value = 0, step = 1,
-                        post = " reads", sep = ","),
-
-            sliderInput("famSize", "Minimum and Maximum family size to show:",
-                        min = 0, max = 500,
-                        value = c(0,100), step = 1,
-                        post = " reads", sep = ","),
-
+          # Box for interactive paramter selection
+          box(
+            title = "Parameters",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            height = 420,
+            sliderInput(
+              inputId = "minFreq",
+              label = "Minimum Variant allele frequency:",
+              min = 0, max = 1,
+              value = 0, step = 0.01,
+              post = "%", sep = ","
+            ),
+            sliderInput(
+              inputId = "minCount",
+              label = "Minimum Variant allele count:",
+              min = 0, max = 10,
+              value = 0, step = 1,
+              post = " reads", sep = ","
+            ),
+            sliderInput(
+              inputId = "famSize",
+              label =  "Minimum and Maximum family size to show:",
+              min = 0, max = 500,
+              value = c(0,100), step = 1,
+              post = " reads", sep = ","
+            ),
             br(),
-
             materialSwitch(
               inputId = "id",
               label = "Absolute counts",
               right = TRUE,
-              status = "primary")
+              status = "primary"
+            )
           ),
 
           # View data tables in collapsable box
@@ -115,26 +186,45 @@ ui <- dashboardPage(
               collapsible = TRUE,
               width = 12,
             mainPanel(
-              tabBox(type = "tabs",
-                     width = 12,
-
+              tabBox(
+                type = "tabs",
+                width = 12,
                 # Panel for the amplicon plots with download button
                 tabPanel("Amplicons",
                   fluidRow(
-                    plotOutput("amplicon_plot", width = "130%", height = "600px"),
-                    downloadButton("download_plot", "Download figure")
+                    plotOutput(
+                      outputId = "amplicon_plot",
+                      width = "130%",
+                      height = "600px"
+                    ),
+                    downloadButton(
+                      outputId = "download_plot",
+                      label = "Download figure"
+                    )
                   )
                 ),
-                tabPanel("QC Plot", plotOutput("qcPlot")),
-                tabPanel("UMI counts", plotOutput("umiCounts")),
-                tabPanel("Histogram", plotOutput("histogram"))
+                # Panel for quality control plot
+                tabPanel(
+                  title = "QC Plot",
+                  plotOutput("qcPlot")
+                ),
+                # Panel for UMI count data
+                tabPanel(
+                  title = "UMI counts",
+                  plotOutput("umiCounts")
+                ),
+                # Panel for barcode family histogram
+                tabPanel(
+                  title = "Histogram",
+                  plotOutput("histogram")
+                )
               )
             )
           )
         )
       ),
 
-      #
+      # TODO Tab for advanced functions
       tabItem(tabName = "advanced",
         h4("Advanced analysis"),
 
@@ -145,8 +235,8 @@ ui <- dashboardPage(
         )
       ),
 
-      # Including html vignette causes some issues as it seems the app size becomes
-      # fixed to the size of vignette...
+      # TODO Including html vignette causes some issues as it seems the app size
+      # becomes fixed to the size of vignette...
       tabItem(tabName = "vignette",
         h4("Include vignette")
         #includeHTML(path = system.file("shiny", "vignette.html", package = "umiAnalyzer"))
@@ -155,7 +245,7 @@ ui <- dashboardPage(
   )
 )
 
-# Define server logic required to draw a histogram
+# Define server logic
 server <- function(input, output, session, plotFun) {
 
   output$report <- downloadHandler(
@@ -413,23 +503,11 @@ server <- function(input, output, session, plotFun) {
 
   })
 
-
-
   # Import consensus read bam file upon button click to generate histograms
   # of barcode distribution. It is possible to import directly into the umiExperiment object
   # by setting the importBam flag, but file and this might become very large, so this
   # function is outsourced to parseBamFiles
   observeEvent(input$importBam, {
-
-    #main <- parseDirPath(volumes, input$dir)
-
-    #test2 <- eventReactive(input$importTest,{
-    #  main <- system.file("extdata", package = "umiAnalyzer")
-    #})
-
-    #if(!is.null(test2())){
-    #  main <- test2()
-    #}
 
     # select between main
     if(!is.null(user_data_main())){
@@ -441,21 +519,26 @@ server <- function(input, output, session, plotFun) {
     if (identical(main, character(0))) {
       return(NULL)
     } else {
-      samples <- list.dirs(path = main,
-                           full.names = FALSE,
-                           recursive = FALSE)
-
-      reads <- umiAnalyzer::parseBamFiles(mainDir = main,
-                                          sampleNames = samples,
-                                          consDepth = 0)
-
+      # List sample names in main directory
+      samples <- list.dirs(
+        path = main,
+        full.names = FALSE,
+        recursive = FALSE)
+      # Parse each sample folder for .bam files containing consensus reads
+      reads <- umiAnalyzer::parseBamFiles(
+        mainDir = main,
+        sampleNames = samples,
+        consDepth = 0
+      )
+      # Output barcode family histogram
       output$histogram <- renderPlot({
-
-        # TODO add min, max and samples arguments to be selected by user
-        umiAnalyzer::plotFamilyHistogram(object = reads,
-                                         xMin = input$famSize[1],
-                                         xMax = input$famSize[2],
-                                         samples = input$samples)
+        # Generate histogram plot using user defined parameters
+        umiAnalyzer::plotFamilyHistogram(
+          object = reads,
+          xMin = input$famSize[1],
+          xMax = input$famSize[2],
+          samples = input$samples
+        )
       })
     }
   })
