@@ -330,7 +330,20 @@ server <- function(input, output, session, plotFun) {
     }
   )
 
+  # TODO add function for processing fastq files
+  fastq <- reactive({
+
+    x <- "my.fastq.gz"
+
+    command <- sprintf("docker run sfilges/umierrorcorrect", x)
+
+    system(command = command)
+
+
+  })
+
   # Output pdf report upon button click
+  # TODO prettify report format
   output$download_plot <- downloadHandler(
     filename = "amplicon_plot.pdf",
     content = function(file) {
