@@ -93,11 +93,14 @@ ui <- dashboardPage(
                   ),
                   actionButton(
                     inputId = "importBam",
-                    label = "Import .bam files"
+                    label = "Import .bam files",
+                    icon = icon("align-left")
                   ),
                   actionButton(
                     inputId = "importTest",
-                    label = "Load test data"),
+                    label = "Load test data",
+                    icon = icon("file-import")
+                  ),
                   downloadButton(
                     outputId = "report",
                     label = "Print Report"
@@ -110,18 +113,24 @@ ui <- dashboardPage(
                 title = "Data selection",
                 icon = icon("edit"),
 
-                selectInput('consensus',
-                            label = 'Consensus Depth:',
-                            choices = c(1,2,3,4,5,10,20,30),
-                            selected = 3),
-                selectInput('samples',
-                            label = 'Samples:',
-                            choices = '',
-                            multiple = TRUE),
-                selectInput('assays',
-                            label = 'Assays:',
-                            choices = '',
-                            multiple = TRUE)
+                selectInput(
+                  inputId = 'consensus',
+                  label = 'Consensus Depth:',
+                  choices = c(1,2,3,4,5,10,20,30),
+                  selected = 3
+                ),
+                selectInput(
+                  inputId = 'samples',
+                  label = 'Samples:',
+                  choices = '',
+                  multiple = TRUE
+                ),
+                selectInput(
+                  inputId = 'assays',
+                  label = 'Assays:',
+                  choices = '',
+                  multiple = TRUE
+                )
               )
             )
           ),
@@ -161,36 +170,43 @@ ui <- dashboardPage(
               status = "primary"
             )
           ),
-
           # View data tables in collapsable box
-          box(title = "Data Viewer",
-              status = "primary",
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              width = 12,
-              style = "font-size: 10px;",
+          box(
+            title = "Data Viewer",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = 12,
             mainPanel(
               tabBox(
-                type = "tabs", width = 12,
-                tabPanel("Data", DT::dataTableOutput("dataTable")),
-                tabPanel("Sample info", DT::dataTableOutput("metaDataTable"))
+                tabPanel(
+                  title = "Data",
+                  DT::dataTableOutput("dataTable"),
+                  style = "font-size: 10px;"
+                ),
+                tabPanel(
+                  title = "Sample info",
+                  DT::dataTableOutput("metaDataTable")
+                )
               )
             )
           ),
-
           # Show plots in collapsable box containing a tabBox with a tab for
           # each plot to be shown.
-          box(title = "Plots",
-              status = "primary",
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              width = 12,
+          box(
+            title = "Plots",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = 12,
             mainPanel(
               tabBox(
                 type = "tabs",
                 width = 12,
                 # Panel for the amplicon plots with download button
-                tabPanel("Amplicons",
+                tabPanel(
+                  title = "Amplicons",
+                  icon = icon("chart-bar"),
                   fluidRow(
                     plotOutput(
                       outputId = "amplicon_plot",
@@ -226,11 +242,47 @@ ui <- dashboardPage(
 
       # TODO Tab for advanced functions
       tabItem(tabName = "advanced",
-        h4("Advanced analysis"),
-
         fluidRow(
-          mainPanel(
-
+          shinydashboard::box(
+            title = "Advanced data analysis",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = 6,
+            actionButton(
+              inputId = 'runVarCaller',
+              label = 'Run variant caller'
+            ),
+            actionButton(
+              inputId = 'mergeReplicates',
+              label = "Merge Replicates"
+            ),
+            actionButton(
+              inputId = "generateVCF",
+              label = "Generate VCF file"
+            )
+          ),
+          # View data tables in collapsable box
+          shinydashboard::box(
+            title = "Data Viewer",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = 12,
+            mainPanel(
+              tabBox(
+                tabPanel(
+                  title = "Amplicons data",
+                  style = "font-size: 10px;"
+                ),
+                tabPanel(
+                  title = "Sample info"
+                ),
+                tabPanel(
+                  title = "Merged data"
+                )
+              )
+            )
           )
         )
       ),
@@ -259,10 +311,12 @@ server <- function(input, output, session, plotFun) {
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
       # Set up parameters to pass to Rmd document
-      params <- list(data = filteredData(),
-                     assays = input$assays,
-                     samples = input$samples,
-                     minDepth =  input$consensus)
+      params <- list(
+        data = filteredData(),
+        assays = input$assays,
+        samples = input$samples,
+        minDepth =  input$consensus
+      )
 
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
@@ -276,6 +330,7 @@ server <- function(input, output, session, plotFun) {
     }
   )
 
+  # Output pdf report upon button click
   output$download_plot <- downloadHandler(
     filename = "amplicon_plot.pdf",
     content = function(file) {
@@ -300,12 +355,49 @@ server <- function(input, output, session, plotFun) {
                "R Installation" = R.home(),
                getVolumes()())
 
-  shinyDirChoose(input, 'dir',
-                 roots = volumes,
-                 session = session,
-                 restrictions = system.file(package = "base"))
+  shinyDirChoose(
+    input = input,
+    id = 'dir',
+    roots = volumes,
+    session = session,
+    restrictions = system.file(package = "base")
+  )
 
-  shinyFileChoose(input, 'file', root=volumes, filetypes=c('.csv','.txt','.tsv'))
+  shinyFileChoose(
+    input = input,
+    id = 'file',
+    root = volumes,
+    filetypes = c('.csv','.txt','.tsv')
+  )
+
+  shinyFileChoose(
+    input = input,
+    id = 'zipFile',
+    root = volumes,
+    filetypes = c('.zip')
+  )
+
+  # Upload zipped data
+  temp_data_main <- reactive({
+
+    zip_path <- input$zipFile$datapath
+
+    if ( is.null(zip_path) ) {
+      return(NULL)
+    } else {
+
+      temp_dir <- file.path(tempdir(), "data")
+
+      unzip(
+        zipfile = zip_path,
+        list = FALSE,
+        exdir = temp_dir,
+        unzip = "internal"
+      )
+
+      return(temp_dir)
+    }
+  })
 
   metaData <- reactive({
 
@@ -319,9 +411,15 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
-      data <- umiAnalyzer::importDesign(object = experiment(), file = metaData)
+      data <- umiAnalyzer::importDesign(
+        object = experiment(),
+        file = metaData
+      )
 
-      design <- umiAnalyzer::getMetaData(object = data, attributeName = "design")
+      design <- umiAnalyzer::getMetaData(
+        object = data,
+        attributeName = "design"
+      )
 
       return(design)
 
@@ -330,9 +428,11 @@ server <- function(input, output, session, plotFun) {
 
   # Set up user_data_main
   user_data_main <- reactive({
-
     # Path selected by the user
-    main <- parseDirPath(volumes, input$dir)
+    main <- shinyFiles::parseDirPath(
+      roots = volumes,
+      selection = input$dir
+    )
 
     # Create umiExperiment object
     if (identical(main, character(0))){
@@ -341,21 +441,24 @@ server <- function(input, output, session, plotFun) {
         return(main)
       }
   })
-
   # Set up a test_data main
-
   test_data_main <- eventReactive(input$importTest,{
     main <- system.file("extdata", package = "umiAnalyzer")
     return(main)
   })
 
   # Create experiment
-
   experiment <- reactive({
 
-    # select between main
-    if(!is.null(user_data_main())){
-      main <- user_data_main()
+    # select directories
+    if( !is.null(user_data_main()) || !is.null(temp_data_main()) ){
+
+      if( !is.null(user_data_main())  ) {
+        main <- user_data_main()
+      } else {
+        main <- temp_data_main()
+      }
+
     } else {
       main <- test_data_main()
     }
@@ -369,10 +472,11 @@ server <- function(input, output, session, plotFun) {
       data <- umiAnalyzer::createUmiExperiment(
         experimentName = "simsen",
         mainDir = main,
-        sampleNames = samples)
+        sampleNames = samples
+      )
 
       print(class(data))
-      print(data@cons.data)
+      #print(data@cons.data)
 
       return(data)
       }
@@ -409,15 +513,19 @@ server <- function(input, output, session, plotFun) {
 
     data <- umiAnalyzer::saveConsData( experiment() )
 
-    updateSelectInput(session,
-                      inputId = 'assays',
-                      choices = unlist(strsplit(unique(data$Name), split = ',')),
-                      selected = head(unlist(strsplit(unique(data$Name), split = ',')),1))
+    updateSelectInput(
+      session = session,
+      inputId = 'assays',
+      choices = unlist(strsplit(unique(data$Name), split = ',')),
+      selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
+    )
 
-    updateSelectInput(session,
-                      inputId = 'samples',
-                      choices = unlist(strsplit(unique(data$`Sample Name`), split = ',')),
-                      selected = head(unlist(strsplit(unique(data$`Sample Name`), split = ',')),1))
+    updateSelectInput(
+      session = session,
+      inputId = 'samples',
+      choices = unlist(strsplit(unique(data$`Sample Name`), split = ',')),
+      selected = head(unlist(strsplit(unique(data$`Sample Name`), split = ',')),1)
+    )
 
   })
 
@@ -429,7 +537,11 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    filter <- umiAnalyzer::getFilterdData(object = filteredData(), name = "user_filter")
+    filter <- umiAnalyzer::getFilterdData(
+      object = filteredData(),
+      name = "user_filter"
+    )
+
     filter <- filter['user_filter'][[1]]
 
     filter %>%
@@ -466,12 +578,12 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::generateAmpliconPlots(object = filteredData(),
-                          filter.name = "user_filter",
-                          do.plot = TRUE,
-                          amplicons = input$assays,
-                          samples = input$samples)
-
+    umiAnalyzer::generateAmpliconPlots(
+      object = filteredData(),
+      filter.name = "user_filter",
+      do.plot = TRUE,
+      amplicons = input$assays,
+      samples = input$samples)
   })
 
   # Output the QC plot
@@ -499,8 +611,10 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::plotUmiCounts(object = experiment(),do.plot = TRUE)
-
+    umiAnalyzer::plotUmiCounts(
+      object = experiment(),
+      do.plot = TRUE
+    )
   })
 
   # Import consensus read bam file upon button click to generate histograms

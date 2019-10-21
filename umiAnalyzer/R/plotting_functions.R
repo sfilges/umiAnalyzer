@@ -49,12 +49,24 @@ generateQCplots <- function(object,
 
   if (group.by == "assay") {
     depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount)) +
-      geom_boxplot(outlier.colour = "black", outlier.shape = 10, outlier.size = 3) +
-      geom_jitter(size = 8,shape = 16, position = position_jitter(0.2)) +
-      theme(axis.text.x = element_text(size = 14, angle = 90),
-            axis.text.y = element_text(size = 14)) +
-      geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
-      geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
+      geom_boxplot(
+        outlier.colour = "black",
+        outlier.shape = 10,
+        outlier.size = 3) +
+      geom_jitter(
+        size = 8,
+        shape = 16,
+        position = position_jitter(0.2)) +
+      theme_bw() +
+      theme(
+        axis.text.x = element_text(size = 14, angle = 90),
+        axis.text.y = element_text(size = 14)) +
+      geom_hline(
+        yintercept = median(cdepths$UMIcount),
+        linetype = "dashed", color = "red") +
+      geom_hline(
+        yintercept = mean(cdepths$UMIcount),
+        linetype = "dashed", color = "blue") +
       labs(
         title = "Consensus 3 depths by assay",
         subtitle = paste(
@@ -65,10 +77,20 @@ generateQCplots <- function(object,
       )
   } else if (group.by == "sample") {
     depth_plot <- ggplot(cdepths, aes_(x = ~sample, y = ~UMIcount)) +
-      geom_boxplot(outlier.colour = "black", outlier.shape = 10, outlier.size = 3) +
+      geom_boxplot(
+        outlier.colour = "black",
+        outlier.shape = 10,
+        outlier.size = 3) +
+      theme_bw() +
       theme(axis.text.x = element_text(angle = 90)) +
-      geom_hline(yintercept = median(cdepths$UMIcount), linetype = "dashed", color = "red") +
-      geom_hline(yintercept = mean(cdepths$UMIcount), linetype = "dashed", color = "blue") +
+      geom_hline(
+        yintercept = median(cdepths$UMIcount),
+        linetype = "dashed",
+        color = "red") +
+      geom_hline(
+        yintercept = mean(cdepths$UMIcount),
+        linetype = "dashed",
+        color = "blue") +
       labs(
         title = "Consensus 3 depths by sample",
         subtitle = paste(
@@ -82,12 +104,28 @@ generateQCplots <- function(object,
   summary.table <- as_tibble(summary.table)
 
   cons0.depths <- summary.table %>%
-    dplyr::filter(.data$assay != "", .data$depth == 0) %>%
-    dplyr::select(.data$assay, .data$region, .data$sample, .data$totalCount)
+    dplyr::filter(
+      .data$assay != "",
+      .data$depth == 0
+    ) %>%
+    dplyr::select(
+      .data$assay,
+      .data$region,
+      .data$sample,
+      .data$totalCount
+    )
 
   cons3.UMIcount <- summary.table %>%
-    dplyr::filter(.data$assay != "", .data$depth == 3) %>%
-    dplyr::select(.data$assay, .data$region, .data$sample, .data$UMIcount)
+    dplyr::filter(
+      .data$assay != "",
+      .data$depth == 3
+    ) %>%
+    dplyr::select(
+      .data$assay,
+      .data$region,
+      .data$sample,
+      .data$UMIcount
+    )
 
   avg.depths <- dplyr::left_join(cons0.depths, cons3.UMIcount, c(
     "region" = "region",
@@ -106,14 +144,21 @@ generateQCplots <- function(object,
     ggtitle("Average family size per assay")
 
   # Plot consensus depth distribution
-
   if (do.plot) {
     print(depth_plot)
     #print(avg.depths_plot)
-    object <- addMetaData(object = object, attributeName = "depth_plot", depth_plot)
+    object <- addMetaData(
+      object = object,
+      attributeName = "depth_plot",
+      depth_plot
+    )
   }
   else {
-    object <- addMetaData(object = object, attributeName = "depth_plot", depth_plot)
+    object <- addMetaData(
+      object = object,
+      attributeName = "depth_plot",
+      depth_plot
+    )
   }
 
   return(object)
@@ -182,11 +227,13 @@ plotUmiCounts <- function(object,
 #' @param do.plot Logical. Should plots be shown.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
-generateAmpliconPlots <- function(object,
-                                  filter.name,
-                                  do.plot = TRUE,
-                                  amplicons = NULL,
-                                  samples = NULL) {
+generateAmpliconPlots <- function(
+  object,
+  filter.name,
+  do.plot = TRUE,
+  amplicons = NULL,
+  samples = NULL
+  ) {
 
   # Check if variant caller has been run on object
   if (identical(dim(object@variants), dim(tibble()))) {
