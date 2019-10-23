@@ -56,11 +56,17 @@ main <- system.file("extdata", package = "umiAnalyzer")
 samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
 
-simsen <- createUmiExperiment(experimentName = "simsen",
-                              mainDir = main,
-                              sampleNames = samples)
+simsen <- createUmiExperiment(
+  experimentName = "simsen",
+  mainDir = main,
+  sampleNames = samples
+ )
 
-reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
+reads <- parseBamFiles(
+  mainDir = main,
+  sampleNames = samples, 
+  consDepth = 10
+ )
 
 plotFamilyHistogram(reads)
 ```
