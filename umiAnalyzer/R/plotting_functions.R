@@ -11,12 +11,14 @@
 #' @param assays (Optional) user-supllied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supllied list of samples to plot. Default is all.
 #'
-generateQCplots <- function(object,
-                            do.plot = TRUE,
-                            group.by = "assay",
-                            plotDepth = 3,
-                            assays = NULL,
-                            samples = NULL) {
+generateQCplots <- function(
+  object,
+  do.plot = TRUE,
+  group.by = "assay",
+  plotDepth = 3,
+  assays = NULL,
+  samples = NUL
+  L) {
 
   cons.table <- object@cons.data
   summary.table <- object@summary.data
@@ -174,10 +176,12 @@ generateQCplots <- function(object,
 #' @param do.plot Logical. Should plots be shown.
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
-plotUmiCounts <- function(object,
-                          do.plot = TRUE,
-                          amplicons = NULL,
-                          samples = NULL) {
+plotUmiCounts <- function(
+  object,
+  do.plot = TRUE,
+  amplicons = NULL,
+  samples = NULL
+  ) {
 
   # Read summary data from object
   data <- object@summary.data %>%

@@ -17,7 +17,8 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
-options(shiny.maxRequestSize=200*1024^2)
+# Maximum 1GB data upload
+options(shiny.maxRequestSize=1000*1024^2)
 
 # Define user interface
 ui <- dashboardPage(
@@ -75,7 +76,7 @@ ui <- dashboardPage(
                 fluidRow(
                   fileInput(
                     inputId = 'zipFile',
-                    label = 'Choose a zip file',
+                    label = 'Choose a zip file (Max. 1 GB)',
                     multiple = FALSE,
                     accept = c('.zip')
                   ),
@@ -415,7 +416,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
-      temp_dir <- file.path(tempdir(), 'data')
+      temp_dir <- file.path(tempdir(),'appData')
 
       unzip(
         zipfile = zip_path,
