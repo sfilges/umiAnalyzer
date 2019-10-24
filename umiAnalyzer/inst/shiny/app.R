@@ -331,21 +331,37 @@ server <- function(input, output, session, plotFun) {
   )
 
   # TODO add function for processing fastq files
-  fastq <- reactive({
+  fastq_main <- reactive({
 
-    x <- "my.fastq.gz"
+    fastq_path <- input$fastqFiles$datapath
 
-    command <- sprintf("docker run sfilges/umierrorcorrect", x)
+    if ( is.null(fastq_path) ) {
+      return(NULL)
+    } else {
 
-    system(command = command)
+      # unzip data to temporary directory
+      temp_dir <- file.path(tempdir(), 'fastq')
 
+      unzip(
+        zipfile = fastq_path,
+        list = FALSE,
+        exdir = temp_dir,
+        unzip = 'internal'
+      )
 
+      # execute run docker script in the folder containing the fastq files
+      command <- sprintf('run_docker.sh %s', fastq_path)
+      system(command = command)
+
+      # return directory containing umierrorcorrect output
+      return(temp_dir)
+    }
   })
 
   # Output pdf report upon button click
   # TODO prettify report format
   output$download_plot <- downloadHandler(
-    filename = "amplicon_plot.pdf",
+    filename = 'amplicon_plot.pdf',
     content = function(file) {
 
       if(is.null(filteredData())){
@@ -355,7 +371,7 @@ server <- function(input, output, session, plotFun) {
       pdf(file)
         umiAnalyzer::generateAmpliconPlots(
           object = filteredData(),
-          filter.name = "user_filter",
+          filter.name = 'user_filter',
           do.plot = TRUE,
           amplicons = input$assays,
           samples = input$samples)
@@ -365,7 +381,7 @@ server <- function(input, output, session, plotFun) {
 
   # Define avalible volumes for shinyFiles
   volumes <- c(Home = fs::path_home(),
-               "R Installation" = R.home(),
+               'R Installation' = R.home(),
                getVolumes()())
 
   shinyDirChoose(
@@ -373,7 +389,7 @@ server <- function(input, output, session, plotFun) {
     id = 'dir',
     roots = volumes,
     session = session,
-    restrictions = system.file(package = "base")
+    restrictions = system.file(package = 'base')
   )
 
   shinyFileChoose(
@@ -399,13 +415,13 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
-      temp_dir <- file.path(tempdir(), "data")
+      temp_dir <- file.path(tempdir(), 'data')
 
       unzip(
         zipfile = zip_path,
         list = FALSE,
         exdir = temp_dir,
-        unzip = "internal"
+        unzip = 'internal'
       )
 
       return(temp_dir)
@@ -585,7 +601,6 @@ server <- function(input, output, session, plotFun) {
   # Generate amplicon plots using umiAnalyzer
   # TODO prettify output on generateAmpliconPlots
   output$amplicon_plot <- renderPlot({
-
 
     if(is.null(filteredData())){
       return(NULL)
