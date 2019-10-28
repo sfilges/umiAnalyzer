@@ -17,8 +17,7 @@ generateQCplots <- function(
   group.by = "assay",
   plotDepth = 3,
   assays = NULL,
-  samples = NUL
-  L) {
+  samples = NULL) {
 
   cons.table <- object@cons.data
   summary.table <- object@summary.data
