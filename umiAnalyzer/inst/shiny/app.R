@@ -165,9 +165,8 @@ ui <- dashboardPage(
             ),
             br(),
             materialSwitch(
-              inputId = "id",
+              inputId = "abs_counts",
               label = "Absolute counts",
-              right = TRUE,
               status = "primary"
             )
           ),
@@ -265,22 +264,22 @@ ui <- dashboardPage(
           ),
           # View data tables in collapsable box
           shinydashboard::box(
-            title = "Data Viewer",
-            status = "primary",
+            title = 'Data Viewer',
+            status = 'primary',
             solidHeader = TRUE,
             collapsible = TRUE,
             width = 12,
             mainPanel(
               tabBox(
                 tabPanel(
-                  title = "Amplicons data",
-                  style = "font-size: 10px;"
+                  title = 'Amplicons data',
+                  style = 'font-size: 10px;'
                 ),
                 tabPanel(
-                  title = "Sample info"
+                  title = 'Sample info'
                 ),
                 tabPanel(
-                  title = "Merged data"
+                  title = 'Merged data'
                 )
               )
             )
@@ -290,9 +289,9 @@ ui <- dashboardPage(
 
       # TODO Including html vignette causes some issues as it seems the app size
       # becomes fixed to the size of vignette...
-      tabItem(tabName = "vignette",
-        h4("Include vignette")
-        #includeHTML(path = system.file("shiny", "vignette.html", package = "umiAnalyzer"))
+      tabItem(tabName = 'vignette',
+              h4("User guide")
+        #includeHTML(path = system.file('shiny', 'vignette.html',package = 'umiAnalyzer'))
       )
     )
   )
@@ -303,13 +302,13 @@ server <- function(input, output, session, plotFun) {
 
   output$report <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "report.html",
+    file = 'report.html',
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), 'report.Rmd')
+      file.copy('report.Rmd', tempReport, overwrite = TRUE)
 
       # Set up parameters to pass to Rmd document
       params <- list(
@@ -448,7 +447,7 @@ server <- function(input, output, session, plotFun) {
 
       design <- umiAnalyzer::getMetaData(
         object = data,
-        attributeName = "design"
+        attributeName = 'design'
       )
 
       return(design)
@@ -500,7 +499,7 @@ server <- function(input, output, session, plotFun) {
       samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
       data <- umiAnalyzer::createUmiExperiment(
-        experimentName = "simsen",
+        experimentName = 'simsen',
         mainDir = main,
         sampleNames = samples
       )
@@ -523,7 +522,7 @@ server <- function(input, output, session, plotFun) {
 
     data <- umiAnalyzer::filterUmiobject(
       object = experiment(),
-      name = "user_filter",
+      name = 'user_filter',
       minDepth = input$consensus,
       minCoverage = 100,
       minFreq = input$minFreq/100,
@@ -569,7 +568,7 @@ server <- function(input, output, session, plotFun) {
 
     filter <- umiAnalyzer::getFilterdData(
       object = filteredData(),
-      name = "user_filter"
+      name = 'user_filter'
     )
 
     filter <- filter['user_filter'][[1]]
@@ -609,10 +608,12 @@ server <- function(input, output, session, plotFun) {
 
     umiAnalyzer::generateAmpliconPlots(
       object = filteredData(),
-      filter.name = "user_filter",
+      filter.name = 'user_filter',
       do.plot = TRUE,
       amplicons = input$assays,
-      samples = input$samples)
+      samples = input$samples,
+      abs.count = input$abs_counts
+    )
   })
 
   # Output the QC plot
@@ -626,7 +627,7 @@ server <- function(input, output, session, plotFun) {
     umiAnalyzer::generateQCplots(
       object = experiment(),
       do.plot = TRUE,
-      group.by = "assay",
+      group.by = 'assay',
       plotDepth = input$consensus,
       assays = input$assays,
       samples = input$samples

@@ -36,15 +36,17 @@ myfilter <- getFilterdData(object = simsen, name = "myfilter")
 myfilter
 
 ## ----ampliconPlots, eval=TRUE--------------------------------------------
-simsen <- generateAmpliconPlots(object = simsen, 
-                                filter.name = "myfilter", 
-                                do.plot = TRUE)
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  filter.name = "myfilter",
+  do.plot = TRUE)
 
-simsen <- generateAmpliconPlots(object = simsen, 
-                                filter.name = "myfilter", 
-                                do.plot = TRUE, 
-                                amplicons = c("PIK3CA_123", "PIK3CA_234"), 
-                                samples = "VAF-1-5ng-1-10x")
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  filter.name = "myfilter",
+  do.plot = TRUE, 
+  amplicons = c("PIK3CA_123", "PIK3CA_234"),
+  samples = "VAF-1-5ng-1-10x")
 
 ## ----replicates, eval=TRUE-----------------------------------------------
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")

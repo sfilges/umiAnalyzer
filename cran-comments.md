@@ -1,5 +1,5 @@
 ## Test environments
-* local OS X install (Mojave 10.14.6), R 3.6.0
+* local OS X install (Mojave 10.14.6), R 3.6.1
 * ubuntu 18.04, R 3.6.0
 * Windows 10 Pro (Version 1903), R 3.5.1
 

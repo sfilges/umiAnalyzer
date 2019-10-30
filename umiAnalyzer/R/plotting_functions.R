@@ -14,7 +14,7 @@
 generateQCplots <- function(
   object,
   do.plot = TRUE,
-  group.by = "assay",
+  group.by = 'assay',
   plotDepth = 3,
   assays = NULL,
   samples = NULL) {
@@ -25,7 +25,7 @@ generateQCplots <- function(
   # Consensus depth plot per assay
 
   cdepths <- summary.table %>% dplyr::filter(
-    .data$assay != "",
+    .data$assay != '',
     .data$depth == plotDepth
   )
 
@@ -118,7 +118,7 @@ generateQCplots <- function(
 
   cons3.UMIcount <- summary.table %>%
     dplyr::filter(
-      .data$assay != "",
+      .data$assay != '',
       .data$depth == 3
     ) %>%
     dplyr::select(
@@ -129,20 +129,20 @@ generateQCplots <- function(
     )
 
   avg.depths <- dplyr::left_join(cons0.depths, cons3.UMIcount, c(
-    "region" = "region",
-    "assay" = "assay",
-    "sample" = "sample"
+    'region' = 'region',
+    'assay' = 'assay',
+    'sample' = 'sample'
   ))
 
   avg.depths <- avg.depths %>% dplyr::mutate(avg.FamDepth = .data$totalCount / .data$UMIcount)
 
   avg.depths_plot <- ggplot(avg.depths, aes_(x = ~assay, y = ~avg.FamDepth)) +
     geom_boxplot(
-      outlier.colour = "red", outlier.shape = 8,
+      outlier.colour = 'red', outlier.shape = 8,
       outlier.size = 4
     ) +
     theme(axis.text.x = element_text(angle = 90)) +
-    ggtitle("Average family size per assay")
+    ggtitle('Average family size per assay')
 
   # Plot consensus depth distribution
   if (do.plot) {
@@ -230,12 +230,14 @@ plotUmiCounts <- function(
 #' @param do.plot Logical. Should plots be shown.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
+#' @param abs.counts Should absolute counts be plotted instead of frequencies?
 generateAmpliconPlots <- function(
   object,
   filter.name,
   do.plot = TRUE,
   amplicons = NULL,
-  samples = NULL
+  samples = NULL,
+  abs.count = FALSE
   ) {
 
   # Check if variant caller has been run on object
@@ -250,6 +252,7 @@ generateAmpliconPlots <- function(
     cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
   }
 
+  # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
   cons.table$Position %<>% as.factor
   cons.table$Name %<>% as.factor
@@ -282,17 +285,31 @@ generateAmpliconPlots <- function(
            Blue dots represent positions with at least 5 variant alleles."
       )
   } else {
-    amplicon_plot <- ggplot(cons.table, aes_(
-      x = ~Position,
-      y = ~ (100 * `Max Non-ref Allele Frequency`),
-      fill = ~Variants)
+    if(abs.count) {
+      amplicon_plot <- ggplot(cons.table, aes_(
+        x = ~Position,
+        y = ~ (100 * `Max Non-ref Allele Count`),
+        fill = ~Variants)
       ) +
-      theme_bw() +
-      geom_bar(stat = "identity") +
-      theme(axis.text.x = element_text(size = 6, angle = 90)) +
-      ylab("Variant Allele Frequency (%)") +
-      xlab("Assay") +
-      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+        theme_bw() +
+        geom_bar(stat = "identity") +
+        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        ylab("Variant UMI count") +
+        xlab("Assay") +
+        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+    } else {
+      amplicon_plot <- ggplot(cons.table, aes_(
+        x = ~Position,
+        y = ~ (100 * `Max Non-ref Allele Frequency`),
+        fill = ~Variants)
+        ) +
+        theme_bw() +
+        geom_bar(stat = "identity") +
+        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        ylab("Variant Allele Frequency (%)") +
+        xlab("Assay") +
+        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+    }
   }
 
   # Show plot and add ggplot object to the UMIexperiment

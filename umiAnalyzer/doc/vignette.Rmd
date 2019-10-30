@@ -7,7 +7,7 @@ output:
     toc: true # table of content true
     toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
-    theme: paper
+    theme: united
     highlight: tango
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
@@ -111,15 +111,17 @@ summarised form. The user can specify amplicons and or samples optionally to
 plot only the selection.
 
 ```{r ampliconPlots, eval=TRUE}
-simsen <- generateAmpliconPlots(object = simsen, 
-                                filter.name = "myfilter", 
-                                do.plot = TRUE)
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  filter.name = "myfilter",
+  do.plot = TRUE)
 
-simsen <- generateAmpliconPlots(object = simsen, 
-                                filter.name = "myfilter", 
-                                do.plot = TRUE, 
-                                amplicons = c("PIK3CA_123", "PIK3CA_234"), 
-                                samples = "VAF-1-5ng-1-10x")
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  filter.name = "myfilter",
+  do.plot = TRUE, 
+  amplicons = c("PIK3CA_123", "PIK3CA_234"),
+  samples = "VAF-1-5ng-1-10x")
 ```
 
 ```{r replicates, eval=TRUE}

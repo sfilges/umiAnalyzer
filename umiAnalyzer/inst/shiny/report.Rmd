@@ -6,8 +6,9 @@ output:
     toc: true # table of content true
     toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
-    theme: united
+    theme: sandstone
     highlight: tango
+    code_folding: hide
 params:
   data: 'NULL'
   assays: 'NULL'
@@ -17,29 +18,66 @@ params:
 
 # Import data
 
-```{r, echo=FALSE}
-library(umiAnalyzer)
+```{r, echo=TRUE, message=FALSE}
+library(umiAnalyzer, quietly = TRUE)
+library(DT, quietly = TRUE)
 
 samples <- params$samples
 assays <- params$assays
 data <- params$data
 ```
 
-UMI-based sequencing data processed with umi-error-correct was analysed in the umiVisualiser
-shiny app. Data for the following samples and assays will be shown:
+UMI-based sequencing data processed with umi-error-correct was analysed in the 
+umiVisualiser shiny app. Data for the following samples and assays will be shown:
 
 ```{r}
 samples
 assays
 ```
 
-# Amplicons plots
+# Data visualizations {.tabset}
+
+## Amplicons
 
 ```{r}
 simsen <- generateAmpliconPlots(
   object = data,
-  filter.name = "user_filter",
+  filter.name = 'user_filter',
   do.plot = TRUE,
   amplicons = assays,
   samples = samples)
 ```
+
+## UMI counts
+
+```{r}
+simsen <- plotUmiCounts(
+  object = data
+)
+```
+
+# Data table
+
+```{r}
+filter <- umiAnalyzer::getFilterdData(
+  object = data,
+  name = 'user_filter'
+)
+filter <- filter['user_filter'][[1]]
+
+filter %>%
+  dplyr::filter(Name %in% assays) %>%
+  dplyr::filter(`Sample Name` %in% samples)
+
+DT::datatable(filter)
+```
+
+# System information
+```{r}
+sessionInfo()
+```
+
+
+
+
+
