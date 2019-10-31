@@ -147,7 +147,6 @@ generateQCplots <- function(
   # Plot consensus depth distribution
   if (do.plot) {
     print(depth_plot)
-    #print(avg.depths_plot)
     object <- addMetaData(
       object = object,
       attributeName = "depth_plot",
@@ -221,20 +220,37 @@ plotUmiCounts <- function(
 
 
 #' Generate Amplicon plots
+#' Plots variant allele frequencies or alternate allele counts for chosen
+#' samples and assays.
 #' @export
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
-#' @param do.plot Logical. Should plots be shown.
+#' @param do.plot Logical. Should plots be shown?
+#' @param cut.off How many variant reads are necessary to consider a variant
+#' above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param abs.counts Should absolute counts be plotted instead of frequencies?
+#' Default is FALSE.
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#'
+#' data <- simsen
+#' data <- filterUmiobject(data, "myfilter")
+#'
+#' data <- generateAmpliconPlots(simsen, "myfilter")
+#' }
+#' @return A umiExperiment object containing a ggplot object with the
+#' amplicon plot.
 generateAmpliconPlots <- function(
   object,
   filter.name,
   do.plot = TRUE,
+  cut.off = 5,
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE
@@ -245,7 +261,7 @@ generateAmpliconPlots <- function(
     cons.table <- getFilterdData(object = object, name = filter.name)
     cons.table <- cons.table[[1]]
 
-    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= 5, "Variant", "Background")
+    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
   }
   else {
     cons.table <- object@variants
@@ -259,11 +275,13 @@ generateAmpliconPlots <- function(
   cons.table$sample %<>% as.factor
 
   if (!is.null(amplicons)) {
-    cons.table <- cons.table %>% dplyr::filter(.data$Name %in% amplicons)
+    cons.table <- cons.table %>%
+      dplyr::filter(.data$Name %in% amplicons)
   }
 
   if (!is.null(samples)) {
-    cons.table <- cons.table %>% dplyr::filter(.data$`Sample Name` %in% samples)
+    cons.table <- cons.table %>%
+      dplyr::filter(.data$`Sample Name` %in% samples)
   }
 
   # If the plot is too big, limit number of positions plotted;
@@ -336,8 +354,15 @@ generateAmpliconPlots <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
+#' @param cut.off How many variant reads are necessary to consider a variant
+#' above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
-vizMergedData <- function(object, amplicons = NULL, do.plot = TRUE){
+vizMergedData <- function(
+  object,
+  cut.off = 5,
+  amplicons = NULL,
+  do.plot = TRUE
+  ){
 
   # Plotting maximum alternate alle count on merged data
   data <- object@merged.data
@@ -442,10 +467,12 @@ viz_Normalization <- function(cons.data){
 #' @importFrom tidyr gather
 #' @importFrom rlang .data
 #' @param cons.data A consensus data table
+#' @param do.plot Logical. Should plot be shown?
 #' @return A ggplot object.
 # Remove counts for reference allele for plotting
-viz_stacked_counts <- function(cons.data){
+viz_stacked_counts <- function(cons.data, do.plot = TRUE){
 
+  # For each row in consensus data, set the reference count to 0.
   out.file <- tibble()
   for(j in 1:nrow(cons.data)) {
     row <- cons.data[j,]
@@ -464,11 +491,12 @@ viz_stacked_counts <- function(cons.data){
     out.file <- dplyr::bind_rows(out.file, row)
   }
 
-  # Plot normalised counts
-  out.file <- out.file %>% dplyr::select(.data$Name, .data$Position, .data$replicate,
-                                         .data$avg.Depth,.data$Reference,
-                                         .data$avg.A,.data$avg.T,.data$avg.C,.data$avg.G,
-                                         .data$avg.N,.data$avg.I,.data$avg.D) %>%
+  # Rename variables
+  out.file <- out.file %>% dplyr::select(
+    .data$Name, .data$Position, .data$replicate,
+    .data$avg.Depth,.data$Reference,
+    .data$avg.A,.data$avg.T,.data$avg.C,.data$avg.G,
+    .data$avg.N,.data$avg.I,.data$avg.D) %>%
     dplyr::rename(">A"= .data$avg.A,
                   ">T"= .data$avg.T,
                   ">C"= .data$avg.C,
@@ -482,12 +510,16 @@ viz_stacked_counts <- function(cons.data){
                                         .data$Reference,
                                         .data$avg.Depth))
 
-  # Stacked
+  # Stacked count plot.
   stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
     geom_bar( stat="identity") +
     facet_grid(replicate ~ Name, scales = "free_x", space = "free_x") +
     theme(axis.text.x = element_text(angle = 90))
 
-  return(stacked)
+  if(do.plot){
+    return(stacked)
+  } else {
+    return(NULL)
+  }
 }
 

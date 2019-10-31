@@ -10,10 +10,26 @@ UMIsample <- setClass("UMIsample",
 
 setOldClass(c("tbl_df", "tbl", "data.frame"))
 
-#' Define experiment class
+#' UMIexperiment class
+#'
+#' The UMIexperiment is the core data object, storing all data and relevant
+#' analysis data associated with your experiment. Each object has number of
+#' slots storing raw data, graphs and processed data.
+#'
+#' @exportClass UMIexperiment
 #' @import tibble
+#'
+#' @slot name Project name for record keeping.
+#' @slot cons.data The raw consensus data supplied by the user.
+#' @slot summary.data Summary data from umierrorcorrect.
+#' @slot reads Consensus reads imported using the parseBamFiles function.
+#' @slot meta.data Sample data optionally supplied by the user.
+#' @slot filters A list of filtered cons.data, which can be accessed separately.
+#' @slot plot A list of generated plots.
+#' @slot variants Consensus table generated with the umiAnalyzer variant caller.
+#' @slot merged.data Data generated using the mergeTechnicalReplicates function.
 UMIexperiment <- setClass(
-  "UMIexperiment",
+  Class = "UMIexperiment",
 
   # Define the slots
   slots = list(
@@ -76,11 +92,21 @@ addUmiSample <- function(object,
 #' @param sampleName UMI sample object name
 #' @param sampleDir Path to UMI sample
 #' @param importBam Logical. Should bam files be imported at object initilization? Default is False.
-createUmiSample <- function(sampleName,
-                            sampleDir,
-                            importBam = FALSE) {
+createUmiSample <- function(
+  sampleName,
+  sampleDir,
+  importBam = FALSE) {
+
+  if(!dir.exists(sampleDir)){
+    stop("You need to provide a valid path.")
+  }
 
   consFile <- list.files(path = sampleDir, pattern = "\\.cons$")
+  summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
+
+  if(length(consfile) == 0 | length(summaryFile) == 0){
+    stop("No consensus or summary file found. Did you supply a correct data folder?")
+  }
 
   consTable <- readr::read_delim(
     file = file.path(sampleDir, consFile),
@@ -105,8 +131,6 @@ createUmiSample <- function(sampleName,
       `Max Non-ref Allele` = col_character()
     )
   )
-
-  summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
   summaryTable <- readr::read_delim(
     file = file.path(sampleDir, summaryFile),
@@ -176,20 +200,36 @@ createUmiSample <- function(sampleName,
 #' exp1 <- createUMIexperiment(experimentName = "exp1", mainDir = main, sampleNames = samples)
 #' }
 #'
-createUmiExperiment <- function(experimentName,
-                                mainDir,
-                                sampleNames,
-                                importBam = FALSE) {
+createUmiExperiment <- function(
+  experimentName = NULL,
+  mainDir,
+  sampleNames,
+  importBam = FALSE){
+
+  if (missing(x = mainDir) || missing(x = sampleNames)) {
+    stop("Must provide a working directory and sample names.")
+  } else if(!(is.character(experimentName) && length(experimentName)==1)) {
+    stop("experimentName needs to be a string.")
+  } else if(!is.logical(importBam)){
+    stop("importBam needs to be of type boolean.")
+  } else if(!dir.exists(mainDir)) {
+    stop("You must supply a valid directory.")
+  }
 
   cons.data.merged <- tibble()
   summary.data.merged <- tibble()
   reads.merged <- tibble()
 
   for (i in 1:length(sampleNames)) {
+
+    if(!dir.exists(file.path(mainDir, sampleNames[i]))){
+      stop("Sample directory not found. Did you provide a top level directory
+           containing you sample folders?")
+    }
+
     sample <- createUmiSample(
       sampleName = sampleNames[i],
       sampleDir= file.path(mainDir, sampleNames[i]),
-
       importBam = importBam
     )
 
@@ -228,7 +268,16 @@ createUmiExperiment <- function(experimentName,
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
 #'
 readBamFile <- function(sampleDir, consDepth = 0) {
+
+  if(!dir.exists(sampleDir)){
+    stop("You must supply a valid path.")
+  }
+
   bam.file <- list.files(path = sampleDir, pattern = "\\_consensus_reads.bam$")
+
+  if(length(bam.file) == 0){
+    stop("The directory you supplied does not seem to contain bam files.")
+  }
 
   bam <- Rsamtools::scanBam(file.path(sampleDir, bam.file))
 
@@ -266,7 +315,28 @@ readBamFile <- function(sampleDir, consDepth = 0) {
 #' @param delim Single character string, either ';' or ',' or tab
 #' @param fileName String. Name of the file to be saved. Default is 'consensus_data.csv'
 #'
-saveConsData <- function(object, save = FALSE, fileName = 'consensus_data.csv', outDir = getwd(), delim = ';') {
+saveConsData <- function(
+  object,
+  save = FALSE,
+  fileName = 'consensus_data.csv',
+  outDir = getwd(),
+  delim = ';'
+  ){
+
+  if(missing(x = object)) {
+    stop("No UMIexperiment object supplied.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!is.logical(save)){
+    stop("Save needs to be of type boolean.")
+  } else if(!(is.character(fileName) && length(fileName)==1)){
+    stop("Invalid file name.")
+  } else if(!dir.exists(outDir)) {
+    stop("Output directory does not exist.")
+  } else if(! delim %in% c(';',',','\t')){
+    stop("Ivalid delimeter, needs to comma, semicolon or tab.")
+  }
+
   consData <- object@cons.data
 
   if (save) {
@@ -292,12 +362,26 @@ saveConsData <- function(object, save = FALSE, fileName = 'consensus_data.csv', 
 #' @param sampleNames A list of sample names.
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
 #'
-parseBamFiles <- function(mainDir,
-                          sampleNames,
-                          consDepth = 0) {
+parseBamFiles <- function(
+  mainDir,
+  sampleNames,
+  consDepth = 0) {
+
+  if (missing(x = mainDir) || missing(x = sampleNames)) {
+    stop("Must provide a working directory and sample names.")
+  } else if(!is.numeric(consDepth) | consDepth < 0){
+    stop("consDepth needs to be a positive integer.")
+  } else if(!dir.exists(mainDir)) {
+    stop("You must supply a valid directory.")
+  }
 
   dir.names <- list.dirs(path = mainDir, recursive = FALSE)
   seq.Data <- tibble()
+
+  if(length(dir.names) == 0){
+    stop("No samples folders found. Have you supplied a valid top level
+         directory containing umierrorcorrect output folders?")
+  }
 
   for (i in 1:length(dir.names)) {
 
@@ -314,6 +398,7 @@ parseBamFiles <- function(mainDir,
 #' A function to analyse consensus read tables generated with parseBamFiles or
 #' a UMIexperiment object containing reads.
 #' @export
+#' @import tibble
 #' @param object Either a tibble generated with parseBamFiles or a UMIexperiment object
 #' @param pattern Regular expression
 #' @param consDepth Minimum consensus depth to keep. Default is 0.
@@ -324,6 +409,13 @@ findConsensusReads <- function(
   consDepth = 0,
   groupBy = c("none", "sample", "position", "both"),
   pattern = NULL) {
+
+  if(missing(x = object)){
+    stop("No object supplied")
+  } else if(!tibble::is_tibble(object) || !class(object) == "UMIexperiment") {
+    stop("Need to supply either a UMIexperiment object tibble generated
+         with parseBamFiles.")
+  }
 
   if (class(object)[1] == "UMIexperiment") {
     readsTable <- object@reads
