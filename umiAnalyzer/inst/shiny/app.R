@@ -240,7 +240,6 @@ ui <- dashboardPage(
         )
       ),
 
-      # TODO Tab for advanced functions
       tabItem(tabName = "advanced",
         fluidRow(
           shinydashboard::box(
@@ -256,6 +255,10 @@ ui <- dashboardPage(
             actionButton(
               inputId = 'mergeReplicates',
               label = "Merge Replicates"
+            ),
+            actionButton(
+              inputId = 'timeSeries',
+              label = "Analyse time series"
             ),
             actionButton(
               inputId = "generateVCF",
@@ -359,7 +362,6 @@ server <- function(input, output, session, plotFun) {
   })
 
   # Output pdf report upon button click
-  # TODO prettify report format
   output$download_plot <- downloadHandler(
     filename = 'amplicon_plot.pdf',
     content = function(file) {
@@ -520,9 +522,8 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    data <- umiAnalyzer::filterUmiobject(
+    data <- umiAnalyzer::filterUmiObject(
       object = experiment(),
-      name = 'user_filter',
       minDepth = input$consensus,
       minCoverage = 100,
       minFreq = input$minFreq/100,
@@ -558,20 +559,18 @@ server <- function(input, output, session, plotFun) {
 
   })
 
+
+
   # Output the consensus data to screen, this will change depending on user input
-  # TODO fix getFilterdData function to return a tibble and not a list!
   output$dataTable <- DT::renderDataTable({
 
     if (is.null(filteredData())){
       return(NULL)
     }
 
-    filter <- umiAnalyzer::getFilterdData(
-      object = filteredData(),
-      name = 'user_filter'
+    filter <- umiAnalyzer::getFilteredData(
+      object = filteredData()
     )
-
-    filter <- filter['user_filter'][[1]]
 
     filter %>%
       dplyr::filter(.data$Name %in% input$assays) %>%
@@ -579,8 +578,8 @@ server <- function(input, output, session, plotFun) {
 
   }, options = list(
     orderClasses = T,
-    pageLenght = 50,
-    lengthMenu = c(10, 50, 100)
+    pageLength = 5,
+    lengthMenu = c(5, 10, 50, 100)
   ))
 
   output$metaDataTable <- DT::renderDataTable({
@@ -608,7 +607,6 @@ server <- function(input, output, session, plotFun) {
 
     umiAnalyzer::generateAmpliconPlots(
       object = filteredData(),
-      filter.name = 'user_filter',
       do.plot = TRUE,
       amplicons = input$assays,
       samples = input$samples,
@@ -634,6 +632,23 @@ server <- function(input, output, session, plotFun) {
       )
 
   })
+
+  #observeEvent(input$timeSeries, {
+  #
+  #  output$timeSeriesPlot <- renderPlot({
+  #
+  #    if(is.null(filteredData() || is.null(metaData()) )){
+  #      return(NULL)
+  #    } else {
+  #      umiAnalyzer::analyzeTimeSeries(
+  #        object = filteredData(),
+  #        time.var = 'time',
+  #        group.by = 'replicate'
+  #      )
+  #    }
+  #  })
+  #})
+
 
   output$umiCounts <- renderPlot({
 

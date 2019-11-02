@@ -4,14 +4,14 @@
 \alias{importDesign}
 \title{Import experimental design meta data such as replicates, treatments, categorical variables.}
 \usage{
-importDesign(object, file, sep = "\\t")
+importDesign(object, file, delim = ",")
 }
 \arguments{
 \item{object}{UMI.experiment to which to add metadata}
 
 \item{file}{File containing meta data}
 
-\item{sep}{Column separator. Default is tab.}
+\item{delim}{Column separator. Default is tab.}
 }
 \description{
 Import experimental design meta data such as replicates, treatments, categorical variables.

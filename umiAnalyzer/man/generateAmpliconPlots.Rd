@@ -2,22 +2,45 @@
 % Please edit documentation in R/plotting_functions.R
 \name{generateAmpliconPlots}
 \alias{generateAmpliconPlots}
-\title{Generate Amplicon plots}
+\title{Generate Amplicon plots
+Plots variant allele frequencies or alternate allele counts for chosen
+samples and assays.}
 \usage{
-generateAmpliconPlots(object, filter.name, do.plot = TRUE,
-  amplicons = NULL, samples = NULL)
+generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
+  cut.off = 5, amplicons = NULL, samples = NULL, abs.count = FALSE)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
 
 \item{filter.name}{Name of the filter to be plotted.}
 
-\item{do.plot}{Logical. Should plots be shown.}
+\item{do.plot}{Logical. Should plots be shown?}
+
+\item{cut.off}{How many variant reads are necessary to consider a variant above background? Default is 5 reads.}
 
 \item{amplicons}{(Optional) character vector of amplicons to be plotted.}
 
 \item{samples}{(Optional) character vector of samples to be plotted.}
+
+\item{abs.count}{Should absolute counts be plotted instead of frequencies?
+Default is FALSE.}
+}
+\value{
+A umiExperiment object containing a ggplot object with the
+amplicon plot.
 }
 \description{
 Generate Amplicon plots
+Plots variant allele frequencies or alternate allele counts for chosen
+samples and assays.
+}
+\examples{
+\dontrun{
+library(umiAnalyzer)
+
+data <- simsen
+data <- filterUmiobject(data, "myfilter")
+
+data <- generateAmpliconPlots(simsen, "myfilter")
+}
 }

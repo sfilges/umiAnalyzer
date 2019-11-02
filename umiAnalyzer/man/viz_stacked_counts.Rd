@@ -4,10 +4,12 @@
 \alias{viz_stacked_counts}
 \title{Plot coverage before and after normalization}
 \usage{
-viz_stacked_counts(cons.data)
+viz_stacked_counts(cons.data, do.plot = TRUE)
 }
 \arguments{
 \item{cons.data}{A consensus data table}
+
+\item{do.plot}{Logical. Should plot be shown?}
 }
 \value{
 A ggplot object.

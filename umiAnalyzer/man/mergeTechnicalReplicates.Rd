@@ -7,12 +7,15 @@ accessible from the UMIexperiment object using merged.data. This is meant to pro
 information across multiple replicates. If you want to merge multiple sequencing runs of the
 sample into a single sample using the collapseReplicates function instead.}
 \usage{
-mergeTechnicalReplicates(object, filter.name)
+mergeTechnicalReplicates(object, filter.name = "default",
+  do.plot = TRUE)
 }
 \arguments{
 \item{object}{UMI.experiment to which to add metadata}
 
-\item{filter.name}{Name of the filter to use.}
+\item{filter.name}{Name of the filter to use. Defaults to "default".}
+
+\item{do.plot}{Should normalization plot be shown. Default is TRUE.}
 }
 \description{
 A function to merge replicates in UMIexperiment object. This will result in a merged data set

@@ -69,17 +69,7 @@ library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-samples <- list.dirs(
-  path = main,
-  full.names = FALSE,
-  recursive = FALSE
-)
-
-simsen <- createUmiExperiment(
-  experimentName = "simsen",
-  mainDir = main,
-  sampleNames = samples
-)
+simsen <- createUmiExperiment(main)
 ```
 
 createUmiExperiment has an optional flag importBam, which is set to FALSE by default. 
@@ -90,7 +80,7 @@ especially if consDepth is set lower than 10, the size of the experiment object
 may become too large.
 
 ```{r bam-files, eval=TRUE}
-reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
+reads <- parseBamFiles(main, consDepth = 10)
 
 plotFamilyHistogram(reads)
 ```
@@ -103,18 +93,11 @@ data set can be retrieved using getFilteredData and assigned to a new variable o
 with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
-simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
+simsen <- generateQCplots(simsen)
 
-simsen <- filterUmiobject(
-  object = simsen, 
-  name = "myfilter", 
-  minDepth = 3,
-  minCoverage = 100, 
-  minFreq = 0, 
-  minCount = 0
-)
+simsen <- filterUmiObject(simsen)
 
-myfilter <- getFilterdData(object = simsen, name = "myfilter")
+myfilter <- getFilteredData(simsen)
 myfilter
 ```
 
@@ -128,10 +111,7 @@ plot only the selection.
 ### All data
 
 ```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  filter.name = "myfilter",
-  do.plot = TRUE)
+simsen <- generateAmpliconPlots(simsen)
 ```
 
 ### Selection
@@ -139,7 +119,6 @@ simsen <- generateAmpliconPlots(
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  filter.name = "myfilter",
   do.plot = TRUE, 
   amplicons = c("PIK3CA_123", "PIK3CA_234"),
   samples = "VAF-1-5ng-1-10x")
@@ -171,6 +150,27 @@ design <- getMetaData(
 design
 ```
 
+## Time series data
+
+We can generate time course data using the analyzeTimeSeries function. This
+requires some information from the meta data that was uploaded above. Most
+importantly a time variable needs to be available in the meta data object called
+"time" by default. However the variable can have any name, which can be specified
+using the time.var parameter. If time.var has a date format that will be used 
+for plotting, otherwise it will convert time.var to a categorical. If you have
+time.var in date format but want the plot to use categorical instead set the
+categorical parameter to TRUE. 
+
+We can also make use of replicate data to remove background noise. If you specify
+a group.by variable from the meta data only variants that occur at least twice
+per group will be used. If we specify 'replicate' that means only variants in
+at least 2 out of 3 replicates will be considered. The default value for
+group.by is NULL and each sample will be analysed and plotted independently.
+
+```{r time_course, eval=TRUE}
+simsen <- analyzeTimeSeries(object = simsen, time.var = "time", group.by = 'replicate')
+```
+
 We can now use the mergeTechnicalReplicates function to create a summarised
 data table. Merging replicates also performs coverage normalization. This can 
 remove bias incurred when comparing samples sequenced at different read depths,
@@ -181,8 +181,7 @@ scale the data.
 
 ```{r replicates, eval=TRUE}
 simsen <- mergeTechnicalReplicates(
-  object = simsen,
-  filter.name = "myfilter"
+  object = simsen
 )
 
 simsen@merged.data
@@ -237,6 +236,10 @@ outDir <- "~/Documents/"
 saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
 ```
 
+# System info
 
+```{r sessionInfo}
+sessionInfo()
+```
 
 

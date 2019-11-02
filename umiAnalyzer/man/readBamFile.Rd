@@ -2,7 +2,7 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{readBamFile}
 \alias{readBamFile}
-\title{Method for reading bam files}
+\title{readBamFile}
 \usage{
 readBamFile(sampleDir, consDepth = 0)
 }
@@ -12,5 +12,5 @@ readBamFile(sampleDir, consDepth = 0)
 \item{consDepth}{Only retain consensus reads of at least cons.depth. Default is 0.}
 }
 \description{
-Method for reading bam files
+Method for reading bam files using scanBam from the Rsamtools package.
 }

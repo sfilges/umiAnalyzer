@@ -172,7 +172,7 @@ generateQCplots <- function(
 #' @importFrom stats median
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
-#' @param assays (Optional) user-supplied list of assays to plot. Default is all.
+#' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 plotUmiCounts <- function(
   object,
@@ -199,7 +199,7 @@ plotUmiCounts <- function(
   # Generate ggplot object
   data$depth %<>% as.factor
 
-  plot <- ggplot(data, aes(x=depth, y=UMIcount, fill=sample)) +
+  plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
     theme_classic() +
     geom_col(alpha=0.6) +
     facet_grid(assay ~ sample)
@@ -229,11 +229,10 @@ plotUmiCounts <- function(
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown?
-#' @param cut.off How many variant reads are necessary to consider a variant
-#' above background? Default is 5 reads.
+#' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
-#' @param abs.counts Should absolute counts be plotted instead of frequencies?
+#' @param abs.count Should absolute counts be plotted instead of frequencies?
 #' Default is FALSE.
 #' @examples
 #' \dontrun{
@@ -248,7 +247,7 @@ plotUmiCounts <- function(
 #' amplicon plot.
 generateAmpliconPlots <- function(
   object,
-  filter.name,
+  filter.name = "default",
   do.plot = TRUE,
   cut.off = 5,
   amplicons = NULL,
@@ -256,10 +255,33 @@ generateAmpliconPlots <- function(
   abs.count = FALSE
   ) {
 
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object and filter names")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!is.logical(do.plot)){
+    warning("do.plot needs to be of type boolean. Using default.")
+    do.plot = TRUE
+  } else if(!is.logical(abs.count)){
+    warning("abs.count needs to be of type boolean. Using defaults.")
+    abs.count = FALSE
+  } else if (!is.numeric(cut.off) || cut.off < 0) {
+    warning("cut.off needs to be a positive integer. Using defaults.")
+    cut.off = 5
+  } else if(is.null(object@filters[filter.name][[1]])) {
+    if(!is.null(object@filters$default)){
+      warning("Requested filter not found, using default.")
+    } else {
+      stop("Filter not found. Have you run filterUmiObject?")
+    }
+  }
+
   # Check if variant caller has been run on object
   if (identical(dim(object@variants), dim(tibble()))) {
-    cons.table <- getFilterdData(object = object, name = filter.name)
-    cons.table <- cons.table[[1]]
+    cons.table <- getFilteredData(
+      object = object,
+      name = filter.name
+    )
 
     cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
   }
@@ -330,19 +352,12 @@ generateAmpliconPlots <- function(
     }
   }
 
-  # Show plot and add ggplot object to the UMIexperiment
+  # Show plot and add ggplot object to the UMIexperiment object
   if (do.plot) {
     print(amplicon_plot)
-    object <- addMetaData(
-      object = object,
-      attributeName = "amplicon_plot",
-      amplicon_plot)
-  }
-  else {
-    object <- addMetaData(
-      object = object,
-      attributeName = "amplicon_plot",
-      amplicon_plot)
+    object@plots$amplicon_plot <- amplicon_plot
+  } else {
+    object@plots$amplicon_plot <- amplicon_plot
   }
   return(object)
 }
@@ -354,8 +369,7 @@ generateAmpliconPlots <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
-#' @param cut.off How many variant reads are necessary to consider a variant
-#' above background? Default is 5 reads.
+#' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
 vizMergedData <- function(
   object,
@@ -386,11 +400,36 @@ vizMergedData <- function(
 #' Generate consensus depth histograms
 #' @export
 #' @import ggplot2
+#' @importFrom tibble is_tibble
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
 #' @param samples List of samples to be shown.
-plotFamilyHistogram <- function(object, xMin = 0, xMax = 100, samples = NULL) {
+plotFamilyHistogram <- function(
+  object,
+  xMin = 0,
+  xMax = 100,
+  samples = NULL
+  ) {
+
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object.")
+  } else if(!is.numeric(xMin) && !is.numeric(xMax)){
+    warning("xMin and xMax needs to be numerical. Using default values instead.")
+    xMin = 0
+    xMax = 10
+  } else if(xMin < 0 || xMax < 0){
+    warning("xMin and xMax need to be positive numbers. Using default values")
+    xMin = 0
+    xMax = 10
+  } else if(xMax < xMin){
+    warning("xMax smaller than xMin, using default values instead.")
+    xMin = 0
+    xMax = 100
+  } else if(!is.character(samples) && !is.null(samples)){
+    warning("Samples need to be a character or NULL. Using default.")
+    samples = NULL
+  }
 
   # check if object is a UMIexperiment
   if (class(object)[1]== "UMIexperiment") {

@@ -12,9 +12,9 @@ plotUmiCounts(object, do.plot = TRUE, amplicons = NULL,
 
 \item{do.plot}{Logical. Should plots be shown.}
 
-\item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
+\item{amplicons}{(Optional) user-supplied list of assays to plot. Default is all.}
 
-\item{assays}{(Optional) user-supplied list of assays to plot. Default is all.}
+\item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
 }
 \description{
 Plot UMI counts
