@@ -748,11 +748,19 @@ importDesign <- function(
 #' @param object UMI.experiment to which to add metadata
 #' @param filter.name Name of the filter to use. Defaults to "default".
 #' @param do.plot Should normalization plot be shown. Default is TRUE.
+#' @param group.by Variable used to group data. If NULL sample names will be used.
+#' @param normalise.by.sample If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.
+#' @param remove.singletons Remove variants only found in one replicate.
+#' @param zero.counts Number between 0 and 1. What values should negative counts get?
 #'
 mergeTechnicalReplicates <- function(
   object,
-  filter.name = "default",
-  do.plot = TRUE
+  filter.name = 'default',
+  do.plot = TRUE,
+  group.by = NULL,
+  normalise.by.sample = FALSE,
+  remove.singletons = TRUE,
+  zero.counts = 0.5
   ) {
 
   if (missing(x = object)) {
@@ -777,12 +785,20 @@ mergeTechnicalReplicates <- function(
 
   consData$Position %<>% as.factor
 
-  mData <- as_tibble(object@meta.data)
-  mData$replicate %<>% as.factor
+  metaData <- as_tibble(object@meta.data)
+
+  if (is.null(group.by)){
+    metaData$group.by <- dplyr::pull(metaData, 1)
+    metaData$group.by %<>% as.factor
+  } else {
+    metaData$group.by <- dplyr::pull(metaData, group.by)
+    metaData$group.by %<>% as.factor
+  }
 
   # Join meta data and consData replicate ID column to consData
   # Change to left_join?
-  consData <- dplyr::inner_join(consData, mData, by = c(`Sample Name` = "sample"))
+  # First column of meta data needs to contain sample names
+  consData <- dplyr::inner_join(consData, metaData, by = c(`Sample Name` = colnames(metaData[,1]) ))
 
   # Calculate normalization factor
   consData <- consData %>% group_by(.data$Name) %>%
@@ -791,46 +807,51 @@ mergeTechnicalReplicates <- function(
     ungroup()
 
   # Plot coverage before and after normalization
-  plot.norm <- viz_Normalization(consData)
+  plot.norm <- vizNormalization(consData)
 
   # Summarize normalized data for output
   consData <- consData %>%
     # Group data by factors
-    dplyr::group_by(.data$Name,
-                    .data$Contig,
-                    .data$Position,
-                    .data$Reference,
-                    .data$replicate) %>%
-    dplyr::summarise(avg.A = mean(.data$A*.data$normFac),
-                     avg.T = mean(.data$T*.data$normFac),
-                     avg.C = mean(.data$C*.data$normFac),
-                     avg.G = mean(.data$G*.data$normFac),
-                     avg.N = mean(.data$N*.data$normFac),
-                     avg.I = mean(.data$I*.data$normFac),
-                     avg.D = mean(.data$D*.data$normFac),
-                     avg.Depth = mean(.data$Coverage*.data$normFac),
-                     std.Depth = sd(.data$Coverage*.data$normFac),
-                     avg.Max.AF = mean(.data$`Max Non-ref Allele Frequency`),
-                     std.MaxAF = sd(.data$`Max Non-ref Allele Frequency`),
-                     avg.MaxAC = mean(.data$`Max Non-ref Allele Count`),
-                     std.MaxAC = sd(.data$`Max Non-ref Allele Count`))
+    dplyr::group_by(
+      .data$Name,
+      .data$Contig,
+      .data$Position,
+      .data$Reference,
+      .data$group.by
+    ) %>%
+    dplyr::summarise(
+      avg.A = mean(.data$A*.data$normFac),
+      avg.T = mean(.data$T*.data$normFac),
+      avg.C = mean(.data$C*.data$normFac),
+      avg.G = mean(.data$G*.data$normFac),
+      avg.N = mean(.data$N*.data$normFac),
+      avg.I = mean(.data$I*.data$normFac),
+      avg.D = mean(.data$D*.data$normFac),
+      avg.Depth = mean(.data$Coverage*.data$normFac),
+      std.Depth = sd(.data$Coverage*.data$normFac),
+      avg.Max.AF = mean(.data$`Max Non-ref Allele Frequency`),
+      std.MaxAF = sd(.data$`Max Non-ref Allele Frequency`),
+      avg.MaxAC = mean(.data$`Max Non-ref Allele Count`),
+      std.MaxAC = sd(.data$`Max Non-ref Allele Count`)
+    )
+
+  # Plot normalised counts stacked by variant allele
+  stacked.counts <- vizStackedCounts(consData)
 
   if(do.plot){
-    # Plot normalised counts stacked by variant allele
-    stacked.counts <- viz_stacked_counts(consData)
-    print(stacked.counts)
-    print(plot.norm)
-
     # Return object
-    object@plots['stacked_counts'] <- stacked.counts
-    object@plots['norm_plot'] <- plot.norm
+    object@plots$stacked_counts <- stacked.counts
+    object@plots$norm_plot <- plot.norm
     object@merged.data <- consData
+
+    print(object@plots$stacked_counts)
+
     return(object)
 
   } else {
     # Return object
-    object@plots['stacked_counts'] <- stacked.counts
-    object@plots['norm_plot'] <- plot.norm
+    object@plots$stacked_counts <- stacked.counts
+    object@plots$norm_plot <- plot.norm
     object@merged.data <- consData
     return(object)
   }

@@ -16,9 +16,9 @@ generateQCplots(object, do.plot = TRUE, group.by = "assay",
 
 \item{plotDepth}{Which consensus depth to plot}
 
-\item{assays}{(Optional) user-supllied list of assays to plot. Default is all.}
+\item{assays}{(Optional) user-supplied list of assays to plot. Default is all.}
 
-\item{samples}{(Optional) user-supllied list of samples to plot. Default is all.}
+\item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
 }
 \description{
 Generate QC plots

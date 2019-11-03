@@ -8,8 +8,8 @@
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
 #' @param plotDepth Which consensus depth to plot
-#' @param assays (Optional) user-supllied list of assays to plot. Default is all.
-#' @param samples (Optional) user-supllied list of samples to plot. Default is all.
+#' @param assays (Optional) user-supplied list of assays to plot. Default is all.
+#' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #'
 generateQCplots <- function(
   object,
@@ -218,7 +218,6 @@ plotUmiCounts <- function(
 
 }
 
-
 #' Generate Amplicon plots
 #' Plots variant allele frequencies or alternate allele counts for chosen
 #' samples and assays.
@@ -386,15 +385,20 @@ vizMergedData <- function(
     data <- data %>% dplyr::filter(.data$Name %in% amplicons)
   }
 
-  data$Variants <- ifelse(data$avg.MaxAC > 5, "Variant","Background")
+  data$Variants <- ifelse(data$avg.MaxAC > cut.off, "Variant","Background")
 
   plot <- ggplot(data, aes_(x=~Position, y=~avg.MaxAC,fill=~Variants)) +
-    geom_bar(stat="identity") +
+    geom_bar(stat = "identity") +
     geom_errorbar(aes_(ymin=~avg.MaxAC, ymax=~avg.MaxAC+std.MaxAC), width=.1) +
     theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(replicate ~ Name, scales = "free_x", space = "free_x")
+    facet_grid(group.by ~ Name, scales = "free_x", space = "free_x")
 
-  print(plot)
+  if(do.plot) {
+    print(plot)
+    object@plots$merged_amplicons <- plot
+  } else {
+    object@plots$merged_amplicons <- plot
+  }
 }
 
 #' Generate consensus depth histograms
@@ -471,10 +475,11 @@ plotFamilyHistogram <- function(
 #' @importFrom gridExtra grid.arrange
 #' @importFrom magrittr "%>%" "%<>%"
 #' @param cons.data Consensus data table
-#' @return A ggplot object.
-viz_Normalization <- function(cons.data){
+#' @return A list of ggplot objects.
+vizNormalization <- function(cons.data){
 
   cons.data$Name %<>% as.factor
+  cons.data$replicate <- cons.data$group.by
 
   # plot coverage before nomralization per assay and group by replicate
   p1 <- ggplot(cons.data, aes_(x=~Name, y=~Coverage)) +
@@ -493,12 +498,35 @@ viz_Normalization <- function(cons.data){
     facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
 
   # group replicates
-  merged <- grid.arrange(p1, p2, nrow = 1)
+  merged <- list(p1,p2)
 
   return(merged)
 }
 
-#' Plot coverage before and after normalization
+#' View normalisation
+#'
+#' @export
+#' @importFrom gridExtra grid.arrange
+#'
+#' @param object A umiExperiment object containing norm plots
+#' @param do.plot should plot be shown? If false returns a grid.arrange object
+#'
+viewNormPlot <- function(object, do.plot = TRUE){
+
+  plot <- grid.arrange(
+    object@plots$norm_plot[[1]],
+    object@plots$norm_plot[[2]],
+    nrow = 1
+  )
+
+  if(do.plot){
+    plot
+  } else{
+    return(plot)
+  }
+}
+
+#' Plot counts by nucleotide change
 #' @import tibble
 #' @import dplyr
 #' @import ggplot2
@@ -509,7 +537,10 @@ viz_Normalization <- function(cons.data){
 #' @param do.plot Logical. Should plot be shown?
 #' @return A ggplot object.
 # Remove counts for reference allele for plotting
-viz_stacked_counts <- function(cons.data, do.plot = TRUE){
+vizStackedCounts <- function(
+  cons.data,
+  do.plot = TRUE
+  ){
 
   # For each row in consensus data, set the reference count to 0.
   out.file <- tibble()
@@ -532,7 +563,7 @@ viz_stacked_counts <- function(cons.data, do.plot = TRUE){
 
   # Rename variables
   out.file <- out.file %>% dplyr::select(
-    .data$Name, .data$Position, .data$replicate,
+    .data$Name, .data$Position, .data$group.by,
     .data$avg.Depth,.data$Reference,
     .data$avg.A,.data$avg.T,.data$avg.C,.data$avg.G,
     .data$avg.N,.data$avg.I,.data$avg.D) %>%
@@ -545,14 +576,14 @@ viz_stacked_counts <- function(cons.data, do.plot = TRUE){
                   ">D"= .data$avg.D) %>%
     tidyr::gather("variant","count", -c(.data$Name,
                                         .data$Position,
-                                        .data$replicate,
+                                        .data$group.by,
                                         .data$Reference,
                                         .data$avg.Depth))
 
   # Stacked count plot.
   stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
     geom_bar( stat="identity") +
-    facet_grid(replicate ~ Name, scales = "free_x", space = "free_x") +
+    facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
     theme(axis.text.x = element_text(angle = 90))
 
   if(do.plot){

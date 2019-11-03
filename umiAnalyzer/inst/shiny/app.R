@@ -246,8 +246,8 @@ ui <- dashboardPage(
             title = "Advanced data analysis",
             status = "primary",
             solidHeader = TRUE,
-            collapsible = TRUE,
-            width = 6,
+            collapsible = FALSE,
+            width = 4,
             actionButton(
               inputId = 'runVarCaller',
               label = 'Run variant caller'
@@ -263,8 +263,53 @@ ui <- dashboardPage(
             actionButton(
               inputId = "generateVCF",
               label = "Generate VCF file"
+            ),
+            selectInput(
+              inputId = 'replicates',
+              label = 'Replicates:',
+              choices = '',
+              multiple = FALSE
+            ),
+            selectInput(
+              inputId = 'timeVar',
+              label = 'Time variable:',
+              choices = '',
+              multiple = FALSE
             )
           ),
+
+          shinydashboard::box(
+            title = 'Plot Viewer',
+            status = 'primary',
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            width = 8,
+            mainPanel(
+              tabBox(
+                type = 'tabs',
+                width = 12,
+                tabPanel(
+                  title = 'Normalization',
+                  plotOutput('normPlot')
+                ),
+                tabPanel(
+                  title = 'Stacked counts',
+                  plotOutput('stackPlot')
+                ),
+                tabPanel(
+                  title = 'Merged amplicons',
+                  plotOutput('mergePlot')
+                ),
+                tabPanel(
+                  title = 'Time series'
+                ),
+                tabPanel(
+                  title = 'Variant caller'
+                )
+              )
+            )
+          ),
+
           # View data tables in collapsable box
           shinydashboard::box(
             title = 'Data Viewer',
@@ -274,15 +319,16 @@ ui <- dashboardPage(
             width = 12,
             mainPanel(
               tabBox(
+                width = 12,
                 tabPanel(
-                  title = 'Amplicons data',
-                  style = 'font-size: 10px;'
+                  title = 'Amplicons data'
                 ),
                 tabPanel(
                   title = 'Sample info'
                 ),
                 tabPanel(
-                  title = 'Merged data'
+                  title = 'Merged data',
+                  DT::dataTableOutput('mergedDataTable')
                 )
               )
             )
@@ -293,7 +339,7 @@ ui <- dashboardPage(
       # TODO Including html vignette causes some issues as it seems the app size
       # becomes fixed to the size of vignette...
       tabItem(tabName = 'vignette',
-              h4("User guide")
+              h4('User guide')
         #includeHTML(path = system.file('shiny', 'vignette.html',package = 'umiAnalyzer'))
       )
     )
@@ -474,22 +520,19 @@ server <- function(input, output, session, plotFun) {
   })
   # Set up a test_data main
   test_data_main <- eventReactive(input$importTest,{
-    main <- system.file("extdata", package = "umiAnalyzer")
+    main <- system.file('extdata', package = 'umiAnalyzer')
     return(main)
   })
 
   # Create experiment
   experiment <- reactive({
-
     # select directories
     if( !is.null(user_data_main()) || !is.null(temp_data_main()) ){
-
       if( !is.null(user_data_main())  ) {
         main <- user_data_main()
       } else {
         main <- temp_data_main()
       }
-
     } else {
       main <- test_data_main()
     }
@@ -497,21 +540,55 @@ server <- function(input, output, session, plotFun) {
     if (is.null(main)) {
       return(NULL)
     } else {
-
-      samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-
-      data <- umiAnalyzer::createUmiExperiment(
-        experimentName = 'simsen',
-        mainDir = main,
-        sampleNames = samples
-      )
-
-      print(class(data))
-      #print(data@cons.data)
-
+      data <- umiAnalyzer::createUmiExperiment(main)
       return(data)
+    }
+  })
+
+  mergedData <- observeEvent(input$mergeReplicates, {
+
+      if (is.null(filteredData())){
+        return(NULL)
       }
 
+      if ( is.null(metaData()) ) {
+        return(NULL)
+      }
+
+      if( input$replicates == "" ){
+        replicates = NULL
+      } else {
+        replicates <- input$replicates
+      }
+
+      data <- filteredData()
+
+      data@meta.data <- metaData()
+
+      data <- umiAnalyzer::mergeTechnicalReplicates(
+        object = data,
+        do.plot = FALSE,
+        group.by = NULL
+      )
+
+      output$mergedDataTable <- DT::renderDataTable({
+        data@merged.data
+      })
+
+      output$normPlot <- renderPlot({
+        umiAnalyzer::viewNormPlot(data)
+      })
+
+      output$stackPlot <- renderPlot({
+        data@plots$stacked_counts
+      })
+
+      output$mergePlot <- renderPlot({
+        umiAnalyzer::vizMergedData(data)
+      })
+
+
+      return(data@merged.data)
   })
 
   # filteredData returns an updated version of the experimen() object containing
@@ -559,8 +636,6 @@ server <- function(input, output, session, plotFun) {
 
   })
 
-
-
   # Output the consensus data to screen, this will change depending on user input
   output$dataTable <- DT::renderDataTable({
 
@@ -582,13 +657,14 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(5, 10, 50, 100)
   ))
 
+
   output$metaDataTable <- DT::renderDataTable({
 
     if (is.null(metaData())){
       return(NULL)
     }
 
-    metaData()
+      metaData()
 
   }, options = list(
     orderClasses = T,
