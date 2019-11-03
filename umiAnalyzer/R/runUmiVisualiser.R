@@ -1,6 +1,7 @@
 #' Function to run the umiVisualiser shiny app
 #' @export
 #' @importFrom shiny runApp
+#' @param docker Boolean. Are you running in a docker container?
 runUmiVisualiser <- function(docker=FALSE) {
   appDir <- system.file("shiny", package = "umiAnalyzer")
   if (appDir == "") {

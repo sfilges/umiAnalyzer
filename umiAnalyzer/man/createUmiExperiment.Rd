@@ -4,15 +4,15 @@
 \alias{createUmiExperiment}
 \title{Method for creating a UMI experiment object}
 \usage{
-createUmiExperiment(experimentName, mainDir, sampleNames,
+createUmiExperiment(mainDir, experimentName = NULL, sampleNames = NULL,
   importBam = FALSE)
 }
 \arguments{
-\item{experimentName}{Name of the experiment}
-
 \item{mainDir}{Main experiment directory}
 
-\item{sampleNames}{List of sample names}
+\item{experimentName}{Name of the experiment}
+
+\item{sampleNames}{List of sample names. Can be either NULL or list. If NULL all subdirectories of mainDir will be searched.}
 
 \item{importBam}{Logical. Should bam files be imported on creation? Default is False.}
 }
