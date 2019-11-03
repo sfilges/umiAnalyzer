@@ -4,7 +4,7 @@
 \alias{plotFamilyHistogram}
 \title{Generate consensus depth histograms}
 \usage{
-plotFamilyHistogram(object, xMin = 0, xMax = 100)
+plotFamilyHistogram(object, xMin = 0, xMax = 100, samples = NULL)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -12,6 +12,8 @@ plotFamilyHistogram(object, xMin = 0, xMax = 100)
 \item{xMin}{Minimum consensus family size to plot, default is 0.}
 
 \item{xMax}{Maximum consensus family size to plot. Default is 100.}
+
+\item{samples}{List of samples to be shown.}
 }
 \description{
 Generate consensus depth histograms

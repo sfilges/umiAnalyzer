@@ -1,8 +1,8 @@
 Package: umiAnalyzer
 Type: Package
 Title: Tools for Analyzing Umierrorcorrect Output
-Version: 0.5.2
-Date: 2019-09-27
+Version: 0.6.1
+Date: 2019-10-30
 Authors@R: c(
     person("Stefan", "Filges", email = "stefan.filges@gu.se", 
     role = c("aut", "cre")),
@@ -22,6 +22,7 @@ Imports: ggplot2 (>= 2.2.1), methods (>= 3.5.0), utils(>= 3.5.0),
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Suggests: knitr, rmarkdown, shinyFiles, tidyverse, DT
+Suggests: knitr, rmarkdown, shinyFiles, shinyWidgets, shinydashboard, 
+    tidyverse, DT
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
