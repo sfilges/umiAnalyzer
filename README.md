@@ -65,6 +65,7 @@ simsen <- createUmiExperiment(
   sampleNames = samples
 )
 
+
 reads <- parseBamFiles(
   mainDir = main,
   sampleNames = samples,
