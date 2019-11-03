@@ -1,3 +1,28 @@
+#' Filter samples and amplicons from a consensus tabel
+#'
+#' @importFrom dplyr filter
+#' @param consensus.data A consensus fdata table.
+#' @param amplicons Null or list of amplicons to use.
+#' @param samples Null or a list of samples to use.
+filterConsensusTable <- function(
+  consensus.data,
+  amplicons = NULL,
+  samples = NULL
+  ) {
+
+  if (!is.null(amplicons)) {
+    consensus.data <- consensus.data %>%
+      dplyr::filter(.data$Name %in% amplicons)
+  }
+
+  if (!is.null(samples)) {
+    consensus.data <- consensus.data %>%
+      dplyr::filter(.data$`Sample Name` %in% samples)
+  }
+
+  return(consensus.data)
+}
+
 
 #' Analyze time-course data
 #' @export

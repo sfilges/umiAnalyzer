@@ -195,7 +195,7 @@ simsen@merged.data
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=FALSE}
+```{r vizMerge, eval=TRUE}
 vizMergedData(simsen)
 ```
 
@@ -209,14 +209,9 @@ and use the callVariants function. You can then filter the resulting consensus d
 the object, e.g. for significant variants.
 
 ```{r example2, eval=FALSE}
-data <- simsen
-data <- callVariants(data)
+simsen <- callVariants(simsen)
 
-data <- filterVariants(
-  object = data,
-  p.adjust = 0.2,
-  minDepth = 5
-)
+simsen <- filterVariants(simsen)
 ```
 
 

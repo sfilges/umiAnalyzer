@@ -187,14 +187,11 @@ plotUmiCounts <- function(
                   .data$depth > 0)
 
   # Select amplicons
-  if (!is.null(amplicons)) {
-    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
-  }
-
-  # Select samples
-  if (!is.null(samples)) {
-    data <- data %>% dplyr::filter(.data$`Sample Name` %in% samples)
-  }
+  data <- filterConsensusTable(
+    data,
+    amplicons = amplicons,
+    samples = samples
+  )
 
   # Generate ggplot object
   data$depth %<>% as.factor
@@ -295,15 +292,11 @@ generateAmpliconPlots <- function(
   cons.table$Name %<>% as.factor
   cons.table$sample %<>% as.factor
 
-  if (!is.null(amplicons)) {
-    cons.table <- cons.table %>%
-      dplyr::filter(.data$Name %in% amplicons)
-  }
-
-  if (!is.null(samples)) {
-    cons.table <- cons.table %>%
-      dplyr::filter(.data$`Sample Name` %in% samples)
-  }
+  cons.table <- filterConsensusTable(
+    cons.table,
+    amplicons = amplicons,
+    samples = samples
+  )
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table

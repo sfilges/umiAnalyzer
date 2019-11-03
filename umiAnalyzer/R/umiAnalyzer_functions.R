@@ -544,7 +544,7 @@ betaNLL <- function(params, data) {
   a <- params[1]
   b <- params[2]
 
-  print(paste("a= ", a, " b= ", b, sep = ""))
+  #print(paste("a= ", a, " b= ", b, sep = ""))
 
   # negative log likelihood for beta
   return(-sum(dbeta(data, shape1 = a, shape2 = b, log = TRUE)))
@@ -686,6 +686,7 @@ filterVariants <- function(
         .data$Name,
         .data$Reference,
         .data$`Max Non-ref Allele`,
+        .data$p.adjust,
         .data$Coverage,
         .data$`Max Non-ref Allele Count`,
         .data$`Max Non-ref Allele Frequency`
@@ -724,18 +725,20 @@ importDesign <- function(
     stop("File must be a valid name.")
   }
 
-  mData <- read.table(
+  metaData <- read.table(
     file = file,
     sep = delim,
     header = TRUE
   )
 
-  object@meta.data <- mData
-  object <- addMetaData(object = object, attributeName = "design", mData)
+  object@meta.data <- metaData
+  object <- addMetaData(object = object, attributeName = 'design', metaData)
 
   return(object)
 }
 
+#' mergeTechnicalReplicates
+#'
 #' A function to merge replicates in UMIexperiment object. This will result in a merged data set
 #' accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
 #' information across multiple replicates. If you want to merge multiple sequencing runs of the
@@ -749,15 +752,27 @@ importDesign <- function(
 #' @param filter.name Name of the filter to use. Defaults to "default".
 #' @param do.plot Should normalization plot be shown. Default is TRUE.
 #' @param group.by Variable used to group data. If NULL sample names will be used.
+#' @param amplicons List of amplicons to use
+#' @param samples List of samples to use
 #' @param normalise.by.sample If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.
 #' @param remove.singletons Remove variants only found in one replicate.
 #' @param zero.counts Number between 0 and 1. What values should negative counts get?
+#' \dontrun{
+#' library(umiAnalyzer)
+#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#' data <- simsen
 #'
+#' simsen <- importDesign(simsen, file = metaData)
+#' simsen <- mergeTechnicalReplicates(simsen, group.by = 'replicate')
+#' }
+#' @return A umiExperiment object
 mergeTechnicalReplicates <- function(
   object,
   filter.name = 'default',
   do.plot = TRUE,
   group.by = NULL,
+  amplicons = NULL,
+  samples = NULL,
   normalise.by.sample = FALSE,
   remove.singletons = TRUE,
   zero.counts = 0.5
@@ -784,6 +799,12 @@ mergeTechnicalReplicates <- function(
   )
 
   consData$Position %<>% as.factor
+
+  consData <- filterConsensusTable(
+    consData,
+    amplicons = amplicons,
+    samples = samples
+  )
 
   metaData <- as_tibble(object@meta.data)
 

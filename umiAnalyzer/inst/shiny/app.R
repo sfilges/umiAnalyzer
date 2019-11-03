@@ -498,8 +498,23 @@ server <- function(input, output, session, plotFun) {
         attributeName = 'design'
       )
 
-      return(design)
+      choices <- colnames(design)
 
+      updateSelectInput(
+        session = session,
+        inputId = 'replicates',
+        choices = choices,
+        selected = head(choices,1)
+      )
+
+      updateSelectInput(
+        session = session,
+        inputId = 'timeVar',
+        choices = choices,
+        selected = head(choices,1)
+      )
+
+      return(design)
     }
   })
 
@@ -568,7 +583,9 @@ server <- function(input, output, session, plotFun) {
       data <- umiAnalyzer::mergeTechnicalReplicates(
         object = data,
         do.plot = FALSE,
-        group.by = NULL
+        group.by = input$replicates,
+        amplicons = input$assays,
+        samples = input$samples
       )
 
       output$mergedDataTable <- DT::renderDataTable({
@@ -587,8 +604,7 @@ server <- function(input, output, session, plotFun) {
         umiAnalyzer::vizMergedData(data)
       })
 
-
-      return(data@merged.data)
+      return(data)
   })
 
   # filteredData returns an updated version of the experimen() object containing

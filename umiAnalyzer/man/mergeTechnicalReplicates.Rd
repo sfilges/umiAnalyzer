@@ -8,7 +8,8 @@ information across multiple replicates. If you want to merge multiple sequencing
 sample into a single sample using the collapseReplicates function instead.}
 \usage{
 mergeTechnicalReplicates(object, filter.name = "default",
-  do.plot = TRUE, group.by = NULL, normalise.by.sample = FALSE,
+  do.plot = TRUE, group.by = NULL, amplicons = NULL,
+  samples = NULL, normalise.by.sample = FALSE,
   remove.singletons = TRUE, zero.counts = 0.5)
 }
 \arguments{
