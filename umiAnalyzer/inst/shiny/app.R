@@ -7,7 +7,6 @@
 # https://github.com/ozimand1as/umiAnalyzer
 #
 #
-
 # Quietly import required packages
 library(tidyverse, quietly = TRUE)
 library(shiny, quietly = TRUE)
@@ -282,8 +281,8 @@ ui <- dashboardPage(
             title = 'Plot Viewer',
             status = 'primary',
             solidHeader = TRUE,
-            collapsible = FALSE,
-            width = 8,
+            collapsible = TRUE,
+            width = 12,
             mainPanel(
               tabBox(
                 type = 'tabs',
@@ -328,7 +327,8 @@ ui <- dashboardPage(
                 ),
                 tabPanel(
                   title = 'Merged data',
-                  DT::dataTableOutput('mergedDataTable')
+                  DT::dataTableOutput('mergedDataTable'),
+                  style = "font-size: 10px;"
                 )
               )
             )
@@ -588,8 +588,12 @@ server <- function(input, output, session, plotFun) {
         samples = input$samples
       )
 
+      out_data <- data@merged.data %>%
+        dplyr::mutate_if(is.numeric, round, 1)
+
+      # TODO keep only first two decimal points to keep output format reasonable
       output$mergedDataTable <- DT::renderDataTable({
-        data@merged.data
+        out_data
       })
 
       output$normPlot <- renderPlot({
@@ -740,7 +744,6 @@ server <- function(input, output, session, plotFun) {
   #    }
   #  })
   #})
-
 
   output$umiCounts <- renderPlot({
 
