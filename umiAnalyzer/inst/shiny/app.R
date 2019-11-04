@@ -97,21 +97,21 @@ ui <- dashboardPage(
                     icon = icon("align-left")
                   ),
                   actionButton(
-                    inputId = "importTest",
-                    label = "Load test data",
-                    icon = icon("file-import")
+                    inputId = 'importTest',
+                    label = 'Load test data',
+                    icon = icon('file-import')
                   ),
                   downloadButton(
-                    outputId = "report",
-                    label = "Print Report"
+                    outputId = 'report',
+                    label = 'Print Report'
                   )
                 )
               ),
               # Panel 2: Data selection - the user chooses consensus depth for
               # filtering and which samples and assays to show.
               tabPanel(
-                title = "Data selection",
-                icon = icon("edit"),
+                title = 'Data selection',
+                icon = icon('edit'),
 
                 selectInput(
                   inputId = 'consensus',
@@ -176,8 +176,8 @@ ui <- dashboardPage(
             solidHeader = TRUE,
             collapsible = TRUE,
             width = 12,
-            mainPanel(
-              tabBox(
+            mainPanel(width = 12,
+              tabBox(width = 12,
                 tabPanel(
                   title = "Data",
                   DT::dataTableOutput("dataTable"),
@@ -199,9 +199,10 @@ ui <- dashboardPage(
             collapsible = TRUE,
             width = 12,
             mainPanel(
+              width = 12,
               tabBox(
                 type = "tabs",
-                width = 12,
+                width = 8,
                 # Panel for the amplicon plots with download button
                 tabPanel(
                   title = "Amplicons",
@@ -284,9 +285,8 @@ ui <- dashboardPage(
             collapsible = TRUE,
             width = 12,
             mainPanel(
-              tabBox(
-                type = 'tabs',
-                width = 12,
+              width = 12,
+              tabBox(width = 8,
                 tabPanel(
                   title = 'Normalization',
                   plotOutput('normPlot')
@@ -303,7 +303,8 @@ ui <- dashboardPage(
                   title = 'Time series'
                 ),
                 tabPanel(
-                  title = 'Variant caller'
+                  title = 'Variant caller',
+                  plotOutput('varPlot')
                 )
               )
             )
@@ -316,7 +317,7 @@ ui <- dashboardPage(
             solidHeader = TRUE,
             collapsible = TRUE,
             width = 12,
-            mainPanel(
+            mainPanel(width = 12,
               tabBox(
                 width = 12,
                 tabPanel(
@@ -329,6 +330,11 @@ ui <- dashboardPage(
                   title = 'Merged data',
                   DT::dataTableOutput('mergedDataTable'),
                   style = "font-size: 10px;"
+                ),
+                tabPanel(
+                  title = 'Variant data',
+                  DT::dataTableOutput('varDataTable'),
+                  style = "font-size: 10px;"
                 )
               )
             )
@@ -336,11 +342,10 @@ ui <- dashboardPage(
         )
       ),
 
-      # TODO Including html vignette causes some issues as it seems the app size
-      # becomes fixed to the size of vignette...
-      tabItem(tabName = 'vignette',
-              h4('User guide')
-        #includeHTML(path = system.file('shiny', 'vignette.html',package = 'umiAnalyzer'))
+      tabItem(
+        tabName = 'vignette',
+        includeMarkdown("user_guide.Rmd")
+        #includeHTML("user_guide.html")
       )
     )
   )
@@ -609,6 +614,35 @@ server <- function(input, output, session, plotFun) {
       })
 
       return(data)
+  })
+
+  variantCalls <- observeEvent(input$runVarCaller, {
+
+    if (is.null(filteredData())){
+      return(NULL)
+    }
+
+    data <- filteredData()
+    data <- callVariants(data)
+
+    # TODO add user input on filtering
+    data <- filterVariants(
+      object = data,
+      p.adjust = 0.2,
+      minVarCount = 5
+    )
+
+    out_data <- data@variants
+
+    output$varDataTable <- DT::renderDataTable({
+      out_data
+    })
+
+    output$varPlot <- renderPlot({
+      umiAnalyzer::generateAmpliconPlots(data)
+    })
+
+    return(data)
   })
 
   # filteredData returns an updated version of the experimen() object containing

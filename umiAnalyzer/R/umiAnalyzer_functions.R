@@ -690,6 +690,7 @@ filterVariants <- function(
         .data$Coverage,
         .data$`Max Non-ref Allele Count`,
         .data$`Max Non-ref Allele Frequency`
+        .data$sample
       )
 
     print(vars.to.print)
