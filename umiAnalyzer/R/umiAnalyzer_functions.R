@@ -568,6 +568,7 @@ betaNLL <- function(params, data) {
 #' @param minDepth Minimum consensus depth required fedault is 3
 #' @param minCoverage Minimum Coverage to use, default is 100 reads.
 #' @return Object containing raw and FDR-adjusted P-Values
+#' @seealso \code{\link{filterVariants}} on how to filter variants.
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -647,23 +648,45 @@ callVariants <- function(
 
 
 #' Filter variants based on p values or depth
+#'
+#' You can filter variants called with the the "callVariants" function based
+#' on adjusted p-value, minimum variant allele count and supply a list
+#' of assays and samples to plot.
+#'
 #' @export
 #' @importFrom magrittr "%>%" "%<>%"
-#' @importFrom dplyr select filter
+#' @importFrom dplyr select filter between
 #' @importFrom tibble as_tibble
 #' @importFrom rlang .data
 #' @param object A UMIexperiment object
 #' @param p.adjust Numeric. Adjusted p value (FDR). Default is 0.2.
 #' @param minVarCount Integer. Minimum variant allele count. Default is 5.
-#' @return A UMIexperiment object with filtered variants. Can be used to generate vcf files.
+#' @param amplicons NULL or list of assays to plot. NULL uses all.
+#' @param samples NULL or list of samples to plot. NULL uses all.
+#' @seealso \code{\link{callVariants}} on how to call variants.
+#' @return A UMIexperiment object with filtered variants. Can be used to
+#'   generate vcf files.
 #'
 filterVariants <- function(
   object,
   p.adjust = 0.2,
-  minVarCount = 5
+  minVarCount = 5,
+  amplicons = NULL,
+  samples = NULL
   ) {
 
-  # TODO add error handeling
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!dplyr::between(p.adjust, 0, 1)) {
+    warning("Adjusted p-value cutoff needs to be between 0 and 1, using defaults.")
+    p.adjust = 0.2
+  } else if(minVarCount < 0) {
+    warning("minVarCount must be a positive integer. Using defaults instead.")
+    minVarCount = 5
+  }
+
   # TODO update the check for presence of the variant data to checking object@variants instead of attributes
 
   if ("varCalls" %in% names(attributes(object))) {
@@ -672,7 +695,13 @@ filterVariants <- function(
 
     # Filter based on p-value and minimum variant allele depth and select important columns
     # using .data also prevents R CMD check from giving a NOTE about undefined global variables
-    # (provided that you???ve also imported rlang::.data with @importFrom rlang .data).
+    # (provided that you have also imported rlang::.data with @importFrom rlang .data).
+
+    vars.to.print <- filterConsensusTable(
+      vars.to.print,
+      amplicons,
+      samples
+    )
 
     vars.to.print <- vars.to.print %>%
       dplyr::filter(
@@ -689,7 +718,7 @@ filterVariants <- function(
         .data$p.adjust,
         .data$Coverage,
         .data$`Max Non-ref Allele Count`,
-        .data$`Max Non-ref Allele Frequency`
+        .data$`Max Non-ref Allele Frequency`,
         .data$sample
       )
 
@@ -720,7 +749,7 @@ importDesign <- function(
     stop("Must provide a umiExperiment object and file name.")
   } else if(!class(object) == "UMIexperiment"){
     stop("Object is not of class UMIexperiment.")
-  } else if(! delim %in% c(';',',','\t')){
+  } else if(! delim %in% c(';', ',', '\t')){
     stop("Invalid delimeter, needs to be comma, semicolon or tab.")
   } else if(!is.character(file)) {
     stop("File must be a valid name.")
@@ -758,6 +787,7 @@ importDesign <- function(
 #' @param normalise.by.sample If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.
 #' @param remove.singletons Remove variants only found in one replicate.
 #' @param zero.counts Number between 0 and 1. What values should negative counts get?
+#' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
 #' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")

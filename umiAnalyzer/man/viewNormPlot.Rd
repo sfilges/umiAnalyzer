@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting_functions.R
 \name{viewNormPlot}
 \alias{viewNormPlot}
-\title{View normalisation}
+\title{View count normalisation}
 \usage{
 viewNormPlot(object, do.plot = TRUE)
 }
@@ -12,5 +12,5 @@ viewNormPlot(object, do.plot = TRUE)
 \item{do.plot}{should plot be shown? If false returns a grid.arrange object}
 }
 \description{
-View normalisation
+View count normalisation
 }

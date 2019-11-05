@@ -4,6 +4,7 @@
 #' @param consensus.data A consensus fdata table.
 #' @param amplicons Null or list of amplicons to use.
 #' @param samples Null or a list of samples to use.
+#' @return A consensus table.
 filterConsensusTable <- function(
   consensus.data,
   amplicons = NULL,
@@ -30,13 +31,13 @@ filterConsensusTable <- function(
 #' @import dplyr
 #' @importFrom rlang .data
 #' @importFrom stats sd
-#' @param object UMI.experiment containing meta data
+#' @param object UMIexperiment object containing meta data
 #' @param filter.name Name of the filter to use.
 #' @param time.var String. Name of thethe time variable. Default is "time"
 #' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
 #' @param group.by String. Variable for grouping data, e.g. replicates. Default is NULL.
 #' @param do.plot Should plot be shown?
-#'
+#' @return A UMIexperiment object
 analyzeTimeSeries <- function(
   object,
   filter.name = "default",
@@ -50,8 +51,6 @@ analyzeTimeSeries <- function(
     stop("Must provide a umiExperiment object and filter names")
   } else if(!class(object) == "UMIexperiment"){
     stop("Object is not of class UMIexperiment.")
-  } else if(is.null(object@meta.data[[time.var]])){
-    stop("Time variable not found in meta data.")
   } else if(is.null(object@filters$default)) {
     stop("No data filter found.")
   }

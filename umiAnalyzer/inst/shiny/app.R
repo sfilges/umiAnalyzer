@@ -247,7 +247,7 @@ ui <- dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
-            width = 4,
+            width = 6,
             actionButton(
               inputId = 'runVarCaller',
               label = 'Run variant caller'
@@ -279,6 +279,28 @@ ui <- dashboardPage(
           ),
 
           shinydashboard::box(
+            title = "Parameters",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            width = 6,
+            sliderInput(
+              inputId = "minVarCount",
+              label = "Minimum Variant allele count:",
+              min = 0, max = 10,
+              value = 0, step = 1,
+              post = " reads", sep = ","
+            ),
+            sliderInput(
+              inputId = "pVal",
+              label =  "Minimum adjusted p-value:",
+              min = 0, max = 1,
+              value = 1, step = 0.05,
+              sep = ","
+            )
+          ),
+
+          shinydashboard::box(
             title = 'Plot Viewer',
             status = 'primary',
             solidHeader = TRUE,
@@ -300,7 +322,8 @@ ui <- dashboardPage(
                   plotOutput('mergePlot')
                 ),
                 tabPanel(
-                  title = 'Time series'
+                  title = 'Time series',
+                  plotOutput('timeSeriesPlot')
                 ),
                 tabPanel(
                   title = 'Variant caller',
@@ -493,9 +516,11 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
+      # TODO add ability for user to select delimeter
       data <- umiAnalyzer::importDesign(
         object = experiment(),
-        file = metaData
+        file = metaData,
+        delim = ','
       )
 
       design <- umiAnalyzer::getMetaData(
@@ -622,24 +647,31 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
+    # Call and filter variants based on user input
     data <- filteredData()
-    data <- callVariants(data)
+    data <- umiAnalyzer::callVariants(data)
 
-    # TODO add user input on filtering
-    data <- filterVariants(
+    data <- umiAnalyzer::filterVariants(
       object = data,
-      p.adjust = 0.2,
-      minVarCount = 5
+      p.adjust = input$pVal,
+      minVarCount = input$minVarCount
     )
 
     out_data <- data@variants
 
+    # Render variant call table in app
     output$varDataTable <- DT::renderDataTable({
       out_data
     })
 
+    # Render amplicon plot for computed variants
     output$varPlot <- renderPlot({
-      umiAnalyzer::generateAmpliconPlots(data)
+      umiAnalyzer::generateAmpliconPlots(
+        object = data,
+        amplicons = input$assays,
+        samples = input$samples,
+        abs.count = input$abs_counts
+      )
     })
 
     return(data)
@@ -763,21 +795,25 @@ server <- function(input, output, session, plotFun) {
 
   })
 
-  #observeEvent(input$timeSeries, {
-  #
-  #  output$timeSeriesPlot <- renderPlot({
-  #
-  #    if(is.null(filteredData() || is.null(metaData()) )){
-  #      return(NULL)
-  #    } else {
-  #      umiAnalyzer::analyzeTimeSeries(
-  #        object = filteredData(),
-  #        time.var = 'time',
-  #        group.by = 'replicate'
-  #      )
-  #    }
-  #  })
-  #})
+  observeEvent(input$timeSeries, {
+
+    output$timeSeriesPlot <- renderPlot({
+
+      if(is.null(filteredData())){
+        return(NULL)
+      }
+
+      if(is.null(metaData())){
+        return(NULL)
+      }
+
+      umiAnalyzer::analyzeTimeSeries(
+        object = filteredData(),
+        time.var = input$timeVar,
+        group.by = input$replicates
+      )
+    })
+  })
 
   output$umiCounts <- renderPlot({
 
@@ -787,7 +823,9 @@ server <- function(input, output, session, plotFun) {
 
     umiAnalyzer::plotUmiCounts(
       object = experiment(),
-      do.plot = TRUE
+      do.plot = TRUE,
+      amplicons = input$assays,
+      samples = input$samples
     )
   })
 

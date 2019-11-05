@@ -165,15 +165,19 @@ generateQCplots <- function(
 }
 
 #' Plot UMI counts
-#' @export
-#' @import ggplot2
-#' @import dplyr
-#' @importFrom magrittr "%>%" "%<>%"
-#' @importFrom stats median
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom stats median
+#'
 plotUmiCounts <- function(
   object,
   do.plot = TRUE,
@@ -197,7 +201,7 @@ plotUmiCounts <- function(
   data$depth %<>% as.factor
 
   plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
-    theme_classic() +
+    theme_bw() +
     geom_col(alpha=0.6) +
     facet_grid(assay ~ sample)
 
@@ -216,20 +220,24 @@ plotUmiCounts <- function(
 }
 
 #' Generate Amplicon plots
+#'
 #' Plots variant allele frequencies or alternate allele counts for chosen
 #' samples and assays.
-#' @export
-#' @import ggplot2
-#' @importFrom magrittr "%>%" "%<>%"
-#' @importFrom dplyr filter
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown?
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
-#' @param abs.count Should absolute counts be plotted instead of frequencies?
-#' Default is FALSE.
+#' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom dplyr filter
+#'
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -355,14 +363,18 @@ generateAmpliconPlots <- function(
 }
 
 #' Generate Merged data plots
-#' @export
-#' @import ggplot2
-#' @importFrom dplyr filter
-#' @importFrom magrittr "%>%" "%<>%"
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @importFrom dplyr filter
+#' @importFrom magrittr "%>%" "%<>%"
+#'
 vizMergedData <- function(
   object,
   cut.off = 5,
@@ -395,13 +407,17 @@ vizMergedData <- function(
 }
 
 #' Generate consensus depth histograms
-#' @export
-#' @import ggplot2
-#' @importFrom tibble is_tibble
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
 #' @param samples List of samples to be shown.
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @importFrom tibble is_tibble
+#'
 plotFamilyHistogram <- function(
   object,
   xMin = 0,
@@ -444,6 +460,10 @@ plotFamilyHistogram <- function(
             axis.title = element_text(size = 14, face = "bold")
       ) +
       facet_wrap(~sample)
+
+    # Assign plot to UMIexperiment object
+    object@plots$family_histogram <- cons_depth_plot
+
   } else {
     # a tibble containing read info is passed directly
     if (!is.null(samples)) {
@@ -496,15 +516,18 @@ vizNormalization <- function(cons.data){
   return(merged)
 }
 
-#' View normalisation
-#'
-#' @export
-#' @importFrom gridExtra grid.arrange
+#' View count normalisation
 #'
 #' @param object A umiExperiment object containing norm plots
 #' @param do.plot should plot be shown? If false returns a grid.arrange object
 #'
-viewNormPlot <- function(object, do.plot = TRUE){
+#' @export
+#' @importFrom gridExtra grid.arrange
+#'
+viewNormPlot <- function(
+  object,
+  do.plot = TRUE
+  ){
 
   plot <- grid.arrange(
     object@plots$norm_plot[[1]],
@@ -520,16 +543,18 @@ viewNormPlot <- function(object, do.plot = TRUE){
 }
 
 #' Plot counts by nucleotide change
+#' @param cons.data A consensus data table
+#' @param do.plot Logical. Should plot be shown?
+#'
 #' @import tibble
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
 #' @importFrom rlang .data
-#' @param cons.data A consensus data table
-#' @param do.plot Logical. Should plot be shown?
+#'
 #' @return A ggplot object.
-# Remove counts for reference allele for plotting
+#'
 vizStackedCounts <- function(
   cons.data,
   do.plot = TRUE

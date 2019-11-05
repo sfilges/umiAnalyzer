@@ -32,3 +32,6 @@ data <- callVariants(data)
 }
 
 }
+\seealso{
+\code{\link{filterVariants}} on how to filter variants.
+}

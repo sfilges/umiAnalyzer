@@ -2,9 +2,7 @@
 % Please edit documentation in R/plotting_functions.R
 \name{generateAmpliconPlots}
 \alias{generateAmpliconPlots}
-\title{Generate Amplicon plots
-Plots variant allele frequencies or alternate allele counts for chosen
-samples and assays.}
+\title{Generate Amplicon plots}
 \usage{
 generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
   cut.off = 5, amplicons = NULL, samples = NULL, abs.count = FALSE)
@@ -22,15 +20,13 @@ generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
 
 \item{samples}{(Optional) character vector of samples to be plotted.}
 
-\item{abs.count}{Should absolute counts be plotted instead of frequencies?
-Default is FALSE.}
+\item{abs.count}{Should absolute counts be plotted instead of frequencies? Default is FALSE.}
 }
 \value{
 A umiExperiment object containing a ggplot object with the
 amplicon plot.
 }
 \description{
-Generate Amplicon plots
 Plots variant allele frequencies or alternate allele counts for chosen
 samples and assays.
 }

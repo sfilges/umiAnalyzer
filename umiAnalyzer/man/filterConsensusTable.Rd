@@ -13,6 +13,9 @@ filterConsensusTable(consensus.data, amplicons = NULL, samples = NULL)
 
 \item{samples}{Null or a list of samples to use.}
 }
+\value{
+A consensus table.
+}
 \description{
 Filter samples and amplicons from a consensus tabel
 }

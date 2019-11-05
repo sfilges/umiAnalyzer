@@ -8,7 +8,7 @@ analyzeTimeSeries(object, filter.name = "default", time.var = "time",
   use.variants = FALSE, group.by = NULL, do.plot = TRUE)
 }
 \arguments{
-\item{object}{UMI.experiment containing meta data}
+\item{object}{UMIexperiment object containing meta data}
 
 \item{filter.name}{Name of the filter to use.}
 
@@ -19,6 +19,9 @@ analyzeTimeSeries(object, filter.name = "default", time.var = "time",
 \item{group.by}{String. Variable for grouping data, e.g. replicates. Default is NULL.}
 
 \item{do.plot}{Should plot be shown?}
+}
+\value{
+A UMIexperiment object
 }
 \description{
 Analyze time-course data
