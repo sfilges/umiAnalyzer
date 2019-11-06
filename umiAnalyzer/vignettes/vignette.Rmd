@@ -119,9 +119,9 @@ simsen <- generateAmpliconPlots(simsen)
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  do.plot = TRUE, 
   amplicons = c("PIK3CA_123", "PIK3CA_234"),
-  samples = "VAF-1-5ng-1-10x")
+  samples = "VAF-1-5ng-1-10x"
+)
 ```
 
 ## Merging technical replicates
@@ -168,7 +168,11 @@ at least 2 out of 3 replicates will be considered. The default value for
 group.by is NULL and each sample will be analysed and plotted independently.
 
 ```{r time_course, eval=TRUE}
-simsen <- analyzeTimeSeries(object = simsen, time.var = "time", group.by = 'replicate')
+simsen <- analyzeTimeSeries(
+  object = simsen,
+  time.var = 'time',
+  group.by = 'replicate'
+)
 ```
 
 We can now use the mergeTechnicalReplicates function to create a summarised
@@ -232,8 +236,8 @@ output directory (default is the working directory), filename (default is 'conse
 ```{r csv, eval=FALSE}
 consensus_data <- saveConsData(object = simsen)
 
-outDir <- "~/Documents/"
-saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
+outDir <- getwd()
+saveConsData(object = simsen, outDir = outDir, delim = ';', save = TRUE)
 ```
 
 # System info

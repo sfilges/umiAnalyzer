@@ -70,7 +70,7 @@ analyzeTimeSeries <- function(
   }
 
   metaData <- as_tibble(object@meta.data)
-  metaData$sample %<>% as.character
+
 
   # If no group.by info is provided use sample name instead, else use the
   # group.by column from meta.data.
@@ -82,6 +82,7 @@ analyzeTimeSeries <- function(
     metaData$group.by %<>% as.factor
   }
 
+
   # Join meta data and consData replicate ID column to consData
   # Change to left_join?
   summaryData <- dplyr::inner_join(
@@ -89,6 +90,8 @@ analyzeTimeSeries <- function(
     metaData,
     by = c(`Sample Name` =  colnames(metaData[,1]))
   )
+
+  print(summaryData)
 
   summaryData <- summaryData %>%
     dplyr::filter(.data$Variants == "Variant",
@@ -101,13 +104,14 @@ analyzeTimeSeries <- function(
 
     summaryData <- summaryData[duplicated(summaryData$Change),]
 
-    summaryData <- summaryData %>% dplyr::group_by(.data$Change, .data[[time.var]]) %>%
+    summaryData$time_var <- dplyr::pull(summaryData, time.var)
+    summaryData$time_var %<>% as.factor
+
+    summaryData <- summaryData %>% dplyr::group_by(.data$Change, .data$time_var) %>%
       dplyr::summarise(VAF = 100 * mean(.data$`Max Non-ref Allele Frequency`)) %>%
       dplyr::ungroup() %>%
       tidyr::separate(.data$Change, c("Change", "Position", "Name", "Sample"), sep = "\\*")
 
-  summaryData[[time.var]] %<>% as.factor
-  summaryData$time_var <- summaryData[[time.var]]
 
   time_course <- ggplot(
     summaryData, aes_(

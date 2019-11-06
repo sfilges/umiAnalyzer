@@ -737,29 +737,47 @@ filterVariants <- function(
 #' @importFrom utils read.table
 #' @param object UMI.experiment to which to add metadata
 #' @param file File containing meta data
-#' @param delim Column separator. Default is tab.
+#' @param delim Column separator. Default is NULL (automatically determine delimiter)
 #'
 importDesign <- function(
   object,
   file,
-  delim = ","
+  delim = NULL
   ){
 
   if (missing(x = object) || missing(x = file)) {
     stop("Must provide a umiExperiment object and file name.")
   } else if(!class(object) == "UMIexperiment"){
     stop("Object is not of class UMIexperiment.")
-  } else if(! delim %in% c(';', ',', '\t')){
-    stop("Invalid delimeter, needs to be comma, semicolon or tab.")
   } else if(!is.character(file)) {
     stop("File must be a valid name.")
   }
 
-  metaData <- read.table(
-    file = file,
-    sep = delim,
-    header = TRUE
-  )
+  if(is.null(delim)) {
+    comma <- read.table(file = file, sep = ',', header = TRUE)
+    semicolon <- read.table(file = file, sep = ';', header = TRUE)
+    tab <- read.table(file = file, sep = '\t', header = TRUE)
+
+    if(ncol(comma) > 1){
+      metaData <- comma
+      print("Uploading comma separated meta data file.")
+    } else if(ncol(semicolon) > 1) {
+      metaData <- semicolon
+      print("Uploading semicolon separated meta data file.")
+    } else if(ncol(tab) > 1) {
+      metaData <- tab
+      print("Uploading tab separated meta data file.")
+    } else {
+      warning('Automatic delimieter selection failed: It seems like your metadata
+              file is not delimited by either comma, semicolon or tab.')
+    }
+  } else {
+    metaData <- read.table(
+      file = file,
+      sep = delim,
+      header = TRUE
+    )
+  }
 
   object@meta.data <- metaData
   object <- addMetaData(object = object, attributeName = 'design', metaData)

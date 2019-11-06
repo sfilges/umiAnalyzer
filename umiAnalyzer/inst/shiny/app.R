@@ -6,7 +6,7 @@
 # This app uses and comes supplied with the umiAnalyzer package:
 # https://github.com/ozimand1as/umiAnalyzer
 #
-#
+
 # Quietly import required packages
 library(tidyverse, quietly = TRUE)
 library(shiny, quietly = TRUE)
@@ -43,7 +43,11 @@ ui <- dashboardPage(
         text = "User Guide",
         tabName = "vignette",
         icon = icon("book")
-      )
+      ),
+      menuItem(
+        text = "umierrorcorrect",
+        icon = icon("file-code-o"),
+        href = "https://github.com/tobbeost/umierrorcorrect")
     )
   ),
 
@@ -62,11 +66,10 @@ ui <- dashboardPage(
             collapsible = FALSE,
             height = 420,
             # Tab box with two panels
-            tabBox(
+            tabBox(width = 12,
               type = "tabs",
-              width = 12,
               # Panel 1: Data upload widgets
-              # TODO fix processing of zip files on server
+              # TODO fix processing of windows zip files on server
               # TODO add options for cloud services?
               tabPanel(
                 title = "Upload data",
@@ -259,10 +262,6 @@ ui <- dashboardPage(
             actionButton(
               inputId = 'timeSeries',
               label = "Analyse time series"
-            ),
-            actionButton(
-              inputId = "generateVCF",
-              label = "Generate VCF file"
             ),
             selectInput(
               inputId = 'replicates',
@@ -520,7 +519,7 @@ server <- function(input, output, session, plotFun) {
       data <- umiAnalyzer::importDesign(
         object = experiment(),
         file = metaData,
-        delim = ','
+        delim = NULL
       )
 
       design <- umiAnalyzer::getMetaData(
@@ -807,8 +806,11 @@ server <- function(input, output, session, plotFun) {
         return(NULL)
       }
 
+      data <- filteredData()
+      data@meta.data <- metaData()
+
       umiAnalyzer::analyzeTimeSeries(
-        object = filteredData(),
+        object = data,
         time.var = input$timeVar,
         group.by = input$replicates
       )

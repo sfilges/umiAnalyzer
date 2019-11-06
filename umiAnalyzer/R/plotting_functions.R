@@ -191,11 +191,16 @@ plotUmiCounts <- function(
                   .data$depth > 0)
 
   # Select amplicons
-  data <- filterConsensusTable(
-    data,
-    amplicons = amplicons,
-    samples = samples
-  )
+  if (!is.null(amplicons)) {
+    data <- data %>%
+      dplyr::filter(.data$assay %in% amplicons)
+  }
+
+  # Select samples
+  if (!is.null(samples)) {
+    data <- data %>%
+      dplyr::filter(.data$sample %in% samples)
+  }
 
   # Generate ggplot object
   data$depth %<>% as.factor
