@@ -28,13 +28,13 @@ this:
         * ...
     + Sample_3
 
-Note that the app infers sample names from the the names of the folder. That is
+Note that the app infers sample names from the the names of the folder. That is,
 the first sample will be refered to as "Sample_X", regardless of the filenames
 within the folder.
 
 Umierrorcorrect may output other files, but these are not currently used by the app.
 The .bam files are optional, as they will only be used for generating histograms
-upon user request (see below). Yuo may choose to delete larger files such as
+upon user request (see below). You may choose to delete larger files such as
 .fastq and the full alignment file and only keep the 3 files mentioned above.
 
 If you do not have any data but would like to test the app, press the "Load test data"
@@ -48,14 +48,14 @@ other types of sample information for sample grouping and statistics, you can
 upload a metadata file in the "Choose a file containing sample info" box. Your 
 metadata may look like this:
 
-| Sample   | Replicate | Time |  Other variable  |
-|----------|-----------|------|---|
-| sample_1 | 1         | 0    | ...  |   
-| sample_2 | 1         | 0    |  ... |   
-| sample_3 | 1         | 0    | ...  |   
-| sample_4 | 2         | 10   | ...  |   
-| sample_5 | 2         | 10   | ...  |   
-| sample_6 | 2         | 10   | ...  |   
+|   Sample    |   Replicate   |   Time |  Other variable  |
+|-------------|---------------|------|---|
+| s1 |  1         |   0    | ...  |   
+| s2 |  1         |   0    |  ... |   
+| s3 |  1         |   0    | ...  |   
+| s4 |  2         |   10   | ...  |   
+| s5 |  2         |   10   | ...  |   
+| s6 |  2         |   10   | ...  |   
 
 The app assumes that the first column in the metadata table contains the same
 names as the sample names from the umierrorcorrect output.

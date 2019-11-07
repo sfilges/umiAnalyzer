@@ -233,13 +233,15 @@ createUmiExperiment <- function(
 #' readBamFile
 #'
 #' Method for reading bam files using scanBam from the Rsamtools package.
+#'
+#' @param sampleDir Path to UMI sample
+#' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+#'
 #' @import tibble
 #' @import magrittr
 #' @importFrom Rsamtools scanBam
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
-#' @param sampleDir Path to UMI sample
-#' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
 #'
 readBamFile <- function(sampleDir, consDepth = 0) {
 
@@ -268,8 +270,17 @@ readBamFile <- function(sampleDir, consDepth = 0) {
     sep = '_',
     remove = TRUE
   ) %>%
-    tidyr::separate(col = .data$count, sep = '=', into = c(NA, 'count')) %>%
-    tidyr::unite(col = 'position', .data$chrom, .data$pos, sep = ':')
+    tidyr::separate(
+      col = .data$count,
+      sep = '=',
+      into = c(NA, 'count')
+    ) %>%
+    tidyr::unite(
+      col = 'position',
+      .data$chrom,
+      .data$pos,
+      sep = ':'
+    )
 
   sequences$count %<>% as.integer
 
@@ -485,27 +496,33 @@ filterUmiObject <- function(
 #'
 getFilteredData <- function(
   object,
-  name = "default",
+  name = 'default',
   save = FALSE,
   outDir = getwd(),
   fileName = NULL,
-  delim = ';') {
+  delim = ';'
+  ) {
 
   if (missing(x = object)) {
     stop("Must provide a umiExperiment object and filter name.")
   } else if(!class(object) == "UMIexperiment"){
     stop("Object is not of class UMIexperiment.")
   } else if(!is.logical(save)){
-    stop("save needs to be of type boolean")
+    warning("save needs to be of type boolean. Using defaults instead.")
+    save = FALSE
   } else if(!dir.exists(outDir)){
-    stop("outDir needs to be a valid path.")
+    warning("outDir needs to be a valid path. Using working directory.")
+    outDir = getwd()
   } else if(!is.character(fileName) && !is.null(fileName)){
     stop("fileName needs to be a string or NULL")
   } else if(! delim %in% c(';',',','\t')){
-    stop("Invalid delimeter, needs to be comma, semicolon or tab.")
+    warning("Invalid delimeter, needs to be comma, semicolon or tab.
+            Using comma instead.")
+    delim = ','
   } else if(is.null(object@filters[name][[1]])) {
     if(!is.null(object@filters$default)){
       warning("Requested filter not found, using default.")
+      name = 'default'
     } else {
       stop("Filter not found. Have you run filterUmiObject?")
     }
@@ -534,10 +551,15 @@ getFilteredData <- function(
 }
 
 
+#' Beta distribution
+#'
 #' Calculates the negative log likelihood for the beta distribution.
-#' @importFrom stats dbeta
+#'
 #' @param params Non-negative parameters of the Beta distribution.
 #' @param data consensus.data table of a UMisample or UMIexperiment object.
+#'
+#' @importFrom stats dbeta
+#'
 #' @return Negative log-likelihood for beta distribution.
 #'
 betaNLL <- function(params, data) {
@@ -552,23 +574,29 @@ betaNLL <- function(params, data) {
 
 #' callVariants using beta binomial distribution
 #'
-#' Calculate variant p-values using permutation-based testing. A prior is fitted to model the background
-#' error using maximum likelihood estimation of a beta distribution. The maximum likelihood estimate
-#' of the beta distribution is then used to define the shape of a beta-binomial distribution used
-#' to estimate variant P-Values. This can be interpreted as a probability for a variant to not have
-#' arisen by chance
+#' Calculate variant p-values using permutation-based testing. A prior is fitted
+#' to model the background error using maximum likelihood estimation of a beta
+#' distribution. The maximum likelihood estimate of the beta distribution is then
+#' used to define the shape of a beta-binomial distribution used to estimate
+#' variant P-Values. This can be interpreted as a probability for a variant to
+#' not have arisen by chance.
+#'
 #' @export
+#'
+#' @param object A UMierrorcorrect object.
+#' @param minDepth Minimum consensus depth required fedault is 3
+#' @param minCoverage Minimum Coverage to use, default is 100 reads.
+#'
 #' @importFrom dplyr mutate progress_estimated
 #' @importFrom tibble as_tibble
 #' @importFrom VGAM rbetabinom.ab
 #' @importFrom stats nlm var p.adjust
 #' @importFrom utils install.packages
 #' @importFrom graphics plot
-#' @param object A UMierrorcorrect object.
-#' @param minDepth Minimum consensus depth required fedault is 3
-#' @param minCoverage Minimum Coverage to use, default is 100 reads.
+#'
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @seealso \code{\link{filterVariants}} on how to filter variants.
+#'
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -629,7 +657,7 @@ callVariants <- function(
   pval <- NULL
 
   for (i in 1:length(a1)) { # for each named amplicon position:
-    r1 <- rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
+    r1 <- VGAM::rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
@@ -745,6 +773,7 @@ importDesign <- function(
   delim = NULL
   ){
 
+  # Error Handling
   if (missing(x = object) || missing(x = file)) {
     stop("Must provide a umiExperiment object and file name.")
   } else if(!class(object) == "UMIexperiment"){
@@ -754,6 +783,12 @@ importDesign <- function(
   }
 
   if(is.null(delim)) {
+    # Automatically determine file type if delim = NULL
+    # Import data using all three delimiters and then check the number of
+    # columns. If the delimiter is wrong, there will only be one column.
+
+    # TODO this works for these delimiters but doesn't handle other
+    # delimiters well.
     comma <- read.table(file = file, sep = ',', header = TRUE)
     semicolon <- read.table(file = file, sep = ';', header = TRUE)
     tab <- read.table(file = file, sep = '\t', header = TRUE)
@@ -771,7 +806,11 @@ importDesign <- function(
       warning('Automatic delimieter selection failed: It seems like your metadata
               file is not delimited by either comma, semicolon or tab.')
     }
+  } else if (!delim %in% c(',', ';', '\t')) {
+    # If delim is not NULL and not comma, simicolon or tab, throw exception
+    stop("Delimiter needs to be one of: c(',', ';', '\t')")
   } else {
+    # Import file using user defined delimiter
     metaData <- read.table(
       file = file,
       sep = delim,
@@ -779,6 +818,7 @@ importDesign <- function(
     )
   }
 
+  # Add imported table to the object meta.data slot
   object@meta.data <- metaData
   object <- addMetaData(object = object, attributeName = 'design', metaData)
 
@@ -791,11 +831,7 @@ importDesign <- function(
 #' accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
 #' information across multiple replicates. If you want to merge multiple sequencing runs of the
 #' sample into a single sample using the collapseReplicates function instead.
-#' @export
-#' @importFrom magrittr "%>%" "%<>%"
-#' @import dplyr
-#' @importFrom rlang .data
-#' @importFrom stats sd
+#'
 #' @param object UMI.experiment to which to add metadata
 #' @param filter.name Name of the filter to use. Defaults to "default".
 #' @param do.plot Should normalization plot be shown. Default is TRUE.
@@ -805,6 +841,14 @@ importDesign <- function(
 #' @param normalise.by.sample If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.
 #' @param remove.singletons Remove variants only found in one replicate.
 #' @param zero.counts Number between 0 and 1. What values should negative counts get?
+#'
+#' @export
+#'
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom rlang .data
+#' @importFrom stats sd
+#'
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -827,6 +871,7 @@ mergeTechnicalReplicates <- function(
   zero.counts = 0.5
   ) {
 
+  # Error handling
   if (missing(x = object)) {
     stop("Must provide a umiExperiment object.")
   } else if(!class(object) == "UMIexperiment"){
@@ -834,6 +879,7 @@ mergeTechnicalReplicates <- function(
   } else if(is.null(object@filters[filter.name][[1]])) {
     if(!is.null(object@filters$default)){
       warning("Requested filter ", filter.name, " not found, using default.")
+      filter.name = 'default'
     } else {
       stop("Filter not found. Have you run filterUmiObject?")
     }
@@ -842,6 +888,7 @@ mergeTechnicalReplicates <- function(
     do.plot = TRUE
   }
 
+  # Import filtered data
   consData <- getFilteredData(
     object = object,
     name = filter.name
@@ -849,14 +896,15 @@ mergeTechnicalReplicates <- function(
 
   consData$Position %<>% as.factor
 
+  # Select amplicons and samples
   consData <- filterConsensusTable(
     consData,
     amplicons = amplicons,
     samples = samples
   )
 
+  # Get metadata and
   metaData <- as_tibble(object@meta.data)
-
   if (is.null(group.by)){
     metaData$group.by <- dplyr::pull(metaData, 1)
     metaData$group.by %<>% as.factor

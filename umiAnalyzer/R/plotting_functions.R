@@ -1,9 +1,9 @@
 #' Generate QC plots
-#' @export
-#' @import ggplot2
-#' @import dplyr
-#' @importFrom magrittr "%>%" "%<>%"
-#' @importFrom stats median
+#'
+#' Visualise the UMI count for each selected assay and sample for a given
+#' consensus depth. This is useful to detect differences in coverage,
+#' especially for multiplexed assays.
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
@@ -11,35 +11,50 @@
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom stats median
+#'
 generateQCplots <- function(
   object,
   do.plot = TRUE,
-  group.by = 'assay',
+  group.by = c('assay', 'sample'),
   plotDepth = 3,
   assays = NULL,
-  samples = NULL) {
+  samples = NULL
+  ) {
+
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object and filter names")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  }
 
   cons.table <- object@cons.data
   summary.table <- object@summary.data
 
   # Consensus depth plot per assay
-
   cdepths <- summary.table %>% dplyr::filter(
     .data$assay != '',
     .data$depth == plotDepth
   )
 
   if (!is.null(assays)) {
-    cdepths <- cdepths %>% dplyr::filter(.data$assay %in% assays)
+    cdepths <- cdepths %>%
+      dplyr::filter(.data$assay %in% assays)
   }
 
   if (!is.null(samples)) {
-    cdepths <- cdepths %>% dplyr::filter(.data$sample %in% samples)
+    cdepths <- cdepths %>%
+      dplyr::filter(.data$sample %in% samples)
   }
 
+  # Set assay and sample to factor for better plotting
   cdepths$assay %<>% as.factor
   cdepths$sample %<>% as.factor
-
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -53,21 +68,26 @@ generateQCplots <- function(
       geom_boxplot(
         outlier.colour = "black",
         outlier.shape = 10,
-        outlier.size = 3) +
+        outlier.size = 3
+      ) +
       geom_jitter(
-        size = 8,
+        size = 3,
         shape = 16,
-        position = position_jitter(0.2)) +
+        position = position_jitter(0.2)
+      ) +
       theme_bw() +
       theme(
         axis.text.x = element_text(size = 14, angle = 90),
-        axis.text.y = element_text(size = 14)) +
+        axis.text.y = element_text(size = 14)
+      ) +
       geom_hline(
         yintercept = median(cdepths$UMIcount),
-        linetype = "dashed", color = "red") +
+        linetype = "dashed", color = "red"
+      ) +
       geom_hline(
         yintercept = mean(cdepths$UMIcount),
-        linetype = "dashed", color = "blue") +
+        linetype = "dashed", color = "blue"
+      ) +
       labs(
         title = "Consensus 3 depths by assay",
         subtitle = paste(
@@ -80,7 +100,7 @@ generateQCplots <- function(
     depth_plot <- ggplot(cdepths, aes_(x = ~sample, y = ~UMIcount)) +
       geom_boxplot(
         outlier.colour = "black",
-        outlier.shape = 10,
+        outlier.shape = 16,
         outlier.size = 3) +
       theme_bw() +
       theme(axis.text.x = element_text(angle = 90)) +
@@ -102,69 +122,24 @@ generateQCplots <- function(
       )
   }
 
-  summary.table <- as_tibble(summary.table)
-
-  cons0.depths <- summary.table %>%
-    dplyr::filter(
-      .data$assay != "",
-      .data$depth == 0
-    ) %>%
-    dplyr::select(
-      .data$assay,
-      .data$region,
-      .data$sample,
-      .data$totalCount
-    )
-
-  cons3.UMIcount <- summary.table %>%
-    dplyr::filter(
-      .data$assay != '',
-      .data$depth == 3
-    ) %>%
-    dplyr::select(
-      .data$assay,
-      .data$region,
-      .data$sample,
-      .data$UMIcount
-    )
-
-  avg.depths <- dplyr::left_join(cons0.depths, cons3.UMIcount, c(
-    'region' = 'region',
-    'assay' = 'assay',
-    'sample' = 'sample'
-  ))
-
-  avg.depths <- avg.depths %>% dplyr::mutate(avg.FamDepth = .data$totalCount / .data$UMIcount)
-
-  avg.depths_plot <- ggplot(avg.depths, aes_(x = ~assay, y = ~avg.FamDepth)) +
-    geom_boxplot(
-      outlier.colour = 'red', outlier.shape = 8,
-      outlier.size = 4
-    ) +
-    theme(axis.text.x = element_text(angle = 90)) +
-    ggtitle('Average family size per assay')
-
   # Plot consensus depth distribution
   if (do.plot) {
     print(depth_plot)
-    object <- addMetaData(
-      object = object,
-      attributeName = "depth_plot",
-      depth_plot
-    )
+    object@plots$qc_depth_plot <- depth_plot
   }
   else {
-    object <- addMetaData(
-      object = object,
-      attributeName = "depth_plot",
-      depth_plot
-    )
+    object@plots$qc_depth_plot <- depth_plot
   }
 
   return(object)
 }
 
 #' Plot UMI counts
+#'
+#' Visualise the number detected UMI for each consensus depth cut-off. This may
+#' may helpful in choosing the right consensus depth for your analysis, by
+#' checking the number of reads still available for each assay and sample
+#' for your chosen cut-off.
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param do.plot Logical. Should plots be shown.
@@ -208,20 +183,19 @@ plotUmiCounts <- function(
   plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
     theme_bw() +
     geom_col(alpha=0.6) +
-    facet_grid(assay ~ sample)
+    facet_grid(assay ~ sample) +
+    ylab("UMI count") +
+    xlab("Consensus depth cut-off")
 
-  # Return plot
+  # Return object and plot
   if(do.plot){
-
     print(plot)
+    object@plots$umi_counts <- plot
     return(object)
-
   } else {
-
+    object@plots$umi_counts <- plot
     return(object)
-
   }
-
 }
 
 #' Generate Amplicon plots
@@ -464,7 +438,9 @@ plotFamilyHistogram <- function(
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
       ) +
-      facet_wrap(~sample)
+      facet_wrap(~sample) +
+      ylab("Number of families") +
+      xlab("Barcode familiy size")
 
     # Assign plot to UMIexperiment object
     object@plots$family_histogram <- cons_depth_plot
@@ -482,7 +458,9 @@ plotFamilyHistogram <- function(
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
       ) +
-      facet_wrap(~sample)
+      facet_wrap(~sample) +
+      ylab("Number of families") +
+      xlab("Barcode familiy size")
   }
 
   plot(cons_depth_plot)

@@ -749,7 +749,9 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-      metaData()
+    # TODO this table can now be edited by the user, but the changes are
+    # not used by downstream functions.
+    DT::datatable(metaData(), editable = TRUE)
 
   }, options = list(
     orderClasses = T,
