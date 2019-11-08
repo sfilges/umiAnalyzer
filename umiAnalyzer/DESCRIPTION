@@ -1,8 +1,8 @@
 Package: umiAnalyzer
 Type: Package
 Title: Tools for Analyzing Umierrorcorrect Output
-Version: 0.7.4
-Date: 07-11-2019
+Version: 0.7.5
+Date: 08-11-2019
 Authors@R: c(
     person("Stefan", "Filges", email = "stefan.filges@gu.se", 
     role = c("aut", "cre")),
@@ -19,7 +19,7 @@ Depends: R (>= 3.5.0)
 Imports: ggplot2 (>= 2.2.1), methods (>= 3.5.0), utils(>= 3.5.0), 
     VGAM (>= 1.0-5), stats (>= 3.5.0), dplyr (>= 0.7.5), magrittr (>= 1.5), 
     tibble (>= 1.4.2), rlang (>= 0.2.1), tidyr (>= 0.8.1), readr (>= 1.1.1), 
-    gridExtra (>= 2.3), Rsamtools (>= 1.32.3), shiny (>= 1.1.0)
+    gridExtra (>= 2.3), Rsamtools (>= 1.32.3), shiny (>= 1.1.0), viridis (>= 0.5.1)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

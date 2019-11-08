@@ -17,6 +17,7 @@
 #' @import dplyr
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom stats median
+#' @importFrom viridis scale_fill_viridis
 #'
 generateQCplots <- function(
   object,
@@ -64,20 +65,12 @@ generateQCplots <- function(
   # warnings about undefined global variables.
 
   if (group.by == "assay") {
-    depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount)) +
-      geom_boxplot(
-        outlier.colour = "black",
-        outlier.shape = 10,
-        outlier.size = 3
-      ) +
-      geom_jitter(
-        size = 3,
-        shape = 16,
-        position = position_jitter(0.2)
-      ) +
+    depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount, fill=~sample)) +
+      geom_bar(position = "dodge", stat = "identity") +
+      viridis::scale_fill_viridis(discrete = TRUE) +
       theme_bw() +
       theme(
-        axis.text.x = element_text(size = 14, angle = 90),
+        axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
         axis.text.y = element_text(size = 14)
       ) +
       geom_hline(
@@ -89,7 +82,7 @@ generateQCplots <- function(
         linetype = "dashed", color = "blue"
       ) +
       labs(
-        title = "Consensus 3 depths by assay",
+        title = paste("Consensus ", plotDepth, " depths by assay", sep = ""),
         subtitle = paste(
           "Mean depth: ", round(mean(cdepths$UMIcount)),
           "Median depth: ", round(median(cdepths$UMIcount))

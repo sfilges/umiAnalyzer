@@ -70,6 +70,12 @@ library(umiAnalyzer)
 main <- system.file("extdata", package = "umiAnalyzer")
 
 simsen <- createUmiExperiment(main)
+
+simsen <- mergeAssays(
+  object = simsen,
+  name = "new",
+  assay.list = c("PIK3CA_123", "PIK3CA_234")
+)
 ```
 
 createUmiExperiment has an optional flag importBam, which is set to FALSE by default. 
@@ -111,7 +117,7 @@ plot only the selection.
 ### All data
 
 ```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(simsen)
+simsen <- generateAmpliconPlots(simsen,do.plot = TRUE)
 ```
 
 ### Selection
@@ -119,7 +125,7 @@ simsen <- generateAmpliconPlots(simsen)
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  amplicons = c("PIK3CA_123", "PIK3CA_234"),
+  amplicons = c("new"),
   samples = "VAF-1-5ng-1-10x"
 )
 ```

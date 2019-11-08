@@ -17,5 +17,8 @@ plotUmiCounts(object, do.plot = TRUE, amplicons = NULL,
 \item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
 }
 \description{
-Plot UMI counts
+Visualise the number detected UMI for each consensus depth cut-off. This may
+may helpful in choosing the right consensus depth for your analysis, by
+checking the number of reads still available for each assay and sample
+for your chosen cut-off.
 }

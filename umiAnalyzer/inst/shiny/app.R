@@ -46,7 +46,7 @@ ui <- dashboardPage(
       ),
       menuItem(
         text = "umierrorcorrect",
-        icon = icon("file-code-o"),
+        icon = icon("git"),
         href = "https://github.com/tobbeost/umierrorcorrect")
     )
   ),
@@ -69,8 +69,6 @@ ui <- dashboardPage(
             tabBox(width = 12,
               type = "tabs",
               # Panel 1: Data upload widgets
-              # TODO fix processing of windows zip files on server
-              # TODO add options for cloud services?
               tabPanel(
                 title = "Upload data",
                 icon = icon("upload"),
@@ -84,7 +82,7 @@ ui <- dashboardPage(
                   ),
                   fileInput(
                     inputId = 'file',
-                    label = 'Choose a File containing sample info',
+                    label = 'Choose a File containing sample metadata',
                     multiple = FALSE,
                     accept = c('.txt','.csv','.tsv')
                   ),
@@ -134,6 +132,26 @@ ui <- dashboardPage(
                   choices = '',
                   multiple = TRUE
                 )
+              ),
+              # Panel 3: Merging assays
+              tabPanel(
+                title = 'Merge assays',
+                icon = icon('hubspot'),
+                textInput(
+                  inputId = 'new_name',
+                  label = 'Merged assay name:'
+                ),
+                selectInput(
+                  inputId = 'assay_list',
+                  label = 'Assays to merge:',
+                  choices = '',
+                  multiple = TRUE
+                ),
+                actionButton(
+                  inputId = 'mergeAssays',
+                  label = 'Merge!',
+                  icon = icon('cog')
+                )
               )
             )
           ),
@@ -168,7 +186,7 @@ ui <- dashboardPage(
             br(),
             materialSwitch(
               inputId = "abs_counts",
-              label = "Absolute counts",
+              label = "Absolute counts: ",
               status = "primary"
             )
           ),
@@ -406,34 +424,6 @@ server <- function(input, output, session, plotFun) {
     }
   )
 
-  # TODO add function for processing fastq files
-  fastq_main <- reactive({
-
-    fastq_path <- input$fastqFiles$datapath
-
-    if ( is.null(fastq_path) ) {
-      return(NULL)
-    } else {
-
-      # unzip data to temporary directory
-      temp_dir <- file.path(tempdir(), 'fastq')
-
-      unzip(
-        zipfile = fastq_path,
-        list = FALSE,
-        exdir = temp_dir,
-        unzip = 'internal'
-      )
-
-      # execute run docker script in the folder containing the fastq files
-      command <- sprintf('run_docker.sh %s', fastq_path)
-      system(command = command)
-
-      # return directory containing umierrorcorrect output
-      return(temp_dir)
-    }
-  })
-
   # Output pdf report upon button click
   output$download_plot <- downloadHandler(
     filename = 'amplicon_plot.pdf',
@@ -515,11 +505,10 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
-      # TODO add ability for user to select delimeter
       data <- umiAnalyzer::importDesign(
         object = experiment(),
         file = metaData,
-        delim = NULL
+        delim = NULL # automatically select delimiter
       )
 
       design <- umiAnalyzer::getMetaData(
@@ -589,6 +578,23 @@ server <- function(input, output, session, plotFun) {
     }
   })
 
+  merge_assays <- observeEvent(input$mergeAssays, {
+
+    if (is.null(experiment())){
+      return(NULL)
+    } else if(input$new_name == ""){
+      return(NULL)
+    }
+
+    new_data <- mergeAssays(
+      object = experiment(),
+      name = input$new_name,
+      assay.list = input$assay_list
+    )
+
+    experiment() <- new_data
+  })
+
   mergedData <- observeEvent(input$mergeReplicates, {
 
       if (is.null(filteredData())){
@@ -620,7 +626,6 @@ server <- function(input, output, session, plotFun) {
       out_data <- data@merged.data %>%
         dplyr::mutate_if(is.numeric, round, 1)
 
-      # TODO keep only first two decimal points to keep output format reasonable
       output$mergedDataTable <- DT::renderDataTable({
         out_data
       })
@@ -704,6 +709,13 @@ server <- function(input, output, session, plotFun) {
     }
 
     data <- umiAnalyzer::saveConsData( experiment() )
+
+    updateSelectInput(
+      session = session,
+      inputId = 'assay_list',
+      choices = unlist(strsplit(unique(data$Name), split = ',')),
+      selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
+    )
 
     updateSelectInput(
       session = session,
@@ -792,7 +804,7 @@ server <- function(input, output, session, plotFun) {
       plotDepth = input$consensus,
       assays = input$assays,
       samples = input$samples
-      )
+    )
 
   })
 
@@ -853,7 +865,8 @@ server <- function(input, output, session, plotFun) {
       samples <- list.dirs(
         path = main,
         full.names = FALSE,
-        recursive = FALSE)
+        recursive = FALSE
+      )
       # Parse each sample folder for .bam files containing consensus reads
       reads <- umiAnalyzer::parseBamFiles(
         mainDir = main,

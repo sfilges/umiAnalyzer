@@ -24,19 +24,52 @@ filterConsensusTable <- function(
   return(consensus.data)
 }
 
+#' Merge assays
+#'
+#' Merge assays together by name. Requires a name of the new assay and
+#' a list of assays that will be merged.
+#'
+#' @param object A UMIexperiment object
+#' @param name Name of the new assay
+#' @param assay.list List of assays to merge
+#'
+#' @export
+#'
+#' @importFrom dplyr mutate
+#'
+#' @return merged consensus data
+#'
+mergeAssays <- function(object, name, assay.list){
+
+  data <- object@cons.data
+
+  data <- data %>%
+    dplyr::mutate(Name = as.character(.data$Name)) %>%
+    dplyr::mutate(Name = replace(.data$Name, .data$Name %in% assay.list, name))
+
+  object@cons.data <- data
+
+  return(object)
+
+}
 
 #' Analyze time-course data
-#' @export
-#' @importFrom magrittr "%>%" "%<>%"
-#' @import dplyr
-#' @importFrom rlang .data
-#' @importFrom stats sd
+#'
+#'
 #' @param object UMIexperiment object containing meta data
 #' @param filter.name Name of the filter to use.
 #' @param time.var String. Name of thethe time variable. Default is "time"
 #' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
 #' @param group.by String. Variable for grouping data, e.g. replicates. Default is NULL.
 #' @param do.plot Should plot be shown?
+#'
+#' @export
+#'
+#' @importFrom magrittr "%>%" "%<>%"
+#' @import dplyr
+#' @importFrom rlang .data
+#' @importFrom stats sd
+#'
 #' @return A UMIexperiment object
 analyzeTimeSeries <- function(
   object,
