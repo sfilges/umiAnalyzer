@@ -170,10 +170,12 @@ analyzeTimeSeries <- function(
 }
 
 #' Add metaData
-#' @export
+#'
 #' @param object R object to which meta data should be added
 #' @param attributeName Name of the meta data attribute.
 #' @param attributeValue Meta data to be saved.
+#'
+#' @export
 #'
 addMetaData <- function(object,attributeName,attributeValue){
   attr(x = object, attributeName) <- attributeValue
@@ -196,11 +198,14 @@ getMetaData <- function(object,attributeName){
 }
 
 #' Generate VCF file from UMI sample or UMI experiment object
-#' @export
+#'
+#'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param outDir String. Output directory, defaults to wokring directory.
 #' @param outFile String. Name of the output file
 #' @param printAll Logical. Should all or only trusted variant be printed?
+#'
+#' @export
 #'
 generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   cons.table <- object@cons.table

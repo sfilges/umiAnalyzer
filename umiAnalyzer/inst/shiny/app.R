@@ -66,7 +66,8 @@ ui <- dashboardPage(
             collapsible = FALSE,
             height = 420,
             # Tab box with two panels
-            tabBox(width = 12,
+            tabBox(
+              width = 12,
               type = "tabs",
               # Panel 1: Data upload widgets
               tabPanel(
@@ -75,14 +76,14 @@ ui <- dashboardPage(
                 # Encase i/o buttons in a fluid row environment
                 fluidRow(
                   fileInput(
-                    inputId = 'zipFile',
+                    inputId = 'zipFile', width = "50%",
                     label = 'Choose a zip file (Max. 1 GB)',
                     multiple = FALSE,
                     accept = c('.zip')
                   ),
                   fileInput(
-                    inputId = 'file',
-                    label = 'Choose a File containing sample metadata',
+                    inputId = 'file', width = "50%",
+                    label = 'Choose a file containing sample metadata',
                     multiple = FALSE,
                     accept = c('.txt','.csv','.tsv')
                   ),
@@ -115,19 +116,19 @@ ui <- dashboardPage(
                 icon = icon('edit'),
 
                 selectInput(
-                  inputId = 'consensus',
+                  inputId = 'consensus', width = "50%",
                   label = 'Consensus Depth:',
                   choices = c(1,2,3,4,5,10,20,30),
                   selected = 3
                 ),
                 selectInput(
-                  inputId = 'samples',
+                  inputId = 'samples', width = "50%",
                   label = 'Samples:',
                   choices = '',
                   multiple = TRUE
                 ),
                 selectInput(
-                  inputId = 'assays',
+                  inputId = 'assays', width = "50%",
                   label = 'Assays:',
                   choices = '',
                   multiple = TRUE
@@ -765,7 +766,7 @@ server <- function(input, output, session, plotFun) {
       dplyr::filter(.data$`Sample Name` %in% input$samples)
 
   }, options = list(
-    orderClasses = T,
+    orderClasses = TRUE,
     pageLength = 5,
     lengthMenu = c(5, 10, 50, 100)
   ))
@@ -782,7 +783,7 @@ server <- function(input, output, session, plotFun) {
     DT::datatable(metaData(), editable = TRUE)
 
   }, options = list(
-    orderClasses = T,
+    orderClasses = TRUE,
     pageLenght = 50,
     lengthMenu = c(10, 50, 100)
   ))
@@ -806,7 +807,6 @@ server <- function(input, output, session, plotFun) {
   })
 
   # Output the QC plot
-  # TODO QC plots need a lot more attention. Also consider adding raw read data if available
   output$qcPlot <- renderPlot({
 
     if(is.null(experiment())){
