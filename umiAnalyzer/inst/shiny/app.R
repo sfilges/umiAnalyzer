@@ -557,6 +557,9 @@ server <- function(input, output, session, plotFun) {
     return(main)
   })
 
+  # TODO replace data with reactive values
+  values <- reactiveValues(data=NULL, merge=FALSE)
+
   # Create experiment
   experiment <- reactive({
     # select directories
@@ -573,12 +576,20 @@ server <- function(input, output, session, plotFun) {
     if (is.null(main)) {
       return(NULL)
     } else {
+
+      if( values$merge == FALSE){
+        values$data <- umiAnalyzer::createUmiExperiment(main)
+      }
+
+      print( unique(values$data@cons.data$Name) )
+
       data <- umiAnalyzer::createUmiExperiment(main)
-      return(data)
+
+      return(values$data)
     }
   })
 
-  merge_assays <- observeEvent(input$mergeAssays, {
+  experiment_merged <- observeEvent(input$mergeAssays, {
 
     if (is.null(experiment())){
       return(NULL)
@@ -592,7 +603,12 @@ server <- function(input, output, session, plotFun) {
       assay.list = input$assay_list
     )
 
-    experiment() <- new_data
+    values$data <- new_data
+    values$merge <- TRUE
+
+    print( unique(values$data@cons.data$Name) )
+
+    return(new_data)
   })
 
   mergedData <- observeEvent(input$mergeReplicates, {
