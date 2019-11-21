@@ -1,3 +1,30 @@
+#' Theme selection
+#'
+#' Function to select plotting theme based on user choice.
+#'
+#' @param theme User supplied theme selection
+#'
+#' @return A ggplot theme.
+#'
+select_theme <- function(theme){
+  if(theme == 'classic'){
+    use_theme <- theme_classic()
+  } else if(theme == 'bw'){
+    use_theme <- theme_bw()
+  } else if(theme == 'gray'){
+    use_theme <- theme_gray()
+  } else if(theme == 'minimal'){
+    use_theme <- theme_minimal()
+  } else if(theme == 'light'){
+    use_theme <- theme_light()
+  } else{
+    warning('Invalid theme chosen, using classic theme.')
+    use_theme <- theme_classic()
+  }
+
+  return(use_theme)
+}
+
 #' Filter samples and amplicons from a consensus tabel
 #'
 #' @importFrom dplyr filter
@@ -41,16 +68,23 @@ filterConsensusTable <- function(
 #'
 mergeAssays <- function(object, name, assay.list){
 
+  # Update consensus data
   data <- object@cons.data
-
   data <- data %>%
     dplyr::mutate(Name = as.character(.data$Name)) %>%
     dplyr::mutate(Name = replace(.data$Name, .data$Name %in% assay.list, name))
 
+  # Update summary data
+  summary.data <- object@summary.data
+  summary.data <- summary.data %>%
+    dplyr::mutate(assay = as.character(.data$assay)) %>%
+    dplyr::mutate(assay = replace(.data$assay, .data$assay %in% assay.list, name))
+
+  # Update umiExperiment object
   object@cons.data <- data
+  object@summary.data <- summary.data
 
   return(object)
-
 }
 
 #' Analyze time-course data

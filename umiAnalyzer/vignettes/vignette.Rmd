@@ -99,12 +99,23 @@ data set can be retrieved using getFilteredData and assigned to a new variable o
 with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
-simsen <- generateQCplots(simsen)
+simsen <- generateQCplots(simsen, group.by = 'assay')
+```
 
+
+```{r example1continued_2, eval=TRUE}
 simsen <- filterUmiObject(simsen)
 
 myfilter <- getFilteredData(simsen)
 myfilter
+```
+
+Error correction depends on UMI depth, i.e. how many reads per barcode are 
+required to form a barcode family. We can plot the number of available reads
+for different consensus depths.
+
+```{r example1continued_3, eval=TRUE}
+simsen <- plotUmiCounts(object = simsen)
 ```
 
 Next we generate plots for the amplicons and samples in the umiExperiment object.
@@ -192,21 +203,27 @@ scale the data.
 ```{r replicates, eval=TRUE}
 simsen <- mergeTechnicalReplicates(
   object = simsen,
-  group.by = 'replicate'
+  group.by = 'replicate',
+  option = 'magma',
+  direction = -1, 
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
 )
 
-viewNormPlot(simsen)
-
-simsen@plots$stacked_counts
-
-simsen@merged.data
+#viewNormPlot(simsen)
+#simsen@plots$stacked_counts
+#simsen@merged.data
 ```
 
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
 ```{r vizMerge, eval=TRUE}
-vizMergedData(simsen)
+
+vizMergedData(
+  simsen,
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+)
+
 ```
 
 # Calling variants
@@ -222,6 +239,11 @@ the object, e.g. for significant variants.
 simsen <- callVariants(simsen)
 
 simsen <- filterVariants(simsen)
+
+simsen <- generateAmpliconPlots(
+  object = simsen
+)
+
 ```
 
 

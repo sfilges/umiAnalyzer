@@ -2,9 +2,10 @@
 % Please edit documentation in R/plotting_functions.R
 \name{plotFamilyHistogram}
 \alias{plotFamilyHistogram}
-\title{Generate consensus depth histograms}
+\title{Consensus depth histograms}
 \usage{
-plotFamilyHistogram(object, xMin = 0, xMax = 100, samples = NULL)
+plotFamilyHistogram(object, xMin = 0, xMax = 100, samples = NULL,
+  option = "viridis", direction = 1, theme = "classic")
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -14,7 +15,13 @@ plotFamilyHistogram(object, xMin = 0, xMax = 100, samples = NULL)
 \item{xMax}{Maximum consensus family size to plot. Default is 100.}
 
 \item{samples}{List of samples to be shown.}
+
+\item{option}{Colour scheme to use}
+
+\item{direction}{If using viridis colours sets the orientation of colour scale.}
+
+\item{theme}{ggplot theme to use. Defaults to classic.}
 }
 \description{
-Generate consensus depth histograms
+Generate histograms for the frequency of barcode family depths.
 }

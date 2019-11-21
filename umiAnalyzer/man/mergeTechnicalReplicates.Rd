@@ -7,7 +7,8 @@
 mergeTechnicalReplicates(object, filter.name = "default",
   do.plot = TRUE, group.by = NULL, amplicons = NULL,
   samples = NULL, normalise.by.sample = FALSE,
-  remove.singletons = TRUE, zero.counts = 0.5)
+  remove.singletons = TRUE, zero.counts = 0.5, option = c("viridis",
+  "magma", "plasma", "inferno"), direction = c(1, -1))
 }
 \arguments{
 \item{object}{UMI.experiment to which to add metadata}
@@ -27,6 +28,10 @@ mergeTechnicalReplicates(object, filter.name = "default",
 \item{remove.singletons}{Remove variants only found in one replicate.}
 
 \item{zero.counts}{Number between 0 and 1. What values should negative counts get?}
+
+\item{option}{Colour sclae for plotting.}
+
+\item{direction}{Direction of colour scale if using viridis package.}
 }
 \value{
 A umiExperiment object

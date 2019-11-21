@@ -817,7 +817,7 @@ importDesign <- function(
       metaData <- tab
       print("Uploading tab separated meta data file.")
     } else {
-      warning('Automatic delimieter selection failed: It seems like your metadata
+      warning('Automatic delimiter selection failed: It seems like your metadata
               file is not delimited by either comma, semicolon or tab.')
     }
   } else if (!delim %in% c(',', ';', '\t')) {
@@ -855,6 +855,8 @@ importDesign <- function(
 #' @param normalise.by.sample If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.
 #' @param remove.singletons Remove variants only found in one replicate.
 #' @param zero.counts Number between 0 and 1. What values should negative counts get?
+#' @param option Colour sclae for plotting.
+#' @param direction Direction of colour scale if using viridis package.
 #'
 #' @export
 #'
@@ -882,7 +884,9 @@ mergeTechnicalReplicates <- function(
   samples = NULL,
   normalise.by.sample = FALSE,
   remove.singletons = TRUE,
-  zero.counts = 0.5
+  zero.counts = 0.5,
+  option = c('viridis', 'magma', 'plasma', 'inferno'),
+  direction = c(1, -1)
   ) {
 
   # Error handling
@@ -968,7 +972,7 @@ mergeTechnicalReplicates <- function(
     )
 
   # Plot normalised counts stacked by variant allele
-  stacked.counts <- vizStackedCounts(consData)
+  stacked.counts <- vizStackedCounts(consData, option = option, direction = direction)
 
   if(do.plot){
     # Return object

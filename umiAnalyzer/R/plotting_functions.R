@@ -10,6 +10,9 @@
 #' @param plotDepth Which consensus depth to plot
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
+#' @param theme ggplot theme to use.
+#' @param option Colour palette to use, etiher ggplot default or viridis colours.
+#' @param direction If viridis colours are used, choose orientation of colour scale.
 #'
 #' @export
 #'
@@ -25,7 +28,10 @@ generateQCplots <- function(
   group.by = c('assay', 'sample'),
   plotDepth = 3,
   assays = NULL,
-  samples = NULL
+  samples = NULL,
+  theme = 'classic',
+  option = 'default',
+  direction = 'default'
   ) {
 
   if (missing(x = object)) {
@@ -64,11 +70,13 @@ generateQCplots <- function(
   # want to use this form in packages, as it will avoid spurious R CMD check
   # warnings about undefined global variables.
 
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
   if (group.by == "assay") {
     depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount, fill=~sample)) +
       geom_bar(position = "dodge", stat = "identity") +
-      viridis::scale_fill_viridis(discrete = TRUE) +
-      theme_bw() +
+      use_theme +
       theme(
         axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
         axis.text.y = element_text(size = 14)
@@ -90,13 +98,13 @@ generateQCplots <- function(
         caption = ""
       )
   } else if (group.by == "sample") {
-    depth_plot <- ggplot(cdepths, aes_(x = ~sample, y = ~UMIcount)) +
-      geom_boxplot(
-        outlier.colour = "black",
-        outlier.shape = 16,
-        outlier.size = 3) +
-      theme_bw() +
-      theme(axis.text.x = element_text(angle = 90)) +
+    depth_plot <- ggplot(cdepths, aes_(x = ~sample, y = ~UMIcount, fill=~assay)) +
+      geom_bar(position = "dodge", stat = "identity") +
+      use_theme +
+      theme(
+        axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 14)
+      ) +
       geom_hline(
         yintercept = median(cdepths$UMIcount),
         linetype = "dashed",
@@ -113,6 +121,21 @@ generateQCplots <- function(
         ),
         caption = ""
       )
+  }
+
+  if(option != 'default'){
+
+    if(direction == 'default'){
+      orientation = 1
+    } else {
+      orientation = -1
+    }
+
+    depth_plot <- depth_plot + viridis::scale_fill_viridis(
+      discrete = TRUE,
+      option = option,
+      direction = orientation
+    )
   }
 
   # Plot consensus depth distribution
@@ -138,6 +161,9 @@ generateQCplots <- function(
 #' @param do.plot Logical. Should plots be shown.
 #' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
+#' @param theme Plotting theme, default is classic
+#' @param option Colour palette. Default uses ggplot standard, otherwise viridis options.
+#' @param direction If using viridis colours should the scale be inverted or default?
 #'
 #' @export
 #'
@@ -145,12 +171,16 @@ generateQCplots <- function(
 #' @import dplyr
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom stats median
+#' @importFrom viridis scale_fill_viridis
 #'
 plotUmiCounts <- function(
   object,
   do.plot = TRUE,
   amplicons = NULL,
-  samples = NULL
+  samples = NULL,
+  theme = 'classic',
+  option = 'viridis',
+  direction = 1
   ) {
 
   # Read summary data from object
@@ -173,12 +203,28 @@ plotUmiCounts <- function(
   # Generate ggplot object
   data$depth %<>% as.factor
 
-  plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
-    theme_bw() +
-    geom_col(alpha=0.6) +
-    facet_grid(assay ~ sample) +
-    ylab("UMI count") +
-    xlab("Consensus depth cut-off")
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
+  # If colour option is not default use the viridis package for colour palettes.
+  # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
+  if(option != 'default') {
+    plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
+      use_theme +
+      viridis::scale_fill_viridis(
+        discrete = TRUE,option = option,direction = direction) +
+        geom_col(alpha=0.6) +
+        facet_grid(assay ~ sample) +
+        ylab("UMI count") +
+        xlab("Consensus depth cut-off")
+  } else {
+    plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
+      use_theme +
+      geom_col(alpha=0.6) +
+      facet_grid(assay ~ sample) +
+      ylab("UMI count") +
+      xlab("Consensus depth cut-off")
+  }
 
   # Return object and plot
   if(do.plot){
@@ -203,12 +249,16 @@ plotUmiCounts <- function(
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
+#' @param theme Plotting theme to use, default is classic.
+#' @param option Colour palette to use.
+#' @param direction Orientation of the colour palette.
 #'
 #' @export
 #'
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
+#' @importFrom viridis scale_fill_viridis
 #'
 #' @examples
 #' \dontrun{
@@ -223,12 +273,15 @@ plotUmiCounts <- function(
 #' amplicon plot.
 generateAmpliconPlots <- function(
   object,
-  filter.name = "default",
+  filter.name = 'default',
   do.plot = TRUE,
   cut.off = 5,
   amplicons = NULL,
   samples = NULL,
-  abs.count = FALSE
+  abs.count = FALSE,
+  theme = 'classic',
+  option = 'default',
+  direction = 'default'
   ) {
 
   if (missing(x = object)) {
@@ -278,6 +331,9 @@ generateAmpliconPlots <- function(
     samples = samples
   )
 
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
   if (length(unique(cons.table$`Sample Name`)) > 6) {
@@ -287,7 +343,7 @@ generateAmpliconPlots <- function(
         y = ~ (100 * `Max Non-ref Allele Frequency`))
       ) +
       geom_point(aes(col = .data$Variants, size = .data$`Max Non-ref Allele Count`)) +
-      theme_bw() +
+      use_theme +
       theme(axis.text.x = element_text(size = 8, angle = 90)) +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
@@ -303,7 +359,7 @@ generateAmpliconPlots <- function(
         y = ~ (100 * `Max Non-ref Allele Count`),
         fill = ~Variants)
       ) +
-        theme_bw() +
+        use_theme +
         geom_bar(stat = "identity") +
         theme(axis.text.x = element_text(size = 6, angle = 90)) +
         ylab("Variant UMI count") +
@@ -315,13 +371,28 @@ generateAmpliconPlots <- function(
         y = ~ (100 * `Max Non-ref Allele Frequency`),
         fill = ~Variants)
         ) +
-        theme_bw() +
+        use_theme +
         geom_bar(stat = "identity") +
         theme(axis.text.x = element_text(size = 6, angle = 90)) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
     }
+  }
+
+  if(option != 'default'){
+
+    if(direction == 'default'){
+      orientation = 1
+    } else {
+      orientation = -1
+    }
+
+    amplicon_plot <- amplicon_plot + viridis::scale_fill_viridis(
+      discrete = TRUE,
+      option = option,
+      direction = orientation
+    )
   }
 
   # Show plot and add ggplot object to the UMIexperiment object
@@ -340,6 +411,7 @@ generateAmpliconPlots <- function(
 #' @param do.plot Logical. Should plots be shown.
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
+#' @param theme ggplot theme to use. Default is classic.
 #'
 #' @export
 #'
@@ -351,7 +423,8 @@ vizMergedData <- function(
   object,
   cut.off = 5,
   amplicons = NULL,
-  do.plot = TRUE
+  do.plot = TRUE,
+  theme = 'classic'
   ){
 
   # Plotting maximum alternate alle count on merged data
@@ -362,13 +435,17 @@ vizMergedData <- function(
     data <- data %>% dplyr::filter(.data$Name %in% amplicons)
   }
 
-  data$Variants <- ifelse(data$avg.MaxAC > cut.off, "Variant","Background")
+  data$Variants <- ifelse(data$avg.MaxAC > cut.off, 'Variant', 'Background')
+
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
 
   plot <- ggplot(data, aes_(x=~Position, y=~avg.MaxAC,fill=~Variants)) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = 'identity') +
+    use_theme +
     geom_errorbar(aes_(ymin=~avg.MaxAC, ymax=~avg.MaxAC+std.MaxAC), width=.1) +
     theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(group.by ~ Name, scales = "free_x", space = "free_x")
+    facet_grid(group.by ~ Name, scales = 'free_x', space = 'free_x')
 
   if(do.plot) {
     print(plot)
@@ -378,23 +455,32 @@ vizMergedData <- function(
   }
 }
 
-#' Generate consensus depth histograms
+#' Consensus depth histograms
+#'
+#' Generate histograms for the frequency of barcode family depths.
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
 #' @param samples List of samples to be shown.
+#' @param option Colour scheme to use
+#' @param direction If using viridis colours sets the orientation of colour scale.
+#' @param theme ggplot theme to use. Defaults to classic.
 #'
 #' @export
 #'
 #' @import ggplot2
 #' @importFrom tibble is_tibble
+#' @importFrom viridis scale_fill_viridis
 #'
 plotFamilyHistogram <- function(
   object,
   xMin = 0,
   xMax = 100,
-  samples = NULL
+  samples = NULL,
+  option = 'viridis',
+  direction = 1,
+  theme = 'classic'
   ) {
 
   if (missing(x = object)) {
@@ -416,6 +502,9 @@ plotFamilyHistogram <- function(
     samples = NULL
   }
 
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
   # check if object is a UMIexperiment
   if (class(object)[1]== "UMIexperiment") {
     reads <- object@reads
@@ -424,9 +513,10 @@ plotFamilyHistogram <- function(
       reads <- reads %>% dplyr::filter(.data$sample %in% samples)
     }
 
-    cons_depth_plot <- ggplot(reads, aes(x = count, fill = sample, color = sample)) +
+    cons_depth_plot <- ggplot(reads, aes(x = count, fill = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
-      theme_classic() +
+      use_theme +
+      viridis::scale_fill_viridis(discrete = TRUE,option = option,direction = direction) +
       xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
@@ -444,9 +534,10 @@ plotFamilyHistogram <- function(
       object <- object %>% dplyr::filter(.data$sample %in% samples)
     }
 
-    cons_depth_plot <- ggplot(object, aes(x = count, fill = sample, color = sample)) +
+    cons_depth_plot <- ggplot(object, aes(x = count, fill = sample)) +
       geom_histogram(binwidth = 1, alpha = 0.5) +
-      theme_classic() +
+      use_theme +
+      viridis::scale_fill_viridis(discrete = TRUE,option = option,direction = direction) +
       xlim(xMin, xMax) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14, face = "bold")
@@ -521,6 +612,9 @@ viewNormPlot <- function(
 #' Plot counts by nucleotide change
 #' @param cons.data A consensus data table
 #' @param do.plot Logical. Should plot be shown?
+#' @param option Colour palette to use
+#' @param direction If using viridis colors, choose orientation of palette
+#' @param theme ggplot theme to use, default is classic.
 #'
 #' @import tibble
 #' @import dplyr
@@ -528,12 +622,16 @@ viewNormPlot <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
 #' @importFrom rlang .data
+#' @importFrom viridis scale_fill_viridis
 #'
 #' @return A ggplot object.
 #'
 vizStackedCounts <- function(
   cons.data,
-  do.plot = TRUE
+  do.plot = TRUE,
+  option = 'viridis',
+  direction = 1,
+  theme = 'classic'
   ){
 
   # For each row in consensus data, set the reference count to 0.
@@ -574,9 +672,14 @@ vizStackedCounts <- function(
                                         .data$Reference,
                                         .data$avg.Depth))
 
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
   # Stacked count plot.
   stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
     geom_bar( stat="identity") +
+    use_theme +
+    viridis::scale_fill_viridis(discrete = TRUE,option = option,direction = direction) +
     facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
     theme(axis.text.x = element_text(angle = 90))
 

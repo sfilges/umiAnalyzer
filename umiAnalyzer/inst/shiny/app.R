@@ -16,6 +16,10 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
+library(googleAuthR, quietly = TRUE)
+library(googleCloudStorageR, quietly = TRUE)
+library(googledrive, quietly = TRUE)
+
 # Maximum 1GB data upload
 options(shiny.maxRequestSize=1000*1024^2)
 
@@ -75,37 +79,47 @@ ui <- dashboardPage(
                 icon = icon("upload"),
                 # Encase i/o buttons in a fluid row environment
                 fluidRow(
-                  fileInput(
-                    inputId = 'zipFile', width = "50%",
-                    label = 'Choose a zip file (Max. 1 GB)',
-                    multiple = FALSE,
-                    accept = c('.zip')
+                  column(4,
+                    fluidRow(
+                      shinyDirButton(
+                        id = 'dir',
+                        label = 'Choose directory',
+                        title = 'Upload',
+                        style = "margin-bottom: 10px;margin-left: 5px;",
+                        icon = icon("folder-open")
+                      ),
+                      actionButton(
+                        inputId = "importBam",
+                        label = "Import .bam files",
+                        style = "margin-bottom: 10px;margin-left: 5px;",
+                        icon = icon("align-left")
+                      ),
+                      actionButton(
+                        inputId = 'importTest',
+                        label = 'Load test data',
+                        icon = icon('file-import'),
+                        style = "margin-bottom: 10px;margin-left: 5px;"
+                      ),
+                      downloadButton(
+                        outputId = 'report',
+                        label = 'Print Report',
+                        style = "margin-bottom: 10px;margin-left: 5px;"
+                      )
+                    )
                   ),
-                  fileInput(
-                    inputId = 'file', width = "50%",
-                    label = 'Choose a file containing sample metadata',
-                    multiple = FALSE,
-                    accept = c('.txt','.csv','.tsv')
-                  ),
-                  shinyDirButton(
-                    id = 'dir',
-                    label = 'Choose directory',
-                    title = 'Upload',
-                    icon = icon("folder-open")
-                  ),
-                  actionButton(
-                    inputId = "importBam",
-                    label = "Import .bam files",
-                    icon = icon("align-left")
-                  ),
-                  actionButton(
-                    inputId = 'importTest',
-                    label = 'Load test data',
-                    icon = icon('file-import')
-                  ),
-                  downloadButton(
-                    outputId = 'report',
-                    label = 'Print Report'
+                  column(8,
+                    fileInput(
+                      inputId = 'zipFile', width = "100%",
+                      label = 'Choose a zip file (Max. 1 GB)',
+                      multiple = FALSE,
+                      accept = c('.zip')
+                    ),
+                    fileInput(
+                      inputId = 'file', width = "100%",
+                      label = 'Choose a file containing sample metadata',
+                      multiple = FALSE,
+                      accept = c('.txt','.csv','.tsv')
+                    )
                   )
                 )
               ),
@@ -122,13 +136,13 @@ ui <- dashboardPage(
                   selected = 3
                 ),
                 selectInput(
-                  inputId = 'samples', width = "50%",
+                  inputId = 'samples', width = "100%",
                   label = 'Samples:',
                   choices = '',
                   multiple = TRUE
                 ),
                 selectInput(
-                  inputId = 'assays', width = "50%",
+                  inputId = 'assays', width = "100%",
                   label = 'Assays:',
                   choices = '',
                   multiple = TRUE
@@ -215,41 +229,127 @@ ui <- dashboardPage(
           # Show plots in collapsable box containing a tabBox with a tab for
           # each plot to be shown.
           box(
-            title = "Plots",
-            status = "primary",
+            title = 'Plots',
+            status = 'primary',
             solidHeader = TRUE,
             collapsible = TRUE,
             width = 12,
             mainPanel(
               width = 12,
               tabBox(
-                type = "tabs",
-                width = 8,
+                type = 'tabs',
+                width = 12,
                 # Panel for the amplicon plots with download button
                 tabPanel(
-                  title = "Amplicons",
-                  icon = icon("chart-bar"),
+                  title = 'Amplicons',
+                  icon = icon('chart-bar'),
+                  style = 'margin-left: 10px;',
                   fluidRow(
+                    # Option for plot customisation
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      selectInput(
+                        inputId = 'colors',
+                        label = 'Choose colour palette:',
+                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                      ),
+                      selectInput(
+                        inputId = 'direction',
+                        label = 'Color palette direction:',
+                        choices = c('default','reverse')
+                      ),
+                      selectInput(
+                        inputId = 'theme',
+                        label = 'Choose theme:',
+                        choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '300px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!')
+                    ),
                     plotOutput(
-                      outputId = "amplicon_plot",
-                      width = "130%",
-                      height = "600px"
+                      outputId = 'amplicon_plot',
+                      width = '100%'
                     ),
                     downloadButton(
-                      outputId = "download_plot",
-                      label = "Download figure"
+                      outputId = 'download_plot',
+                      label = 'Download figure'
                     )
                   )
                 ),
                 # Panel for quality control plot
                 tabPanel(
-                  title = "QC Plot",
-                  plotOutput("qcPlot")
+                  title = 'QC Plot',
+                  style = 'margin-left: 10px;',
+                  fluidRow(
+                    # Option for plot customisation
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      selectInput(
+                        inputId = 'colors_qc',
+                        label = 'Choose colour palette:',
+                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                      ),
+                      selectInput(
+                        inputId = 'direction_qc',
+                        label = 'Color palette direction:',
+                        choices = c('default','reverse')
+                      ),
+                      selectInput(
+                        inputId = 'theme_qc',
+                        label = 'Choose theme:',
+                        choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '300px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!')
+                    ),
+                    plotOutput('qcPlot'),
+                    downloadButton(
+                      outputId = 'download_qc_plot',
+                      label = 'Download figure'
+                    )
+                  )
                 ),
                 # Panel for UMI count data
                 tabPanel(
                   title = "UMI counts",
-                  plotOutput("umiCounts")
+                  style = 'margin-left: 10px;',
+                  fluidRow(
+                    # Option for plot customisation
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      selectInput(
+                        inputId = 'colors_umi',
+                        label = 'Choose colour palette:',
+                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                      ),
+                      selectInput(
+                        inputId = 'direction_umi',
+                        label = 'Color palette direction:',
+                        choices = c('default','reverse')
+                      ),
+                      selectInput(
+                        inputId = 'theme_umi',
+                        label = 'Choose theme:',
+                        choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '300px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!')
+                    ),
+                    plotOutput("umiCounts"),
+                    downloadButton(
+                      outputId = 'download_umi_plot',
+                      label = 'Download figure'
+                    )
+                  )
                 ),
                 # Panel for barcode family histogram
                 tabPanel(
@@ -262,33 +362,33 @@ ui <- dashboardPage(
         )
       ),
 
-      tabItem(tabName = "advanced",
-        fluidRow(
+      shinydashboard::tabItem(tabName = "advanced",
+        shiny::fluidRow(
           shinydashboard::box(
             title = "Advanced data analysis",
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
             width = 6,
-            actionButton(
+            shiny::actionButton(
               inputId = 'runVarCaller',
               label = 'Run variant caller'
             ),
-            actionButton(
+            shiny::actionButton(
               inputId = 'mergeReplicates',
               label = "Merge Replicates"
             ),
-            actionButton(
+            shiny::actionButton(
               inputId = 'timeSeries',
               label = "Analyse time series"
             ),
-            selectInput(
+            shiny::selectInput(
               inputId = 'replicates',
               label = 'Replicates:',
               choices = '',
               multiple = FALSE
             ),
-            selectInput(
+            shiny::selectInput(
               inputId = 'timeVar',
               label = 'Time variable:',
               choices = '',
@@ -302,14 +402,14 @@ ui <- dashboardPage(
             solidHeader = TRUE,
             collapsible = FALSE,
             width = 6,
-            sliderInput(
+            shiny::sliderInput(
               inputId = "minVarCount",
               label = "Minimum Variant allele count:",
               min = 0, max = 10,
               value = 0, step = 1,
               post = " reads", sep = ","
             ),
-            sliderInput(
+            shiny::sliderInput(
               inputId = "pVal",
               label =  "Minimum adjusted p-value:",
               min = 0, max = 1,
@@ -434,13 +534,60 @@ server <- function(input, output, session, plotFun) {
         return(NULL)
       }
 
-      pdf(file)
+      pdf(file, width = 7, height = 3,pointsize = 1)
         umiAnalyzer::generateAmpliconPlots(
           object = filteredData(),
           filter.name = 'user_filter',
           do.plot = TRUE,
           amplicons = input$assays,
-          samples = input$samples)
+          samples = input$samples,
+          theme = input$theme
+        )
+      dev.off()
+    }
+  )
+
+  # Output pdf report upon button click
+  output$download_qc_plot <- downloadHandler(
+    filename = 'qc_plot.pdf',
+    content = function(file) {
+
+      if(is.null(experiment())){
+        return(NULL)
+      }
+
+      pdf(file, width = 7, height = 3)
+        umiAnalyzer::generateQCplots(
+          object = experiment(),
+          do.plot = TRUE,
+          group.by = 'sample',
+          plotDepth = input$consensus,
+          assays = input$assays,
+          samples = input$samples,
+          theme = input$theme_qc,
+          option = input$colors_qc,
+          direction = input$direction_qc
+        )
+      dev.off()
+    }
+  )
+
+  # Output pdf report upon button click
+  output$download_umi_plot <- downloadHandler(
+    filename = 'umi_plot.pdf',
+    content = function(file) {
+
+      if(is.null(experiment())){
+        return(NULL)
+      }
+
+      pdf(file, width = 7, height = 3)
+        umiAnalyzer::plotUmiCounts(
+          object = experiment(),
+          do.plot = TRUE,
+          amplicons = input$assays,
+          samples = input$samples
+        )
       dev.off()
     }
   )
@@ -482,6 +629,9 @@ server <- function(input, output, session, plotFun) {
     } else {
 
       temp_dir <- file.path(tempdir(),'appData')
+
+      # Use 7zip to change windows paths to linux format
+      #7z rn windows.zip $(7z l windows.zip | grep '\\' | awk '{ print $6, gensub(/\\/, "/", "g", $6); }' | paste -s)
 
       unzip(
         zipfile = zip_path,
@@ -552,13 +702,15 @@ server <- function(input, output, session, plotFun) {
         return(main)
       }
   })
+
   # Set up a test_data main
   test_data_main <- eventReactive(input$importTest,{
     main <- system.file('extdata', package = 'umiAnalyzer')
     return(main)
   })
 
-  # TODO replace data with reactive values
+  # Values is a reactive object to which a umiExperiment object is added in
+  # the data slot.
   values <- reactiveValues(data=NULL, merge=FALSE)
 
   # Create experiment
@@ -578,13 +730,14 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     } else {
 
+      # Check if assays have been merged. If false, initialise the umiExperiment
+      # object and assing to the values object
       if( values$merge == FALSE){
         values$data <- umiAnalyzer::createUmiExperiment(main)
       }
 
-      print( unique(values$data@cons.data$Name) )
-
-      data <- umiAnalyzer::createUmiExperiment(main)
+      #print( unique(values$data@cons.data$Name) )
+      #data <- umiAnalyzer::createUmiExperiment(main)
 
       return(values$data)
     }
@@ -592,22 +745,26 @@ server <- function(input, output, session, plotFun) {
 
   experiment_merged <- observeEvent(input$mergeAssays, {
 
+    # Check of experiment exists and if new assay names have been defined
     if (is.null(experiment())){
       return(NULL)
     } else if(input$new_name == ""){
       return(NULL)
     }
 
-    new_data <- mergeAssays(
+    # Merge assays based on user input: (1) new assay name (2) list of assays to merge.
+    new_data <- umiAnalyzer::mergeAssays(
       object = experiment(),
       name = input$new_name,
       assay.list = input$assay_list
     )
 
+    # Update values object. This will trigger the reactive experiment() object
+    # which will update data throughout the app with new assay info.
     values$data <- new_data
     values$merge <- TRUE
 
-    print( unique(values$data@cons.data$Name) )
+    #print( unique(values$data@cons.data$Name) )
 
     return(new_data)
   })
@@ -790,7 +947,6 @@ server <- function(input, output, session, plotFun) {
 
 
   # Generate amplicon plots using umiAnalyzer
-  # TODO prettify output on generateAmpliconPlots
   output$amplicon_plot <- renderPlot({
 
     if(is.null(filteredData())){
@@ -802,7 +958,10 @@ server <- function(input, output, session, plotFun) {
       do.plot = TRUE,
       amplicons = input$assays,
       samples = input$samples,
-      abs.count = input$abs_counts
+      abs.count = input$abs_counts,
+      theme = input$theme,
+      option = input$colors,
+      direction = input$direction
     )
   })
 
@@ -816,10 +975,13 @@ server <- function(input, output, session, plotFun) {
     umiAnalyzer::generateQCplots(
       object = experiment(),
       do.plot = TRUE,
-      group.by = 'assay',
+      group.by = 'sample',
       plotDepth = input$consensus,
       assays = input$assays,
-      samples = input$samples
+      samples = input$samples,
+      theme = input$theme_qc,
+      option = input$colors_qc,
+      direction = input$direction_qc
     )
 
   })
@@ -904,5 +1066,7 @@ server <- function(input, output, session, plotFun) {
 }
 
 # Run the application
-shinyApp(ui = ui, server = server)
-
+shiny::shinyApp(
+  ui = ui,
+  server = server
+)

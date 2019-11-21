@@ -5,7 +5,8 @@
 \title{Plot UMI counts}
 \usage{
 plotUmiCounts(object, do.plot = TRUE, amplicons = NULL,
-  samples = NULL)
+  samples = NULL, theme = "classic", option = "viridis",
+  direction = 1)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -15,6 +16,12 @@ plotUmiCounts(object, do.plot = TRUE, amplicons = NULL,
 \item{amplicons}{(Optional) user-supplied list of assays to plot. Default is all.}
 
 \item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
+
+\item{theme}{Plotting theme, default is classic}
+
+\item{option}{Colour palette. Default uses ggplot standard, otherwise viridis options.}
+
+\item{direction}{If using viridis colours should the scale be inverted or default?}
 }
 \description{
 Visualise the number detected UMI for each consensus depth cut-off. This may

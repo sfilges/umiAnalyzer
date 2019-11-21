@@ -4,12 +4,19 @@
 \alias{vizStackedCounts}
 \title{Plot counts by nucleotide change}
 \usage{
-vizStackedCounts(cons.data, do.plot = TRUE)
+vizStackedCounts(cons.data, do.plot = TRUE, option = "viridis",
+  direction = 1, theme = "classic")
 }
 \arguments{
 \item{cons.data}{A consensus data table}
 
 \item{do.plot}{Logical. Should plot be shown?}
+
+\item{option}{Colour palette to use}
+
+\item{direction}{If using viridis colors, choose orientation of palette}
+
+\item{theme}{ggplot theme to use, default is classic.}
 }
 \value{
 A ggplot object.

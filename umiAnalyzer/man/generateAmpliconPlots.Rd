@@ -5,7 +5,8 @@
 \title{Generate Amplicon plots}
 \usage{
 generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
-  cut.off = 5, amplicons = NULL, samples = NULL, abs.count = FALSE)
+  cut.off = 5, amplicons = NULL, samples = NULL, abs.count = FALSE,
+  theme = "classic", option = "default", direction = "default")
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -21,6 +22,12 @@ generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
 \item{samples}{(Optional) character vector of samples to be plotted.}
 
 \item{abs.count}{Should absolute counts be plotted instead of frequencies? Default is FALSE.}
+
+\item{theme}{Plotting theme to use, default is classic.}
+
+\item{option}{Colour palette to use.}
+
+\item{direction}{Orientation of the colour palette.}
 }
 \value{
 A umiExperiment object containing a ggplot object with the
