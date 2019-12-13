@@ -167,13 +167,14 @@ ui <- dashboardPage(
               )
             )
           ),
-          # Box for interactive paramter selection
+          # Box for interactive parameter selection
           box(
             title = "Parameters",
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
             height = 420,
+            style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
             sliderInput(
               inputId = "minFreq",
               label = "Minimum Variant allele frequency:",
@@ -1037,15 +1038,28 @@ server <- function(input, output, session, plotFun) {
       direction = -1
     }
 
-    umiAnalyzer::plotUmiCounts(
-      object = experiment(),
-      do.plot = TRUE,
-      amplicons = input$assays,
-      samples = input$samples,
-      theme = input$theme_umi,
-      option = input$colors_umi,
-      direction = direction
+    # Initialise progress bar
+    shiny::withProgress(
+      message = 'Rendering UMI plot',
+      value = 0.25, {
+
+      umiAnalyzer::plotUmiCounts(
+        object = experiment(),
+        do.plot = TRUE,
+        amplicons = input$assays,
+        samples = input$samples,
+        theme = input$theme_umi,
+        option = input$colors_umi,
+        direction = direction
+      )
+
+    # Update progress bar
+    shiny::incProgress(
+      amount = 1,
+      detail = paste("Rendering UMIs")
     )
+    })
+
   })
 
   # Import consensus read bam file upon button click to generate histograms
