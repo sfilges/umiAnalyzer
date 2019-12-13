@@ -363,8 +363,8 @@ ui <- dashboardPage(
       shinydashboard::tabItem(tabName = "advanced",
         shiny::fluidRow(
           shinydashboard::box(
-            title = "Advanced data analysis",
-            status = "primary",
+            title = 'Advanced data analysis',
+            status = 'primary',
             solidHeader = TRUE,
             collapsible = FALSE,
             width = 6,

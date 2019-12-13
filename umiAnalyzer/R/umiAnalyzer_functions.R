@@ -637,7 +637,8 @@ betaNLL <- function(params, data) {
 callVariants <- function(
   object,
   minDepth = 3,
-  minCoverage = 100
+  minCoverage = 100,
+  computePrior = FALSE
   ) {
 
   if (missing(x = object)) {
@@ -664,7 +665,7 @@ callVariants <- function(
     minDepth = minDepth,       # Require minDepth
     minCoverage = minCoverage, # Require at least minCoverage cons reads
     minFreq = 0,               # no minimum allele freq
-    minCount = 0               # no minimum variant allele count
+    minCount = 0              # no minimum variant allele count
   )
 
   cons.table <- object@filters["varCalls"][[1]]
@@ -680,17 +681,26 @@ callVariants <- function(
   b0 <- (1 - m) * (m * (1 - m) / v - 1)
   params0 <- c(a0, b0)
 
-  fit <- nlm(betaNLL, params0, a0 / b0)
-  a <- fit$estimate[1]
-  b <- fit$estimate[2]
-  pval <- NULL
+  # If computePrior == TRUE fit a new beta binomial background distribution,
+  # otherwise use pre-computed values (default)
+  if(computePrior){
+    fit <- nlm(betaNLL, params0, a0 / b0)
+    a <- fit$estimate[1]
+    b <- fit$estimate[2]
+    pval <- NULL
+
+  } else {
+    a <- 2.168215069116764
+    b <- 3531.588541594945
+    pval <- NULL
+  }
 
   for (i in 1:length(a1)) { # for each named amplicon position:
     r1 <- VGAM::rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
-  padj <- p.adjust(pval, method = "fdr")
+  padj <- p.adjust(pval, method = 'fdr')
 
   cons.table <- dplyr::mutate(cons.table, pval = pval)
   cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
