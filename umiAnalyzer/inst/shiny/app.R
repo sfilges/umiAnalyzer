@@ -21,7 +21,9 @@ library(googleCloudStorageR, quietly = TRUE)
 library(googledrive, quietly = TRUE)
 
 # Maximum 1GB data upload
-options(shiny.maxRequestSize=1000*1024^2)
+options(shiny.maxRequestSize=1000*1024^2, shiny.reactlog=TRUE)
+
+#----UI----
 
 # Define user interface
 ui <- dashboardPage(
@@ -492,6 +494,8 @@ ui <- dashboardPage(
   )
 )
 
+#----Server----
+
 # Define server logic
 server <- function(input, output, session, plotFun) {
 
@@ -643,6 +647,8 @@ server <- function(input, output, session, plotFun) {
       return(temp_dir)
     }
   })
+
+  # What is metadata?
 
   metaData <- reactive({
 
@@ -945,9 +951,9 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(10, 50, 100)
   ))
 
+  # Generate amplicon plots using umiAnalyzer in reactive
 
-  # Generate amplicon plots using umiAnalyzer
-  output$amplicon_plot <- renderPlot({
+  amplicon_plot <- reactive({
 
     if(is.null(filteredData())){
       return(NULL)
@@ -962,7 +968,19 @@ server <- function(input, output, session, plotFun) {
       theme = input$theme,
       option = input$colors,
       direction = input$direction
-    )
+    )})
+
+  # delay amplicon plot until reactive stop changing
+
+  amplicon_plot_d <- amplicon_plot %>% debounce(500)
+
+  # plot amplicon plot reactive value
+
+  output$amplicon_plot <- renderPlot({
+
+    plot <- amplicon_plot_d()
+    plot
+
   })
 
   # Output the QC plot
