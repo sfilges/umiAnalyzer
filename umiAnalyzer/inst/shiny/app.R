@@ -16,6 +16,8 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
+
+#----UI----
 # Maximum 5GB data upload
 options(shiny.maxRequestSize=5000*1024^2)
 
@@ -490,6 +492,8 @@ ui <- dashboardPage(
   )
 )
 
+#----Server----
+
 # Define server logic
 server <- function(input, output, session, plotFun) {
 
@@ -635,6 +639,8 @@ server <- function(input, output, session, plotFun) {
       return(temp_dir)
     }
   })
+
+  # What is metadata?
 
   metaData <- reactive({
 
@@ -952,16 +958,12 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(10, 50, 100)
   ))
 
-  # Generate amplicon plots using umiAnalyzer
-  output$amplicon_plot <- renderPlot({
+  # Generate amplicon plots using umiAnalyzer in reactive
+  amplicon_plot <- reactive({
 
     if(is.null(filteredData())){
       return(NULL)
     }
-
-    shiny::withProgress(
-      message = 'Rendering amplicon plot',
-      value = 0.25, {
 
     umiAnalyzer::generateAmpliconPlots(
       object = filteredData(),
@@ -972,12 +974,18 @@ server <- function(input, output, session, plotFun) {
       theme = input$theme,
       option = input$colors,
       direction = input$direction
-    )
+   )
+  })
 
-    shiny::incProgress(1, detail = paste("Rendering plot"))
+  # delay amplicon plot until reactive stop changing
 
-    })
+  amplicon_plot_d <- amplicon_plot %>% debounce(500)
 
+  # plot amplicon plot reactive value
+  
+  # TODO add progress bar here
+  output$amplicon_plot <- renderPlot({
+    amplicon_plot_d()
   })
 
   # Output the QC plot
