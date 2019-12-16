@@ -19,7 +19,7 @@ library(umiAnalyzer, quietly = TRUE)
 
 #----UI----
 # Maximum 5GB data upload
-options(shiny.maxRequestSize=5000*1024^2)
+options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
 
 # Define user interface
 ui <- dashboardPage(
@@ -965,28 +965,35 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::generateAmpliconPlots(
-      object = filteredData(),
-      do.plot = TRUE,
-      amplicons = input$assays,
-      samples = input$samples,
-      abs.count = input$abs_counts,
-      theme = input$theme,
-      option = input$colors,
-      direction = input$direction
-   )
+    # TODO this generatesa new progress bar each time the plot changes. Consider
+    # moving everything into an umbrella reactive object?
+    withProgress(message = 'Rendering amplicon plot', value = 0.25, {
+
+      object <- umiAnalyzer::generateAmpliconPlots(
+        object = filteredData(),
+        do.plot = TRUE,
+        amplicons = input$assays,
+        samples = input$samples,
+        abs.count = input$abs_counts,
+        theme = input$theme,
+        option = input$colors,
+        direction = input$direction
+     )
+
+    shiny::incProgress(1, detail = paste("Rendering complete"))
+
+    })
+    object@plots$amplicon_plot
   })
 
   # delay amplicon plot until reactive stop changing
-
-  amplicon_plot_d <- amplicon_plot %>% debounce(500)
+  amplicon_plot_d <- amplicon_plot %>% debounce(200)
 
   # plot amplicon plot reactive value
-  
-  # TODO add progress bar here
   output$amplicon_plot <- renderPlot({
     amplicon_plot_d()
   })
+
 
   # Output the QC plot
   output$qcPlot <- renderPlot({
