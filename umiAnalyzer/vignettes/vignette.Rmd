@@ -243,7 +243,6 @@ simsen <- filterVariants(simsen)
 simsen <- generateAmpliconPlots(
   object = simsen
 )
-
 ```
 
 

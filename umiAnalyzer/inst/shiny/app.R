@@ -16,44 +16,39 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
-library(googleAuthR, quietly = TRUE)
-library(googleCloudStorageR, quietly = TRUE)
-library(googledrive, quietly = TRUE)
-
-# Maximum 1GB data upload
-options(shiny.maxRequestSize=1000*1024^2, shiny.reactlog=TRUE)
 
 #----UI----
+# Maximum 5GB data upload
+options(shiny.maxRequestSize=5000*1024^2)
 
 # Define user interface
 ui <- dashboardPage(
-
   dashboardHeader(
-    title = "umiVisualiser"
+    title = 'umiVisualiser'
   ),
-
   # Define menu items on the sidebar
   dashboardSidebar(
     sidebarMenu(
       menuItem(
-        text = "Dashboard",
-        tabName = "dashboard",
-        icon = icon("dna")
+        text = 'Dashboard',
+        tabName = 'dashboard',
+        icon = icon('dna')
       ),
       menuItem(
-        text = "Advanced",
-        tabName = "advanced",
-        icon = icon("magic")
+        text = 'Advanced',
+        tabName = 'advanced',
+        icon = icon('magic')
       ),
       menuItem(
-        text = "User Guide",
-        tabName = "vignette",
-        icon = icon("book")
+        text = 'User Guide',
+        tabName = 'vignette',
+        icon = icon('book')
       ),
       menuItem(
-        text = "umierrorcorrect",
-        icon = icon("git"),
-        href = "https://github.com/tobbeost/umierrorcorrect")
+        text = 'umierrorcorrect',
+        icon = icon('git'),
+        href = 'https://github.com/tobbeost/umierrorcorrect'
+      )
     )
   ),
 
@@ -62,7 +57,7 @@ ui <- dashboardPage(
     # List tab items ...
     tabItems(
       # ... each tab-item correponds to a menu-item in the sidebar
-      tabItem(tabName = "dashboard",
+      tabItem(tabName = 'dashboard',
         fluidRow(
           # Box for primary data upload and selection
           box(
@@ -81,47 +76,49 @@ ui <- dashboardPage(
                 icon = icon("upload"),
                 # Encase i/o buttons in a fluid row environment
                 fluidRow(
-                  column(4,
-                    fluidRow(
-                      shinyDirButton(
-                        id = 'dir',
-                        label = 'Choose directory',
-                        title = 'Upload',
-                        style = "margin-bottom: 10px;margin-left: 5px;",
-                        icon = icon("folder-open")
-                      ),
-                      actionButton(
-                        inputId = "importBam",
-                        label = "Import .bam files",
-                        style = "margin-bottom: 10px;margin-left: 5px;",
-                        icon = icon("align-left")
-                      ),
-                      actionButton(
-                        inputId = 'importTest',
-                        label = 'Load test data',
-                        icon = icon('file-import'),
-                        style = "margin-bottom: 10px;margin-left: 5px;"
-                      ),
-                      downloadButton(
-                        outputId = 'report',
-                        label = 'Print Report',
-                        style = "margin-bottom: 10px;margin-left: 5px;"
-                      )
-                    )
+                  style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
+                  fileInput(
+                    inputId = 'zipFile', width = "100%",
+                    label = 'Choose a zip file (Max. 5 GB)',
+                    multiple = FALSE,
+                    accept = c('.zip')
                   ),
-                  column(8,
-                    fileInput(
-                      inputId = 'zipFile', width = "100%",
-                      label = 'Choose a zip file (Max. 1 GB)',
-                      multiple = FALSE,
-                      accept = c('.zip')
+                  fileInput(
+                    inputId = 'file', width = "100%",
+                    label = 'Choose a file containing sample metadata',
+                    multiple = FALSE,
+                    accept = c('.txt','.csv','.tsv')
+                  ),
+                  dropdown(
+                    label = "Load data",
+
+                    shinyDirButton(
+                      id = 'dir',
+                      label = 'Choose directory',
+                      title = 'Upload',
+                      style = "margin-bottom: 10px;margin-left: 5px;",
+                      icon = icon("folder-open")
                     ),
-                    fileInput(
-                      inputId = 'file', width = "100%",
-                      label = 'Choose a file containing sample metadata',
-                      multiple = FALSE,
-                      accept = c('.txt','.csv','.tsv')
-                    )
+                    actionButton(
+                      inputId = "importBam",
+                      label = "Import .bam files",
+                      style = "margin-bottom: 10px;margin-left: 5px;",
+                      icon = icon("align-left")
+                    ),
+                    actionButton(
+                      inputId = 'importTest',
+                      label = 'Load test data',
+                      icon = icon('file-import'),
+                      style = "margin-bottom: 10px;margin-left: 5px;"
+                    ),
+                    downloadButton(
+                      outputId = 'report',
+                      label = 'Print Report',
+                      style = "margin-bottom: 10px;margin-left: 5px;"
+                    ),
+
+                    icon = icon("gear"),
+                    width = "100%"
                   )
                 )
               ),
@@ -172,13 +169,14 @@ ui <- dashboardPage(
               )
             )
           ),
-          # Box for interactive paramter selection
+          # Box for interactive parameter selection
           box(
             title = "Parameters",
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
             height = 420,
+            style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
             sliderInput(
               inputId = "minFreq",
               label = "Minimum Variant allele frequency:",
@@ -367,8 +365,8 @@ ui <- dashboardPage(
       shinydashboard::tabItem(tabName = "advanced",
         shiny::fluidRow(
           shinydashboard::box(
-            title = "Advanced data analysis",
-            status = "primary",
+            title = 'Advanced data analysis',
+            status = 'primary',
             solidHeader = TRUE,
             collapsible = FALSE,
             width = 6,
@@ -531,47 +529,41 @@ server <- function(input, output, session, plotFun) {
 
   # Output pdf report upon button click
   output$download_plot <- downloadHandler(
-    filename = 'amplicon_plot.pdf',
-    content = function(file) {
-
-      if(is.null(filteredData())){
-        return(NULL)
-      }
-
-      pdf(file, width = 7, height = 3,pointsize = 1)
-        umiAnalyzer::generateAmpliconPlots(
-          object = filteredData(),
-          filter.name = 'user_filter',
-          do.plot = TRUE,
-          amplicons = input$assays,
-          samples = input$samples,
-          theme = input$theme
-        )
+    filename <- function() {
+      paste('amplicon-plot-', Sys.time(),'.pdf',sep='') },
+    content <- function(file) {
+      pdf(file, width = 7, height = 3)
+      object <- umiAnalyzer::generateAmpliconPlots(
+        object = filteredData(),
+        do.plot = TRUE,
+        amplicons = input$assays,
+        samples = input$samples,
+        abs.count = input$abs_counts,
+        theme = input$theme,
+        option = input$colors,
+        direction = input$direction
+      )
       dev.off()
     }
   )
 
   # Output pdf report upon button click
   output$download_qc_plot <- downloadHandler(
-    filename = 'qc_plot.pdf',
-    content = function(file) {
-
-      if(is.null(experiment())){
-        return(NULL)
-      }
-
+    filename <- function() {
+      paste('qc-plot-', Sys.time(),'.pdf',sep='') },
+    content <- function(file) {
       pdf(file, width = 7, height = 3)
-        umiAnalyzer::generateQCplots(
-          object = experiment(),
-          do.plot = TRUE,
-          group.by = 'sample',
-          plotDepth = input$consensus,
-          assays = input$assays,
-          samples = input$samples,
-          theme = input$theme_qc,
-          option = input$colors_qc,
-          direction = input$direction_qc
-        )
+      object <- umiAnalyzer::generateQCplots(
+        object = experiment(),
+        do.plot = TRUE,
+        group.by = 'sample',
+        plotDepth = input$consensus,
+        assays = input$assays,
+        samples = input$samples,
+        theme = input$theme_qc,
+        option = input$colors_qc,
+        direction = input$direction_qc
+      )
       dev.off()
     }
   )
@@ -739,7 +731,10 @@ server <- function(input, output, session, plotFun) {
       # Check if assays have been merged. If false, initialise the umiExperiment
       # object and assing to the values object
       if( values$merge == FALSE){
-        values$data <- umiAnalyzer::createUmiExperiment(main)
+
+        withProgress(message="Creating experiment object", value = 0, {
+          values$data <- umiAnalyzer::createUmiExperiment(main, as.shiny = TRUE)
+        })
       }
 
       #print( unique(values$data@cons.data$Name) )
@@ -843,19 +838,25 @@ server <- function(input, output, session, plotFun) {
 
     out_data <- data@variants
 
-    # Render variant call table in app
-    output$varDataTable <- DT::renderDataTable({
-      out_data
-    })
+    withProgress(message = 'Rendering outputs', value = 0.25, {
 
-    # Render amplicon plot for computed variants
-    output$varPlot <- renderPlot({
-      umiAnalyzer::generateAmpliconPlots(
-        object = data,
-        amplicons = input$assays,
-        samples = input$samples,
-        abs.count = input$abs_counts
-      )
+      # Render variant call table in app
+      output$varDataTable <- DT::renderDataTable({
+        out_data
+      })
+
+      # Render amplicon plot for computed variants
+      output$varPlot <- renderPlot({
+        umiAnalyzer::generateAmpliconPlots(
+          object = data,
+          amplicons = input$assays,
+          samples = input$samples,
+          abs.count = input$abs_counts
+        )
+      })
+
+    shiny::incProgress(1, detail = paste("Rendering plot"))
+
     })
 
     return(data)
@@ -869,6 +870,8 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
+    withProgress(message = 'Filtering object', value = 0.25, {
+
     data <- umiAnalyzer::filterUmiObject(
       object = experiment(),
       minDepth = input$consensus,
@@ -876,6 +879,10 @@ server <- function(input, output, session, plotFun) {
       minFreq = input$minFreq/100,
       minCount = input$minCount
     )
+
+    shiny::incProgress(1, detail = paste("Filtering"))
+
+    })
 
     return(data)
   })
@@ -952,7 +959,6 @@ server <- function(input, output, session, plotFun) {
   ))
 
   # Generate amplicon plots using umiAnalyzer in reactive
-
   amplicon_plot <- reactive({
 
     if(is.null(filteredData())){
@@ -968,19 +974,18 @@ server <- function(input, output, session, plotFun) {
       theme = input$theme,
       option = input$colors,
       direction = input$direction
-    )})
+   )
+  })
 
   # delay amplicon plot until reactive stop changing
 
   amplicon_plot_d <- amplicon_plot %>% debounce(500)
 
   # plot amplicon plot reactive value
-
+  
+  # TODO add progress bar here
   output$amplicon_plot <- renderPlot({
-
-    plot <- amplicon_plot_d()
-    plot
-
+    amplicon_plot_d()
   })
 
   # Output the QC plot
@@ -990,18 +995,20 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::generateQCplots(
-      object = experiment(),
-      do.plot = TRUE,
-      group.by = 'sample',
-      plotDepth = input$consensus,
-      assays = input$assays,
-      samples = input$samples,
-      theme = input$theme_qc,
-      option = input$colors_qc,
-      direction = input$direction_qc
-    )
-
+    shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
+      umiAnalyzer::generateQCplots(
+        object = experiment(),
+        do.plot = TRUE,
+        group.by = 'sample',
+        plotDepth = input$consensus,
+        assays = input$assays,
+        samples = input$samples,
+        theme = input$theme_qc,
+        option = input$colors_qc,
+        direction = input$direction_qc
+      )
+    shiny::incProgress(1, detail = paste("Rendering QC plot"))
+    })
   })
 
   observeEvent(input$timeSeries, {
@@ -1033,12 +1040,34 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::plotUmiCounts(
-      object = experiment(),
-      do.plot = TRUE,
-      amplicons = input$assays,
-      samples = input$samples
+    if(input$direction_umi == "default") {
+      direction = 1
+    } else {
+      direction = -1
+    }
+
+    # Initialise progress bar
+    shiny::withProgress(
+      message = 'Rendering UMI plot',
+      value = 0.25, {
+
+      umiAnalyzer::plotUmiCounts(
+        object = experiment(),
+        do.plot = TRUE,
+        amplicons = input$assays,
+        samples = input$samples,
+        theme = input$theme_umi,
+        option = input$colors_umi,
+        direction = direction
+      )
+
+    # Update progress bar
+    shiny::incProgress(
+      amount = 1,
+      detail = paste("Rendering UMIs")
     )
+    })
+
   })
 
   # Import consensus read bam file upon button click to generate histograms
@@ -1063,21 +1092,45 @@ server <- function(input, output, session, plotFun) {
         full.names = FALSE,
         recursive = FALSE
       )
+
+      shiny::withProgress(
+        message = 'Parsing consensus reads',
+        value = 0, {
+
       # Parse each sample folder for .bam files containing consensus reads
       reads <- umiAnalyzer::parseBamFiles(
         mainDir = main,
         sampleNames = samples,
-        consDepth = 0
+        consDepth = 0,
+        as.shiny= TRUE
       )
+
+      })
+
       # Output barcode family histogram
       output$histogram <- renderPlot({
-        # Generate histogram plot using user defined parameters
-        umiAnalyzer::plotFamilyHistogram(
-          object = reads,
-          xMin = input$famSize[1],
-          xMax = input$famSize[2],
-          samples = input$samples
+
+        # TODO progress bar initialises at 0.25 and finishes at 1 when plot is
+        # rendered. Implement continuous bar?
+        shiny::withProgress(
+          message = 'Rendering histograms',
+          value = 0.25, {
+
+          # Generate histogram plot using user defined parameters
+          umiAnalyzer::plotFamilyHistogram(
+            object = reads,
+            xMin = input$famSize[1],
+            xMax = input$famSize[2],
+            samples = input$samples
+          )
+
+        # Update progress bar
+        shiny::incProgress(
+          amount = 1,
+          detail = paste("Rendering histograms")
         )
+        })
+
       })
     }
   })

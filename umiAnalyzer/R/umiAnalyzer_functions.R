@@ -154,6 +154,7 @@ createUmiSample <- function(
 #' @param mainDir Main experiment directory
 #' @param sampleNames List of sample names. Can be either NULL or list. If NULL all subdirectories of mainDir will be searched.
 #' @param importBam Logical. Should bam files be imported on creation? Default is False.
+#' @param as.shiny Set to TRUE if run within a shiny::withProgress environment
 #'
 #' @export
 #'
@@ -161,6 +162,7 @@ createUmiSample <- function(
 #' @importFrom utils read.csv
 #' @importFrom methods new
 #' @importFrom dplyr bind_rows
+#' @importFrom shiny incProgress
 #'
 #' @examples
 #' \dontrun{
@@ -176,7 +178,8 @@ createUmiExperiment <- function(
   mainDir,
   experimentName = NULL,
   sampleNames = NULL,
-  importBam = FALSE){
+  importBam = FALSE,
+  as.shiny = FALSE){
 
   if (!dir.exists(mainDir)) {
     stop("Must provide a valid directory.")
@@ -208,6 +211,11 @@ createUmiExperiment <- function(
   reads.merged <- tibble()
 
   for (i in 1:length(sampleNames)) {
+
+    if(as.shiny){
+      n <- length(sampleNames)
+      shiny::incProgress(1/n, detail = paste("Loading sample", i, " of ",n))
+    }
 
     if(!dir.exists(file.path(mainDir, sampleNames[i]))){
       stop("Sample directory not found. Did you provide a top level directory
@@ -360,11 +368,13 @@ saveConsData <- function(
 #' @param mainDir Directory containing umierrorcorrect output folders.
 #' @param sampleNames A list of sample names.
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
+#' @param as.shiny Set to TRUE if run within a shiny::withProgress environment
 #'
 parseBamFiles <- function(
   mainDir,
   sampleNames = NULL,
-  consDepth = 0) {
+  consDepth = 0,
+  as.shiny = FALSE) {
 
   if (missing(x = mainDir)) {
     stop("Must provide a working directory and sample names.")
@@ -399,6 +409,11 @@ parseBamFiles <- function(
       sampleDir = file.path(mainDir, dir.names[i]),
       consDepth = consDepth
     )
+
+    if(as.shiny){
+      n <- length(dir.names)
+      shiny::incProgress(1/n, detail = paste("Parsing reads", i, " of ", n))
+    }
 
     seq.Table$sample <- dir.names[i]
 
@@ -622,7 +637,8 @@ betaNLL <- function(params, data) {
 callVariants <- function(
   object,
   minDepth = 3,
-  minCoverage = 100
+  minCoverage = 100,
+  computePrior = FALSE
   ) {
 
   if (missing(x = object)) {
@@ -649,7 +665,7 @@ callVariants <- function(
     minDepth = minDepth,       # Require minDepth
     minCoverage = minCoverage, # Require at least minCoverage cons reads
     minFreq = 0,               # no minimum allele freq
-    minCount = 0               # no minimum variant allele count
+    minCount = 0              # no minimum variant allele count
   )
 
   cons.table <- object@filters["varCalls"][[1]]
@@ -665,17 +681,26 @@ callVariants <- function(
   b0 <- (1 - m) * (m * (1 - m) / v - 1)
   params0 <- c(a0, b0)
 
-  fit <- nlm(betaNLL, params0, a0 / b0)
-  a <- fit$estimate[1]
-  b <- fit$estimate[2]
-  pval <- NULL
+  # If computePrior == TRUE fit a new beta binomial background distribution,
+  # otherwise use pre-computed values (default)
+  if(computePrior){
+    fit <- nlm(betaNLL, params0, a0 / b0)
+    a <- fit$estimate[1]
+    b <- fit$estimate[2]
+    pval <- NULL
+
+  } else {
+    a <- 2.168215069116764
+    b <- 3531.588541594945
+    pval <- NULL
+  }
 
   for (i in 1:length(a1)) { # for each named amplicon position:
     r1 <- VGAM::rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
-  padj <- p.adjust(pval, method = "fdr")
+  padj <- p.adjust(pval, method = 'fdr')
 
   cons.table <- dplyr::mutate(cons.table, pval = pval)
   cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
