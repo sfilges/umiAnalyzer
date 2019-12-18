@@ -18,6 +18,7 @@ library(umiAnalyzer, quietly = TRUE)
 
 
 #----UI----
+
 # Maximum 5GB data upload
 options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
 
@@ -958,8 +959,20 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(10, 50, 100)
   ))
 
-  # Generate amplicon plots using umiAnalyzer in reactive
-  amplicon_plot <- reactive({
+  # make reactive expresion of input values
+  amplicon_settings <- reactive({input$assays})
+  sample_settings <- reactive({input$samples})
+
+
+  # delay amplicon plot until reactive stop changing
+  amplicon_settings_d <- amplicon_settings %>% debounce(200)
+  sample_settings_d <- sample_settings %>% debounce(200)
+
+  # plot amplicon plot reactive value
+  output$amplicon_plot <- renderPlot({
+
+    amplicon_s <- amplicon_settings_d()
+    sample_s <- sample_settings_d()
 
     if(is.null(filteredData())){
       return(NULL)
@@ -967,31 +980,26 @@ server <- function(input, output, session, plotFun) {
 
     # TODO this generatesa new progress bar each time the plot changes. Consider
     # moving everything into an umbrella reactive object?
+
     withProgress(message = 'Rendering amplicon plot', value = 0.25, {
 
       object <- umiAnalyzer::generateAmpliconPlots(
         object = filteredData(),
         do.plot = TRUE,
-        amplicons = input$assays,
-        samples = input$samples,
+        amplicons = amplicon_s,
+        samples = sample_s,
         abs.count = input$abs_counts,
         theme = input$theme,
         option = input$colors,
         direction = input$direction
-     )
+      )
 
     shiny::incProgress(1, detail = paste("Rendering complete"))
 
     })
     object@plots$amplicon_plot
-  })
 
-  # delay amplicon plot until reactive stop changing
-  amplicon_plot_d <- amplicon_plot %>% debounce(200)
 
-  # plot amplicon plot reactive value
-  output$amplicon_plot <- renderPlot({
-    amplicon_plot_d()
   })
 
 
