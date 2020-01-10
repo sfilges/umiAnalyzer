@@ -154,6 +154,8 @@ server <- function(input, output, session, plotFun) {
     }
   })
 
+  #----remove this line----
+
 
 
   #----Meta data reactive----
