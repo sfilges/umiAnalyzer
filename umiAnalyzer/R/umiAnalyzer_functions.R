@@ -159,6 +159,7 @@ createUmiSample <- function(
 #' @export
 #'
 #' @import tibble
+#' @importFrom stringr str_remove
 #' @importFrom utils read.csv
 #' @importFrom methods new
 #' @importFrom dplyr bind_rows
@@ -222,23 +223,30 @@ createUmiExperiment <- function(
            containing you sample folders?")
     }
 
+    ## TODO import sample names based on cons file
+
+    consFile <- list.files(
+      path = file.path(mainDir, sampleNames[i]),
+      pattern = "\\.cons$")
+    consFile <- stringr::str_remove(consFile, '.cons')
+
     sample <- createUmiSample(
-      sampleName = sampleNames[i],
+      sampleName = consFile,
       sampleDir= file.path(mainDir, sampleNames[i]),
       importBam = importBam
     )
 
     cons <- sample@cons.data
-    cons$sample <- sampleNames[i]
+    cons$sample <- consFile
     cons.data.merged <- dplyr::bind_rows(cons.data.merged, cons)
 
     summary <- sample@summary.data
-    summary$sample <- sampleNames[i]
+    summary$sample <- consFile
     summary.data.merged <- dplyr::bind_rows(summary.data.merged, summary)
 
     if(importBam) {
       reads <- sample@reads
-      reads$sample <- sampleNames[i]
+      reads$sample <- consFile
       reads.merged <- dplyr::bind_rows(reads.merged, reads)
     }
   }
