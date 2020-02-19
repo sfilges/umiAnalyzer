@@ -1,8 +1,10 @@
 ## ---- echo = FALSE-------------------------------------------------------
-  knitr::opts_chunk$set(collapse = TRUE, 
-                        comment = "#>",
-                        fig.width=9, 
-                        fig.height=6)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=9,
+  fig.height=6
+)
 
 ## ----runApp, eval=FALSE--------------------------------------------------
 #  library(umiAnalyzer)
@@ -14,12 +16,19 @@ library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+samples <- list.dirs(
+  path = main,
+  full.names = FALSE,
+  recursive = FALSE
+)
 
-simsen <- createUmiExperiment(experimentName = "simsen",
-                              mainDir = main,
-                              sampleNames = samples)
+simsen <- createUmiExperiment(
+  experimentName = "simsen",
+  mainDir = main,
+  sampleNames = samples
+)
 
+## ----bam-files, eval=TRUE------------------------------------------------
 reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
 
 plotFamilyHistogram(reads)
@@ -28,19 +37,24 @@ plotFamilyHistogram(reads)
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
 simsen <- filterUmiobject(
-  object = simsen, name = "myfilter", minDepth = 3,
-  minCoverage = 100, minFreq = 0, minCount = 0
+  object = simsen, 
+  name = "myfilter", 
+  minDepth = 3,
+  minCoverage = 100, 
+  minFreq = 0, 
+  minCount = 0
 )
 
 myfilter <- getFilterdData(object = simsen, name = "myfilter")
 myfilter
 
-## ----ampliconPlots, eval=TRUE--------------------------------------------
+## ---- eval=TRUE----------------------------------------------------------
 simsen <- generateAmpliconPlots(
   object = simsen,
   filter.name = "myfilter",
   do.plot = TRUE)
 
+## ---- eval=TRUE----------------------------------------------------------
 simsen <- generateAmpliconPlots(
   object = simsen,
   filter.name = "myfilter",

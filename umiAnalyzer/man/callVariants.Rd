@@ -2,11 +2,7 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{callVariants}
 \alias{callVariants}
-\title{Calculate variant p-values using permutation-based testing. A prior is fitted to model the background
-error using maximum likelihood estimation of a beta distribution. The maximum likelihood estimate
-of the beta distribution is then used to define the shape of a beta-binomial distribution used
-to estimate variant P-Values. This can be interpreted as a probability for a variant to not have
-arisen by chance}
+\title{callVariants using beta binomial distribution}
 \usage{
 callVariants(object, minDepth = 3, minCoverage = 100)
 }
@@ -21,11 +17,12 @@ callVariants(object, minDepth = 3, minCoverage = 100)
 Object containing raw and FDR-adjusted P-Values
 }
 \description{
-Calculate variant p-values using permutation-based testing. A prior is fitted to model the background
-error using maximum likelihood estimation of a beta distribution. The maximum likelihood estimate
-of the beta distribution is then used to define the shape of a beta-binomial distribution used
-to estimate variant P-Values. This can be interpreted as a probability for a variant to not have
-arisen by chance
+Calculate variant p-values using permutation-based testing. A prior is fitted
+to model the background error using maximum likelihood estimation of a beta
+distribution. The maximum likelihood estimate of the beta distribution is then
+used to define the shape of a beta-binomial distribution used to estimate
+variant P-Values. This can be interpreted as a probability for a variant to
+not have arisen by chance.
 }
 \examples{
 \dontrun{
@@ -35,4 +32,7 @@ data <- simsen
 data <- callVariants(data)
 }
 
+}
+\seealso{
+\code{\link{filterVariants}} on how to filter variants.
 }

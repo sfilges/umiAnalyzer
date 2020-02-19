@@ -2,7 +2,7 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{betaNLL}
 \alias{betaNLL}
-\title{Calculates the negative log likelihood for the beta distribution.}
+\title{Beta distribution}
 \usage{
 betaNLL(params, data)
 }

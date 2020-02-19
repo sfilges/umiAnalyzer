@@ -4,11 +4,12 @@ author: "Stefan Filges"
 date: "`r Sys.Date()`"
 output: 
   html_document:
-    toc: true # table of content true
-    toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
-    number_sections: true  ## if you want number sections at each table header
-    theme: united
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    theme: sandstone
     highlight: tango
+    code_folding: show
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{umiAnalyzer vignette}
@@ -26,10 +27,12 @@ body {
 ```
 
 ```{r, echo = FALSE}
-  knitr::opts_chunk$set(collapse = TRUE, 
-                        comment = "#>",
-                        fig.width=9, 
-                        fig.height=6)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=9,
+  fig.height=6
+)
 ```
 
 # Introduction
@@ -38,7 +41,7 @@ umiAnalyzer provides tools for analyzing umierrorcorrect output.
 
 ## Using the umiVisualiser shiny app
 
-The shiny app requires the shiny, shinyFiles, tidyverse and DT packages and can
+The shiny app requires the shiny, shinyFiles, shinyWidgets, tidyverse and DT packages and can
 be run using the following command:
 
 ```{r runApp, eval=FALSE}
@@ -48,7 +51,7 @@ runUmiVisualiser()
 ```
 
 
-## How to make your own umiExperiment object
+## How to make your own umiExperiment object {.tabset}
 
 Define a variable containing the path to the directory with all the umierrorcorrect 
 output folders belonging to your experiment. umiAnalyzer comes with raw test data 
@@ -59,22 +62,24 @@ Call the createUmiExperiment to create your umiExperiment object.
 The umiExperiment object always maintains your raw data, however you can create as many filters as you
 like, which will be saved as separate objects to access. You can filter the consensus table of
 umiExperiment object with filterUmiObject. The only mandatory arguments are the object to be filtered
-and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
+and a user defined name. You can use that name to retrieve a filtered table using getFilteredData. 
 
 ```{r example1, eval=TRUE}
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+samples <- list.dirs(
+  path = main,
+  full.names = FALSE,
+  recursive = FALSE
+)
 
-simsen <- createUmiExperiment(experimentName = "simsen",
-                              mainDir = main,
-                              sampleNames = samples)
-
-reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
-
-plotFamilyHistogram(reads)
+simsen <- createUmiExperiment(
+  experimentName = "simsen",
+  mainDir = main,
+  sampleNames = samples
+)
 ```
 
 createUmiExperiment has an optional flag importBam, which is set to FALSE by default. 
@@ -83,6 +88,12 @@ read data in the 'simsen' object which can then be passed directly to plotFamily
 without having to run parseBamFiles again. Note that for large experiments, 
 especially if consDepth is set lower than 10, the size of the experiment object
 may become too large.
+
+```{r bam-files, eval=TRUE}
+reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
+
+plotFamilyHistogram(reads)
+```
 
 Next we generate Quality Control plots and filter the umiExperiment object to
 select for consensus 3 reads. Most downstream functions use filtered data, each each filtered 
@@ -95,8 +106,12 @@ with the optional parameter save = TRUE, which is set to FALSE by
 simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
 
 simsen <- filterUmiobject(
-  object = simsen, name = "myfilter", minDepth = 3,
-  minCoverage = 100, minFreq = 0, minCount = 0
+  object = simsen, 
+  name = "myfilter", 
+  minDepth = 3,
+  minCoverage = 100, 
+  minFreq = 0, 
+  minCount = 0
 )
 
 myfilter <- getFilterdData(object = simsen, name = "myfilter")
@@ -110,12 +125,18 @@ large to plot all of them individually in a single plot the data is shown in
 summarised form. The user can specify amplicons and or samples optionally to
 plot only the selection.
 
-```{r ampliconPlots, eval=TRUE}
+### All data
+
+```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
   filter.name = "myfilter",
   do.plot = TRUE)
+```
 
+### Selection
+
+```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
   filter.name = "myfilter",
@@ -123,6 +144,8 @@ simsen <- generateAmpliconPlots(
   amplicons = c("PIK3CA_123", "PIK3CA_234"),
   samples = "VAF-1-5ng-1-10x")
 ```
+
+## Using metadata
 
 ```{r replicates, eval=TRUE}
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")

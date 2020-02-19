@@ -1,0 +1,7 @@
+sample	replicate	inputDNA	VAF	depth	time
+VAF-1-5ng-1-10x	1%-5ng-1-10x	20	1.0	10	2
+VAF-1-5ng-2-10x	1%-5ng-1-10x	20	1.0	10	2
+VAF-1-5ng-3-10x	1%-5ng-1-10x	20	1.0	10	2
+WT-5ng-1-10x	WT-5ng-1-10x	20	0.0	10	1
+WT-5ng-2-10x	WT-5ng-1-10x	20	0.0	10	1
+WT-5ng-3-10x	WT-5ng-1-10x	20	0.0	10	1

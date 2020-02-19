@@ -4,8 +4,9 @@
 \alias{generateQCplots}
 \title{Generate QC plots}
 \usage{
-generateQCplots(object, do.plot = TRUE, group.by = "assay",
-  plotDepth = 3, assays = NULL, samples = NULL)
+generateQCplots(object, do.plot = TRUE, group.by = c("assay",
+  "sample"), plotDepth = 3, assays = NULL, samples = NULL,
+  theme = "classic", option = "default", direction = "default")
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}
@@ -16,10 +17,18 @@ generateQCplots(object, do.plot = TRUE, group.by = "assay",
 
 \item{plotDepth}{Which consensus depth to plot}
 
-\item{assays}{(Optional) user-supllied list of assays to plot. Default is all.}
+\item{assays}{(Optional) user-supplied list of assays to plot. Default is all.}
 
-\item{samples}{(Optional) user-supllied list of samples to plot. Default is all.}
+\item{samples}{(Optional) user-supplied list of samples to plot. Default is all.}
+
+\item{theme}{ggplot theme to use.}
+
+\item{option}{Colour palette to use, etiher ggplot default or viridis colours.}
+
+\item{direction}{If viridis colours are used, choose orientation of colour scale.}
 }
 \description{
-Generate QC plots
+Visualise the UMI count for each selected assay and sample for a given
+consensus depth. This is useful to detect differences in coverage,
+especially for multiplexed assays.
 }

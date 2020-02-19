@@ -4,7 +4,7 @@
 \alias{parseBamFiles}
 \title{Function to parse bam files}
 \usage{
-parseBamFiles(mainDir, sampleNames, consDepth = 0)
+parseBamFiles(mainDir, sampleNames = NULL, consDepth = 0)
 }
 \arguments{
 \item{mainDir}{Directory containing umierrorcorrect output folders.}

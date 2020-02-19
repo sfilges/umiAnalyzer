@@ -6,6 +6,9 @@
 \usage{
 runUmiVisualiser(docker = FALSE)
 }
+\arguments{
+\item{docker}{Boolean. Are you running in a docker container?}
+}
 \description{
 Function to run the umiVisualiser shiny app
 }

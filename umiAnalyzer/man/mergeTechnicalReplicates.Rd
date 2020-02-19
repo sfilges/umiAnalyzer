@@ -2,21 +2,53 @@
 % Please edit documentation in R/umiAnalyzer_functions.R
 \name{mergeTechnicalReplicates}
 \alias{mergeTechnicalReplicates}
-\title{A function to merge replicates in UMIexperiment object. This will result in a merged data set
-accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
-information across multiple replicates. If you want to merge multiple sequencing runs of the
-sample into a single sample using the collapseReplicates function instead.}
+\title{mergeTechnicalReplicates}
 \usage{
-mergeTechnicalReplicates(object, filter.name)
+mergeTechnicalReplicates(object, filter.name = "default",
+  do.plot = TRUE, group.by = NULL, amplicons = NULL,
+  samples = NULL, normalise.by.sample = FALSE,
+  remove.singletons = TRUE, zero.counts = 0.5, option = c("viridis",
+  "magma", "plasma", "inferno"), direction = c(1, -1))
 }
 \arguments{
 \item{object}{UMI.experiment to which to add metadata}
 
-\item{filter.name}{Name of the filter to use.}
+\item{filter.name}{Name of the filter to use. Defaults to "default".}
+
+\item{do.plot}{Should normalization plot be shown. Default is TRUE.}
+
+\item{group.by}{Variable used to group data. If NULL sample names will be used.}
+
+\item{amplicons}{List of amplicons to use}
+
+\item{samples}{List of samples to use}
+
+\item{normalise.by.sample}{If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.}
+
+\item{remove.singletons}{Remove variants only found in one replicate.}
+
+\item{zero.counts}{Number between 0 and 1. What values should negative counts get?}
+
+\item{option}{Colour sclae for plotting.}
+
+\item{direction}{Direction of colour scale if using viridis package.}
+}
+\value{
+A umiExperiment object
 }
 \description{
 A function to merge replicates in UMIexperiment object. This will result in a merged data set
 accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
 information across multiple replicates. If you want to merge multiple sequencing runs of the
 sample into a single sample using the collapseReplicates function instead.
+}
+\examples{
+\dontrun{
+library(umiAnalyzer)
+metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+data <- simsen
+
+simsen <- importDesign(simsen, file = metaData)
+simsen <- mergeTechnicalReplicates(simsen, group.by = 'replicate')
+}
 }
