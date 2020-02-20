@@ -24,7 +24,7 @@ Installation
 install.packages("umiAnalyzer")
 
 # Latest from github using the devtools package
-devtools::install_github("ozimand1as/umiAnalyzer")
+devtools::install_github("ozimand1as/umiAnalyzer/umiAnalyzer")
 ```
 
 Running the visualization app
