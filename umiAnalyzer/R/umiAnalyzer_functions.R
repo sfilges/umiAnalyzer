@@ -407,7 +407,7 @@ parseBamFiles <- function(
   seq.Data <- tibble()
 
   if(length(dir.names) == 0){
-    stop("No samples folders found. Have you supplied a valid top level
+    stop("No sample folders found. Have you supplied a valid top level
          directory containing umierrorcorrect output folders?")
   }
 
@@ -434,8 +434,11 @@ parseBamFiles <- function(
 #' Find consensus reads
 #' A function to analyse consensus read tables generated with parseBamFiles or
 #' a UMIexperiment object containing reads.
+#'
 #' @export
+#'
 #' @import tibble
+#'
 #' @param object Either a tibble generated with parseBamFiles or a UMIexperiment object
 #' @param pattern Regular expression
 #' @param consDepth Minimum consensus depth to keep. Default is 0.
@@ -463,17 +466,21 @@ findConsensusReads <- function(
 
 #' Method for filtering UMIexperiment and sample objects
 #' @export
+#'
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom utils data
 #' @importFrom dplyr filter
 #' @importFrom tibble as_tibble
+#'
 #' @param object Requires a UMI sample or UMI experiment object.
 #' @param name String. Name of the filter. Default is "default".
 #' @param minDepth Consensus depth to analyze. Default is 3.
 #' @param minCoverage Mininum coverage required for amplicons. Default is 1.
 #' @param minFreq Minimum variant allele frequency to keep. Default is 0.
 #' @param minCount Minimum variant allele count to keep. Default is 3.
+#'
 #' @return A UMI sample or UMI experiment object.
+#'
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)

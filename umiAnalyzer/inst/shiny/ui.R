@@ -224,7 +224,8 @@ ui <- dashboardPage(
                   title = "Sample info",
                   DT::dataTableOutput("metaDataTable")
                 )
-              )
+              ),
+              downloadButton("downloadData", "Download")
             )
           ),
           # Show plots in collapsable box containing a tabBox with a tab for

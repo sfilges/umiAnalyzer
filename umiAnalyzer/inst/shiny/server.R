@@ -1,6 +1,30 @@
 # Define server logic
 server <- function(input, output, session, plotFun) {
 
+
+  #----- Download selected data csv ----
+
+  output$downloadData <- downloadHandler(
+
+    filename = function() {
+      paste("consensus_data", ".csv", sep = "")
+    },
+    content = function(file) {
+
+      filter <- umiAnalyzer::getFilteredData(
+        object = filteredData()
+      )
+
+      filter <- filter %>%
+        dplyr::filter(.data$Name %in% input$assays) %>%
+        dplyr::filter(.data$`Sample Name` %in% input$samples) %>%
+        dplyr::filter(.data$`Max Non-ref Allele Count` >= input$minCount) %>%
+        dplyr::filter(.data$`Max Non-ref Allele Frequency` >= input$minFreq)
+
+      readr::write_csv2(filter, file)
+    }
+  )
+
   #----Output_report-----
 
   output$report <- downloadHandler(
@@ -442,7 +466,7 @@ server <- function(input, output, session, plotFun) {
 
   })
 
-  # Output the consensus data to screen, this will change depending on user input
+  #--------- Output the consensus data --------
   output$dataTable <- DT::renderDataTable({
 
     if (is.null(filteredData())){
@@ -521,7 +545,8 @@ server <- function(input, output, session, plotFun) {
   })
 
 
-  # Output the QC plot
+  #------ Output the QC plot -------
+
   output$qcPlot <- renderPlot({
 
     if(is.null(experiment())){
@@ -602,6 +627,8 @@ server <- function(input, output, session, plotFun) {
       })
 
   })
+
+  #----- Import BAM files ------
 
   # Import consensus read bam file upon button click to generate histograms
   # of barcode distribution. It is possible to import directly into the umiExperiment object
