@@ -102,7 +102,7 @@ generateQCplots <- function(
       geom_bar(position = "dodge", stat = "identity") +
       use_theme +
       theme(
-        axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
+        axis.text.x = element_text(size = 14),
         axis.text.y = element_text(size = 14)
       ) +
       geom_hline(
@@ -114,7 +114,7 @@ generateQCplots <- function(
         linetype = "dashed",
         color = "blue") +
       labs(
-        title = "Consensus 3 depths by sample",
+        title = paste("Consensus ", plotDepth, " depths by sample", sep = ""),
         subtitle = paste(
           "Mean depth: ", round(mean(cdepths$UMIcount)),
           "Median depth: ", round(median(cdepths$UMIcount))
@@ -356,7 +356,7 @@ generateAmpliconPlots <- function(
     if(abs.count) {
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
-        y = ~ (100 * `Max Non-ref Allele Count`),
+        y = ~ (`Max Non-ref Allele Count`),
         fill = ~Variants)
       ) +
         use_theme +
