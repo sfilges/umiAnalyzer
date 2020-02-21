@@ -4,7 +4,7 @@
 \alias{parseBamFiles}
 \title{Function to parse bam files}
 \usage{
-parseBamFiles(mainDir, sampleNames = NULL, consDepth = 0)
+parseBamFiles(mainDir, sampleNames = NULL, consDepth = 0, as.shiny = FALSE)
 }
 \arguments{
 \item{mainDir}{Directory containing umierrorcorrect output folders.}
@@ -12,6 +12,8 @@ parseBamFiles(mainDir, sampleNames = NULL, consDepth = 0)
 \item{sampleNames}{A list of sample names.}
 
 \item{consDepth}{Only retain consensus reads of at least cons.depth. Default is 0.}
+
+\item{as.shiny}{Set to TRUE if run within a shiny::withProgress environment}
 }
 \description{
 Function to parse bam files

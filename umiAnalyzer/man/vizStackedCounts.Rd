@@ -4,8 +4,13 @@
 \alias{vizStackedCounts}
 \title{Plot counts by nucleotide change}
 \usage{
-vizStackedCounts(cons.data, do.plot = TRUE, option = "viridis",
-  direction = 1, theme = "classic")
+vizStackedCounts(
+  cons.data,
+  do.plot = TRUE,
+  option = "viridis",
+  direction = 1,
+  theme = "classic"
+)
 }
 \arguments{
 \item{cons.data}{A consensus data table}

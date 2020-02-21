@@ -4,11 +4,19 @@
 \alias{mergeTechnicalReplicates}
 \title{mergeTechnicalReplicates}
 \usage{
-mergeTechnicalReplicates(object, filter.name = "default",
-  do.plot = TRUE, group.by = NULL, amplicons = NULL,
-  samples = NULL, normalise.by.sample = FALSE,
-  remove.singletons = TRUE, zero.counts = 0.5, option = c("viridis",
-  "magma", "plasma", "inferno"), direction = c(1, -1))
+mergeTechnicalReplicates(
+  object,
+  filter.name = "default",
+  do.plot = TRUE,
+  group.by = NULL,
+  amplicons = NULL,
+  samples = NULL,
+  normalise.by.sample = FALSE,
+  remove.singletons = TRUE,
+  zero.counts = 0.5,
+  option = c("viridis", "magma", "plasma", "inferno"),
+  direction = c(1, -1)
+)
 }
 \arguments{
 \item{object}{UMI.experiment to which to add metadata}

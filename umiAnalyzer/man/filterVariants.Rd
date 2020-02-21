@@ -4,8 +4,13 @@
 \alias{filterVariants}
 \title{Filter variants based on p values or depth}
 \usage{
-filterVariants(object, p.adjust = 0.2, minVarCount = 5,
-  amplicons = NULL, samples = NULL)
+filterVariants(
+  object,
+  p.adjust = 0.2,
+  minVarCount = 5,
+  amplicons = NULL,
+  samples = NULL
+)
 }
 \arguments{
 \item{object}{A UMIexperiment object}

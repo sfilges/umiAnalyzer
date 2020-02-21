@@ -1,25 +1,49 @@
+#' Download meta data template
+#'
+#' Function for downloading a template file containing metadata.
+#'
+#' @param object A UmiExperiment object
+#'
+#' @importFrom tibble enframe
+#' @importFrom dplyr rename
+#'
+#' @export
+#'
+#' @return A tibble containing a metadata template
+#'
+download_template <- function(object){
+  data <- object@cons.data
+
+  samples <- tibble::enframe(unique(data$`Sample Name`), name = NULL)
+  samples <- dplyr::rename(samples, Sample_Name = .data$value)
+
+  return(samples)
+}
+
 #' Theme selection
 #'
 #' Function to select plotting theme based on user choice.
 #'
 #' @param theme User supplied theme selection
 #'
+#' @import ggplot2
+#'
 #' @return A ggplot theme.
 #'
 select_theme <- function(theme){
   if(theme == 'classic'){
-    use_theme <- theme_classic()
+    use_theme <- ggplot2::theme_classic()
   } else if(theme == 'bw'){
-    use_theme <- theme_bw()
+    use_theme <- ggplot2::theme_bw()
   } else if(theme == 'gray'){
-    use_theme <- theme_gray()
+    use_theme <- ggplot2::theme_gray()
   } else if(theme == 'minimal'){
-    use_theme <- theme_minimal()
+    use_theme <- ggplot2::theme_minimal()
   } else if(theme == 'light'){
-    use_theme <- theme_light()
+    use_theme <- ggplot2::theme_light()
   } else{
     warning('Invalid theme chosen, using classic theme.')
-    use_theme <- theme_classic()
+    use_theme <- ggplot2::theme_classic()
   }
 
   return(use_theme)

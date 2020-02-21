@@ -4,9 +4,15 @@
 \alias{plotUmiCounts}
 \title{Plot UMI counts}
 \usage{
-plotUmiCounts(object, do.plot = TRUE, amplicons = NULL,
-  samples = NULL, theme = "classic", option = "viridis",
-  direction = 1)
+plotUmiCounts(
+  object,
+  do.plot = TRUE,
+  amplicons = NULL,
+  samples = NULL,
+  theme = "classic",
+  option = "viridis",
+  direction = 1
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}

@@ -1,6 +1,46 @@
 # Define server logic
 server <- function(input, output, session, plotFun) {
 
+  #----- Download metadata template----
+
+  output$template <- downloadHandler(
+
+    filename = function() {
+      paste("meta_data.csv", sep = "")
+    },
+    content = function(file) {
+
+      object = filteredData()
+      template <- umiAnalyzer::download_template(object)
+      template <- tibble::add_column(template, my_variable = 1:nrow(template))
+
+      readr::write_csv2(template, file)
+    }
+  )
+
+  #----- Download selected data csv ----
+
+  output$downloadData <- downloadHandler(
+
+    filename = function() {
+      paste("consensus_data_", Sys.time(), ".csv", sep = "")
+    },
+    content = function(file) {
+
+      filter <- umiAnalyzer::getFilteredData(
+        object = filteredData()
+      )
+
+      filter <- filter %>%
+        dplyr::filter(.data$Name %in% input$assays) %>%
+        dplyr::filter(.data$`Sample Name` %in% input$samples) %>%
+        dplyr::filter(.data$`Max Non-ref Allele Count` >= input$minCount) %>%
+        dplyr::filter(.data$`Max Non-ref Allele Frequency` >= input$minFreq)
+
+      readr::write_csv2(filter, file)
+    }
+  )
+
   #----Output_report-----
 
   output$report <- downloadHandler(
@@ -153,10 +193,6 @@ server <- function(input, output, session, plotFun) {
       return(temp_dir)
     }
   })
-
-  #----remove this line----
-
-
 
   #----Meta data reactive----
 
@@ -442,7 +478,7 @@ server <- function(input, output, session, plotFun) {
 
   })
 
-  # Output the consensus data to screen, this will change depending on user input
+  #--------- Output the consensus data --------
   output$dataTable <- DT::renderDataTable({
 
     if (is.null(filteredData())){
@@ -496,7 +532,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    # TODO this generatesa new progress bar each time the plot changes. Consider
+    # TODO this generates a new progress bar each time the plot changes. Consider
     # moving everything into an umbrella reactive object?
 
     withProgress(message = 'Rendering amplicon plot', value = 0.25, {
@@ -521,7 +557,8 @@ server <- function(input, output, session, plotFun) {
   })
 
 
-  # Output the QC plot
+  #------ Output the QC plot -------
+
   output$qcPlot <- renderPlot({
 
     if(is.null(experiment())){
@@ -543,6 +580,8 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })
   })
+
+  #------ Time series plots --------
 
   observeEvent(input$timeSeries, {
 
@@ -566,6 +605,8 @@ server <- function(input, output, session, plotFun) {
       )
     })
   })
+
+  #------ UMI count plots --------
 
   output$umiCounts <- renderPlot({
 
@@ -602,6 +643,8 @@ server <- function(input, output, session, plotFun) {
       })
 
   })
+
+  #----- Import BAM files ------
 
   # Import consensus read bam file upon button click to generate histograms
   # of barcode distribution. It is possible to import directly into the umiExperiment object
@@ -668,5 +711,3 @@ server <- function(input, output, session, plotFun) {
     }
   })
 }
-
-# Run the application

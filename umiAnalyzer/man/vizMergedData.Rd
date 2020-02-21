@@ -4,8 +4,13 @@
 \alias{vizMergedData}
 \title{Generate Merged data plots}
 \usage{
-vizMergedData(object, cut.off = 5, amplicons = NULL, do.plot = TRUE,
-  theme = "classic")
+vizMergedData(
+  object,
+  cut.off = 5,
+  amplicons = NULL,
+  do.plot = TRUE,
+  theme = "classic"
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}

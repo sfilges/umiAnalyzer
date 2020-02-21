@@ -4,7 +4,7 @@
 \alias{callVariants}
 \title{callVariants using beta binomial distribution}
 \usage{
-callVariants(object, minDepth = 3, minCoverage = 100)
+callVariants(object, minDepth = 3, minCoverage = 100, computePrior = FALSE)
 }
 \arguments{
 \item{object}{A UMierrorcorrect object.}
@@ -12,6 +12,8 @@ callVariants(object, minDepth = 3, minCoverage = 100)
 \item{minDepth}{Minimum consensus depth required fedault is 3}
 
 \item{minCoverage}{Minimum Coverage to use, default is 100 reads.}
+
+\item{computePrior}{Should a new distribution be derived from data.}
 }
 \value{
 Object containing raw and FDR-adjusted P-Values

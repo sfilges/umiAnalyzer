@@ -4,8 +4,14 @@
 \alias{analyzeTimeSeries}
 \title{Analyze time-course data}
 \usage{
-analyzeTimeSeries(object, filter.name = "default", time.var = "time",
-  use.variants = FALSE, group.by = NULL, do.plot = TRUE)
+analyzeTimeSeries(
+  object,
+  filter.name = "default",
+  time.var = "time",
+  use.variants = FALSE,
+  group.by = NULL,
+  do.plot = TRUE
+)
 }
 \arguments{
 \item{object}{UMIexperiment object containing meta data}

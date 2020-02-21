@@ -6,8 +6,13 @@
 If save is set to TRUE data will be written to a csv file otherwise consensu data will
 be returned as a tibble.}
 \usage{
-saveConsData(object, save = FALSE, fileName = "consensus_data.csv",
-  outDir = getwd(), delim = ";")
+saveConsData(
+  object,
+  save = FALSE,
+  fileName = "consensus_data.csv",
+  outDir = getwd(),
+  delim = ";"
+)
 }
 \arguments{
 \item{object}{umiExperimet object}

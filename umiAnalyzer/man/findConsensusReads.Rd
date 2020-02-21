@@ -6,8 +6,12 @@
 A function to analyse consensus read tables generated with parseBamFiles or
 a UMIexperiment object containing reads.}
 \usage{
-findConsensusReads(object, consDepth = 0, groupBy = c("none", "sample",
-  "position", "both"), pattern = NULL)
+findConsensusReads(
+  object,
+  consDepth = 0,
+  groupBy = c("none", "sample", "position", "both"),
+  pattern = NULL
+)
 }
 \arguments{
 \item{object}{Either a tibble generated with parseBamFiles or a UMIexperiment object}

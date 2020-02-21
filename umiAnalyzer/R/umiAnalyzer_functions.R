@@ -273,50 +273,63 @@ createUmiExperiment <- function(
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
 #'
-readBamFile <- function(sampleDir, consDepth = 0) {
+readBamFile <- function(
+  sampleDir,
+  consDepth = 0
+  ) {
 
   if(!dir.exists(sampleDir)){
     stop("You must supply a valid path.")
   }
 
-  bam.file <- list.files(path = sampleDir, pattern = "\\_consensus_reads.bam$")
-
-  if(length(bam.file) == 0){
-    stop("The directory you supplied does not seem to contain bam files.")
-  }
-
-  bam <- Rsamtools::scanBam(file.path(sampleDir, bam.file))
-
-  sequences <- tibble(
-    qname = bam[[1]]$qname,
-    chrom = bam[[1]]$rname,
-    pos = bam[[1]]$pos,
-    seq = as.data.frame(bam[[1]]$seq)$x
+  bam.file <- list.files(
+    path = sampleDir,
+    pattern = "\\_consensus_reads.bam$"
   )
 
-  sequences <- tidyr::separate(sequences,
-    col = .data$qname,
-    into = c(NA, NA, NA, 'barcode', 'count'),
-    sep = '_',
-    remove = TRUE
-  ) %>%
-    tidyr::separate(
-      col = .data$count,
-      sep = '=',
-      into = c(NA, 'count')
-    ) %>%
-    tidyr::unite(
-      col = 'position',
-      .data$chrom,
-      .data$pos,
-      sep = ':'
+  # If no bam files are located print an error message and return NULL
+  if(length(bam.file) == 0){
+    warning(paste("The directory you supplied does not seem to contain bam files: "),
+            sampleDir, sep = '')
+    return(NULL)
+  } else {
+    # Load bam file
+    bam <- Rsamtools::scanBam(
+      file = file.path(sampleDir, bam.file[1])
     )
 
-  sequences$count %<>% as.integer
+    # Extract sequence information from bam object
+    sequences <- tibble(
+      qname = bam[[1]]$qname,
+      chrom = bam[[1]]$rname,
+      pos = bam[[1]]$pos,
+      seq = as.data.frame(bam[[1]]$seq)$x
+    )
 
-  sequences <- dplyr::filter(sequences, count >= consDepth)
+    sequences <- tidyr::separate(sequences,
+                                 col = .data$qname,
+                                 into = c(NA, NA, NA, 'barcode', 'count'),
+                                 sep = '_',
+                                 remove = TRUE
+    ) %>%
+      tidyr::separate(
+        col = .data$count,
+        sep = '=',
+        into = c(NA, 'count')
+      ) %>%
+      tidyr::unite(
+        col = 'position',
+        .data$chrom,
+        .data$pos,
+        sep = ':'
+      )
 
-  return(sequences)
+    sequences$count %<>% as.integer
+
+    sequences <- dplyr::filter(sequences, count >= consDepth)
+
+    return(sequences)
+  }
 }
 
 #' Save consensus data
@@ -407,7 +420,7 @@ parseBamFiles <- function(
   seq.Data <- tibble()
 
   if(length(dir.names) == 0){
-    stop("No samples folders found. Have you supplied a valid top level
+    stop("No sample folders found. Have you supplied a valid top level
          directory containing umierrorcorrect output folders?")
   }
 
@@ -418,6 +431,18 @@ parseBamFiles <- function(
       consDepth = consDepth
     )
 
+    # If NULL is returned by readBamFile no bam file was found
+    if(is.null(seq.Table)){
+      print(
+        paste(
+          "No bam file was found for sample:",dir.names[i],
+          "in directory:",mainDir,
+          sep=" "
+        )
+      )
+    }
+
+    # If running in shiny app, displat a loading bar
     if(as.shiny){
       n <- length(dir.names)
       shiny::incProgress(1/n, detail = paste("Parsing reads", i, " of ", n))
@@ -434,8 +459,11 @@ parseBamFiles <- function(
 #' Find consensus reads
 #' A function to analyse consensus read tables generated with parseBamFiles or
 #' a UMIexperiment object containing reads.
+#'
 #' @export
+#'
 #' @import tibble
+#'
 #' @param object Either a tibble generated with parseBamFiles or a UMIexperiment object
 #' @param pattern Regular expression
 #' @param consDepth Minimum consensus depth to keep. Default is 0.
@@ -463,17 +491,21 @@ findConsensusReads <- function(
 
 #' Method for filtering UMIexperiment and sample objects
 #' @export
+#'
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom utils data
 #' @importFrom dplyr filter
 #' @importFrom tibble as_tibble
+#'
 #' @param object Requires a UMI sample or UMI experiment object.
 #' @param name String. Name of the filter. Default is "default".
 #' @param minDepth Consensus depth to analyze. Default is 3.
 #' @param minCoverage Mininum coverage required for amplicons. Default is 1.
 #' @param minFreq Minimum variant allele frequency to keep. Default is 0.
 #' @param minCount Minimum variant allele count to keep. Default is 3.
+#'
 #' @return A UMI sample or UMI experiment object.
+#'
 #' @examples
 #' \dontrun{
 #' library(umiAnalyzer)
@@ -623,6 +655,7 @@ betaNLL <- function(params, data) {
 #' @param object A UMierrorcorrect object.
 #' @param minDepth Minimum consensus depth required fedault is 3
 #' @param minCoverage Minimum Coverage to use, default is 100 reads.
+#' @param computePrior Should a new distribution be derived from data.
 #'
 #' @importFrom dplyr mutate progress_estimated
 #' @importFrom tibble as_tibble
