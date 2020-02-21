@@ -4,8 +4,13 @@
 \alias{createUmiExperiment}
 \title{Method for creating a UMI experiment object}
 \usage{
-createUmiExperiment(mainDir, experimentName = NULL, sampleNames = NULL,
-  importBam = FALSE)
+createUmiExperiment(
+  mainDir,
+  experimentName = NULL,
+  sampleNames = NULL,
+  importBam = FALSE,
+  as.shiny = FALSE
+)
 }
 \arguments{
 \item{mainDir}{Main experiment directory}
@@ -15,6 +20,8 @@ createUmiExperiment(mainDir, experimentName = NULL, sampleNames = NULL,
 \item{sampleNames}{List of sample names. Can be either NULL or list. If NULL all subdirectories of mainDir will be searched.}
 
 \item{importBam}{Logical. Should bam files be imported on creation? Default is False.}
+
+\item{as.shiny}{Set to TRUE if run within a shiny::withProgress environment}
 }
 \description{
 Method for creating a UMI experiment object

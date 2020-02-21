@@ -4,9 +4,17 @@
 \alias{generateQCplots}
 \title{Generate QC plots}
 \usage{
-generateQCplots(object, do.plot = TRUE, group.by = c("assay",
-  "sample"), plotDepth = 3, assays = NULL, samples = NULL,
-  theme = "classic", option = "default", direction = "default")
+generateQCplots(
+  object,
+  do.plot = TRUE,
+  group.by = c("assay", "sample"),
+  plotDepth = 3,
+  assays = NULL,
+  samples = NULL,
+  theme = "classic",
+  option = "default",
+  direction = "default"
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}

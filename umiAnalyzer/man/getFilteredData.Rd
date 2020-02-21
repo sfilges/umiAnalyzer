@@ -4,8 +4,14 @@
 \alias{getFilteredData}
 \title{Method for retrieving filtered data}
 \usage{
-getFilteredData(object, name = "default", save = FALSE,
-  outDir = getwd(), fileName = NULL, delim = ";")
+getFilteredData(
+  object,
+  name = "default",
+  save = FALSE,
+  outDir = getwd(),
+  fileName = NULL,
+  delim = ";"
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object.}

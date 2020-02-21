@@ -4,8 +4,15 @@
 \alias{plotFamilyHistogram}
 \title{Consensus depth histograms}
 \usage{
-plotFamilyHistogram(object, xMin = 0, xMax = 100, samples = NULL,
-  option = "viridis", direction = 1, theme = "classic")
+plotFamilyHistogram(
+  object,
+  xMin = 0,
+  xMax = 100,
+  samples = NULL,
+  option = "viridis",
+  direction = 1,
+  theme = "classic"
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}

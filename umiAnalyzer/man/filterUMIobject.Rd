@@ -4,8 +4,14 @@
 \alias{filterUmiObject}
 \title{Method for filtering UMIexperiment and sample objects}
 \usage{
-filterUmiObject(object, name = "default", minDepth = 3,
-  minCoverage = 100, minFreq = 0, minCount = 0)
+filterUmiObject(
+  object,
+  name = "default",
+  minDepth = 3,
+  minCoverage = 100,
+  minFreq = 0,
+  minCount = 0
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object.}

@@ -1,13 +1,29 @@
 # Define server logic
 server <- function(input, output, session, plotFun) {
 
+  #----- Download metadata template----
+
+  output$template <- downloadHandler(
+
+    filename = function() {
+      paste("meta_data.csv", sep = "")
+    },
+    content = function(file) {
+
+      object = filteredData()
+      template <- umiAnalyzer::download_template(object)
+      template <- tibble::add_column(template, my_variable = 1:nrow(template))
+
+      readr::write_csv2(template, file)
+    }
+  )
 
   #----- Download selected data csv ----
 
   output$downloadData <- downloadHandler(
 
     filename = function() {
-      paste("consensus_data", ".csv", sep = "")
+      paste("consensus_data_", Sys.time(), ".csv", sep = "")
     },
     content = function(file) {
 
@@ -177,10 +193,6 @@ server <- function(input, output, session, plotFun) {
       return(temp_dir)
     }
   })
-
-  #----remove this line----
-
-
 
   #----Meta data reactive----
 
@@ -520,7 +532,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    # TODO this generatesa new progress bar each time the plot changes. Consider
+    # TODO this generates a new progress bar each time the plot changes. Consider
     # moving everything into an umbrella reactive object?
 
     withProgress(message = 'Rendering amplicon plot', value = 0.25, {
@@ -569,6 +581,8 @@ server <- function(input, output, session, plotFun) {
     })
   })
 
+  #------ Time series plots --------
+
   observeEvent(input$timeSeries, {
 
     output$timeSeriesPlot <- renderPlot({
@@ -591,6 +605,8 @@ server <- function(input, output, session, plotFun) {
       )
     })
   })
+
+  #------ UMI count plots --------
 
   output$umiCounts <- renderPlot({
 
@@ -695,5 +711,3 @@ server <- function(input, output, session, plotFun) {
     }
   })
 }
-
-# Run the application

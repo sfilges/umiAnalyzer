@@ -4,9 +4,18 @@
 \alias{generateAmpliconPlots}
 \title{Generate Amplicon plots}
 \usage{
-generateAmpliconPlots(object, filter.name = "default", do.plot = TRUE,
-  cut.off = 5, amplicons = NULL, samples = NULL, abs.count = FALSE,
-  theme = "classic", option = "default", direction = "default")
+generateAmpliconPlots(
+  object,
+  filter.name = "default",
+  do.plot = TRUE,
+  cut.off = 5,
+  amplicons = NULL,
+  samples = NULL,
+  abs.count = FALSE,
+  theme = "classic",
+  option = "default",
+  direction = "default"
+)
 }
 \arguments{
 \item{object}{Requires a UMI sample or UMI experiment object}

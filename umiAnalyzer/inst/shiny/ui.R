@@ -53,7 +53,7 @@ ui <- dashboardPage(
     )
   ),
 
-  # Define main windows
+  #------------ Define main windows ----------
   dashboardBody(
     # List tab items ...
     tabItems(
@@ -91,7 +91,7 @@ ui <- dashboardPage(
                     accept = c('.txt','.csv','.tsv')
                   ),
                   dropdown(
-                    label = "Load data",
+                    label = "Options",
 
                     shinyDirButton(
                       id = 'dir',
@@ -115,6 +115,11 @@ ui <- dashboardPage(
                     downloadButton(
                       outputId = 'report',
                       label = 'Print Report',
+                      style = "margin-bottom: 10px;margin-left: 5px;"
+                    ),
+                    downloadButton(
+                      outputId = 'template',
+                      label = 'Get Template',
                       style = "margin-bottom: 10px;margin-left: 5px;"
                     ),
 
