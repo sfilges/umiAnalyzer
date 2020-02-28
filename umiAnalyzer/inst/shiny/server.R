@@ -445,6 +445,7 @@ server <- function(input, output, session, plotFun) {
     return(data)
   })
 
+  #------------- Update assays list -------------
   # Update assay and sample list based on initially loaded object, meaning that
   # the lists will be visible even if filter are applied
   observe({
@@ -458,7 +459,8 @@ server <- function(input, output, session, plotFun) {
     updateSelectInput(
       session = session,
       inputId = 'assay_list',
-      choices = unlist(strsplit(unique(data$Name), split = ',')),
+      #choices = unlist(strsplit(unique(data$Name), split = ',')),
+      choices = unique(data$Name),
       selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
     )
 
@@ -466,6 +468,7 @@ server <- function(input, output, session, plotFun) {
       session = session,
       inputId = 'assays',
       choices = unlist(strsplit(unique(data$Name), split = ',')),
+      #choices = unique(data$Name),
       selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
     )
 
@@ -499,7 +502,6 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(5, 10, 50, 100)
   ))
 
-
   output$metaDataTable <- DT::renderDataTable({
 
     if (is.null(metaData())){
@@ -520,11 +522,11 @@ server <- function(input, output, session, plotFun) {
   amplicon_settings <- reactive({input$assays})
   sample_settings <- reactive({input$samples})
 
-
   # delay amplicon plot until reactive stop changing
   amplicon_settings_d <- amplicon_settings %>% debounce(500)
   sample_settings_d <- sample_settings %>% debounce(500)
 
+  #------------ Amplicon plot ---------------
   # plot amplicon plot reactive value
   output$amplicon_plot <- renderPlot({
 
@@ -552,8 +554,6 @@ server <- function(input, output, session, plotFun) {
 
     })
     object@plots$amplicon_plot
-
-
   })
 
 

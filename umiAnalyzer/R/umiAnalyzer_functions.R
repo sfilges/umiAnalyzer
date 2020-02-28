@@ -542,7 +542,7 @@ filterUmiObject <- function(
     dplyr::filter(
       .data$`Consensus group size` == minDepth,
       .data$Coverage >= minCoverage,
-      .data$Name != "",
+      .data$Name != '',
       .data$`Max Non-ref Allele Frequency` >= minFreq,
       .data$`Max Non-ref Allele Count` >= minCount
     )
