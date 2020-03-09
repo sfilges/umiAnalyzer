@@ -204,11 +204,18 @@ ui <- dashboardPage(
               value = c(0,100), step = 1,
               post = " reads", sep = ","
             ),
-            br(),
-            materialSwitch(
-              inputId = "abs_counts",
-              label = "Absolute counts: ",
-              status = "primary"
+            fluidRow(
+              style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
+              materialSwitch(
+                inputId = "abs_counts",
+                label = "Absolute counts: ",
+                status = "primary"
+              ),
+              materialSwitch(
+                inputId = "stacked",
+                label = "Stacked plot: ",
+                status = "primary"
+              )
             )
           ),
           # View data tables in collapsable box
@@ -252,7 +259,11 @@ ui <- dashboardPage(
                   icon = icon('chart-bar'),
                   style = 'margin-left: 10px;',
                   fluidRow(
-                    # Option for plot customisation
+                    # Options for plot customisation:
+                    #     - Select colour scheme
+                    #     - Select orientation of colors
+                    #     - Select ggplot plot theme
+                    #     - Set y-axis range
                     dropdownButton(
                       tags$h3('Customise plot'),
                       selectInput(
@@ -269,6 +280,30 @@ ui <- dashboardPage(
                         inputId = 'theme',
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      numericInput(
+                        inputId = 'y_min',
+                        label = 'y_min',
+                        value = 0,
+                        min = 0,
+                        max = 100
+                      ),
+                      numericInput(
+                        inputId = 'y_max',
+                        label = 'y_max',
+                        value = NULL,
+                        min = 0,
+                        max = 100
+                      ),
+                      materialSwitch(
+                        inputId = "plot_mutation",
+                        label = "Show mutant allele: ",
+                        status = "primary"
+                      ),
+                      materialSwitch(
+                        inputId = "plot_reference",
+                        label = "Show reference base: ",
+                        status = "primary"
                       ),
                       circle = FALSE,
                       status = 'default',
@@ -351,7 +386,7 @@ ui <- dashboardPage(
                       width = '300px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
-                    plotOutput("umiCounts"),
+                    plotOutput('umiCounts'),
                     downloadButton(
                       outputId = 'download_umi_plot',
                       label = 'Download figure'

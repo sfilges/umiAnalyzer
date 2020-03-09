@@ -526,7 +526,7 @@ server <- function(input, output, session, plotFun) {
   amplicon_settings_d <- amplicon_settings %>% debounce(500)
   sample_settings_d <- sample_settings %>% debounce(500)
 
-  #------------ Amplicon plot ---------------
+  #------------------- Amplicon plot ---------------------
   # plot amplicon plot reactive value
   output$amplicon_plot <- renderPlot({
 
@@ -547,7 +547,12 @@ server <- function(input, output, session, plotFun) {
         abs.count = input$abs_counts,
         theme = input$theme,
         option = input$colors,
-        direction = input$direction
+        direction = input$direction,
+        y_min = input$y_min,
+        y_max = input$y_max,
+        plot.text = input$plot_mutation,
+        plot.ref = input$plot_reference,
+        stack.plot = input$stacked
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))
@@ -600,8 +605,7 @@ server <- function(input, output, session, plotFun) {
 
       umiAnalyzer::analyzeTimeSeries(
         object = data,
-        time.var = input$timeVar,
-        group.by = input$replicates
+        time.var = input$timeVar
       )
     })
   })

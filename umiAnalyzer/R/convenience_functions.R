@@ -193,7 +193,7 @@ analyzeTimeSeries <- function(
   summaryData <- dplyr::inner_join(
     consData,
     metaData,
-    by = c(`Sample Name` =  colnames(metaData[,1]))
+    by = c(`Sample Name` ="Sample_Name")
   )
 
   print(summaryData)
@@ -222,7 +222,7 @@ analyzeTimeSeries <- function(
     summaryData, aes_(
       x = ~time_var,
       y = ~VAF,
-      group = ~Position,
+      group = ~Change,
       shape = ~Name)) +
     theme_bw() +
     xlab("Time") +

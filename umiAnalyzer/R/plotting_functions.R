@@ -252,6 +252,9 @@ plotUmiCounts <- function(
 #' @param theme Plotting theme to use, default is classic.
 #' @param option Colour palette to use.
 #' @param direction Orientation of the colour palette.
+#' @param plot.text Should non-references bases be indicated above the bar?
+#' @param plot.ref If true show reference base instead of position on x-axis.
+#' @param stack.plot Show all variant alleles in a stacked bar plot.
 #'
 #' @export
 #'
@@ -279,9 +282,14 @@ generateAmpliconPlots <- function(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
+  y_min = 0,
+  y_max = NULL,
   theme = 'classic',
   option = 'default',
-  direction = 'default'
+  direction = 'default',
+  plot.text = TRUE,
+  plot.ref = TRUE,
+  stack.plot = FALSE
   ) {
 
   if (missing(x = object)) {
@@ -334,6 +342,12 @@ generateAmpliconPlots <- function(
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
+  # Set maximum y-axis limit to largest variant allele frequency in data
+  # rounded up to the nearest integer.
+  if(is.null(y_max)){
+    y_max <- ceiling(100*max(cons.table$`Max Non-ref Allele Frequency`))
+  }
+
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
   if (length(unique(cons.table$`Sample Name`)) > 6) {
@@ -356,7 +370,7 @@ generateAmpliconPlots <- function(
     if(abs.count) {
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
-        y = ~ (`Max Non-ref Allele Count`),
+        y = ~(`Max Non-ref Allele Count`),
         fill = ~Variants)
       ) +
         use_theme +
@@ -373,11 +387,33 @@ generateAmpliconPlots <- function(
         ) +
         use_theme +
         geom_bar(stat = "identity") +
+        ylim(y_min, y_max) +
         theme(axis.text.x = element_text(size = 6, angle = 90)) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
     }
+
+    if(plot.text){
+      amplicon_plot <- amplicon_plot +
+        geom_text(data = cons.table,
+                  mapping = aes(label = `Max Non-ref Allele`),
+                  position = position_dodge(width = 1),
+                  size = 4
+        )
+    }
+
+    if(plot.ref){
+      amplicon_plot <- amplicon_plot +
+        scale_x_discrete(
+          breaks = cons.table$Position,
+          labels = cons.table$Reference
+        ) +
+        theme(
+          axis.text.x = element_text(size = 9, angle = 0)
+        )
+    }
+
   }
 
   if(option != 'default'){
@@ -392,6 +428,15 @@ generateAmpliconPlots <- function(
       discrete = TRUE,
       option = option,
       direction = orientation
+    )
+  }
+
+  if(stack.plot){
+    amplicon_plot <- stacked_amplicon_plot(
+      cons.data = cons.table,
+      theme = theme,
+      plot.ref = plot.ref,
+      abs.count = abs.count
     )
   }
 
@@ -581,6 +626,107 @@ vizNormalization <- function(cons.data){
   merged <- list(p1,p2)
 
   return(merged)
+}
+
+#' Plot all variant allele bases
+#'
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#'
+#' @param cons.data Consensus data table
+#' @param theme Plotting theme
+#' @param plot.ref If true, shows reference base on x-axis
+#' @param abs.count Plot absolute countsinstead of frequencies.
+#'
+#' @return A ggplot object.
+stacked_amplicon_plot <- function(
+  cons.data,
+  theme = 'classic',
+  plot.ref = FALSE,
+  abs.count = FALSE
+  ){
+
+  out.file <- tibble()
+  for(j in 1:nrow(cons.data)) {
+    row <- cons.data[j,]
+    if( row$Reference == "A" ) {
+      row$A <- 0
+    }
+    else if( row$Reference == "C" ) {
+      row$C <- 0
+    }
+    else if( row$Reference == "G" ) {
+      row$G <- 0
+    }
+    else if( row$Reference == "T" ) {
+      row$T <- 0
+    }
+    out.file <- dplyr::bind_rows(out.file, row)
+  }
+
+  # Rename variables
+  out.file <- out.file %>% dplyr::select(
+    .data$Name, .data$Position,
+    .data$Coverage,.data$Reference,
+    .data$A,.data$T,.data$C,.data$G,
+    .data$N,.data$I,.data$D) %>%
+    tidyr::gather(
+      "variant",
+      "count",
+      -c(.data$Name,
+         .data$Position,
+         .data$Reference,
+         .data$Coverage
+        )
+      )
+
+  out.file$Name %<>% as.factor
+  out.file$Position %<>% as.factor
+
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+
+  if(abs.count){
+    # Stacked count plot.
+    stacked <- ggplot(out.file, aes_(
+      fill=~variant,
+      y=~count,
+      x=~Position)) +
+      geom_bar(position="stack", stat="identity") +
+      use_theme +
+      ylab("Variant Allele Frequency (%)") +
+      xlab("Assay") +
+      facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
+      theme(axis.text.x = element_text(angle = 90)) +
+      scale_fill_brewer(palette = "Set1")
+  } else {
+    # Stacked count plot.
+    stacked <- ggplot(out.file, aes_(
+      fill=~variant,
+      y=~(100*count/Coverage),
+      x=~Position)) +
+      geom_bar(position="stack", stat="identity") +
+      use_theme +
+      ylab("Variant Allele Frequency (%)") +
+      xlab("Assay") +
+      facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
+      theme(axis.text.x = element_text(angle = 90)) +
+      scale_fill_brewer(palette = "Set1")
+  }
+
+  if(plot.ref){
+    stacked <- stacked +
+      scale_x_discrete(
+        breaks = out.file$Position,
+        labels = out.file$Reference
+      ) +
+      theme(
+        axis.text.x = element_text(size = 9, angle = 0)
+      )
+  }
+
+  return(stacked)
+
 }
 
 #' View count normalisation
