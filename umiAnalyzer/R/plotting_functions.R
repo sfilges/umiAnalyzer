@@ -262,6 +262,7 @@ plotUmiCounts <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
 #' @importFrom viridis scale_fill_viridis
+#' @importFrom scales rescale_none
 #'
 #' @examples
 #' \dontrun{
@@ -383,14 +384,13 @@ generateAmpliconPlots <- function(
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
         y = ~ (100 * `Max Non-ref Allele Frequency`),
-        fill = ~Variants)
-        ) +
+        fill = ~Variants)) +
         use_theme +
         geom_bar(stat = "identity") +
-        ylim(y_min, y_max) +
         theme(axis.text.x = element_text(size = 6, angle = 90)) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
+        scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
     }
 
