@@ -269,7 +269,9 @@ ui <- dashboardPage(
                       selectInput(
                         inputId = 'colors',
                         label = 'Choose colour palette:',
-                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                        choices = c('default','viridis','magma','plasma','inferno','cividis',
+                                    'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
+                                    'Set1', 'Set2', 'Set3')
                       ),
                       selectInput(
                         inputId = 'direction',

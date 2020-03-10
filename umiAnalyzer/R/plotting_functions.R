@@ -416,19 +416,29 @@ generateAmpliconPlots <- function(
 
   }
 
+  if(direction == 'default'){
+    orientation = 1
+  } else {
+    orientation = -1
+  }
+
   if(option != 'default'){
 
-    if(direction == 'default'){
-      orientation = 1
+    # If not using default colour scheme use either
+    # (1) Colours from viridis package
+    if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
+      amplicon_plot <- amplicon_plot + viridis::scale_fill_viridis(
+        discrete = TRUE,
+        option = option,
+        direction = orientation
+      )
     } else {
-      orientation = -1
+    # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+      amplicon_plot <- amplicon_plot +
+        ggplot2::scale_fill_brewer(
+          palette = option
+        )
     }
-
-    amplicon_plot <- amplicon_plot + viridis::scale_fill_viridis(
-      discrete = TRUE,
-      option = option,
-      direction = orientation
-    )
   }
 
   if(stack.plot){
@@ -436,7 +446,9 @@ generateAmpliconPlots <- function(
       cons.data = cons.table,
       theme = theme,
       plot.ref = plot.ref,
-      abs.count = abs.count
+      abs.count = abs.count,
+      option = option,
+      direction = orientation
     )
   }
 
@@ -643,7 +655,9 @@ stacked_amplicon_plot <- function(
   cons.data,
   theme = 'classic',
   plot.ref = FALSE,
-  abs.count = FALSE
+  abs.count = FALSE,
+  option = 'Pastel1',
+  direction = 1
   ){
 
   out.file <- tibble()
@@ -697,8 +711,7 @@ stacked_amplicon_plot <- function(
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
       facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
-      theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_brewer(palette = "Set1")
+      theme(axis.text.x = element_text(angle = 90))
   } else {
     # Stacked count plot.
     stacked <- ggplot(out.file, aes_(
@@ -710,8 +723,7 @@ stacked_amplicon_plot <- function(
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
       facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
-      theme(axis.text.x = element_text(angle = 90)) +
-      scale_fill_brewer(palette = "Set1")
+      theme(axis.text.x = element_text(angle = 90))
   }
 
   if(plot.ref){
@@ -723,6 +735,28 @@ stacked_amplicon_plot <- function(
       theme(
         axis.text.x = element_text(size = 9, angle = 0)
       )
+  }
+
+  if(option == 'default'){
+    option = 'Pastel1'
+  }
+
+  if(option != 'default'){
+    # If not using default colour scheme use either
+    # (1) Colours from viridis package
+    if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
+      stacked <- stacked + viridis::scale_fill_viridis(
+        discrete = TRUE,
+        option = option,
+        direction = direction
+      )
+    } else {
+      # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+      stacked <- stacked +
+        ggplot2::scale_fill_brewer(
+          palette = option
+        )
+    }
   }
 
   return(stacked)
