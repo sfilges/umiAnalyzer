@@ -12,9 +12,14 @@ generateAmpliconPlots(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
+  y_min = 0,
+  y_max = NULL,
   theme = "classic",
   option = "default",
-  direction = "default"
+  direction = "default",
+  plot.text = TRUE,
+  plot.ref = TRUE,
+  stack.plot = FALSE
 )
 }
 \arguments{
@@ -32,11 +37,21 @@ generateAmpliconPlots(
 
 \item{abs.count}{Should absolute counts be plotted instead of frequencies? Default is FALSE.}
 
+\item{y_min}{Minimum y-axis value, default is 0}
+
+\item{y_max}{MAximum y-axis value, default is NULL (autoscale)}
+
 \item{theme}{Plotting theme to use, default is classic.}
 
 \item{option}{Colour palette to use.}
 
 \item{direction}{Orientation of the colour palette.}
+
+\item{plot.text}{Should non-references bases be indicated above the bar?}
+
+\item{plot.ref}{If true show reference base instead of position on x-axis.}
+
+\item{stack.plot}{Show all variant alleles in a stacked bar plot.}
 }
 \value{
 A umiExperiment object containing a ggplot object with the

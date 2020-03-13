@@ -42,7 +42,6 @@ server <- function(input, output, session, plotFun) {
   )
 
   #----Output_report-----
-
   output$report <- downloadHandler(
     # For PDF output, change this to "report.pdf"
     file = 'report.html',

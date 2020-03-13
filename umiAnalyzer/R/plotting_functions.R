@@ -251,6 +251,8 @@ plotUmiCounts <- function(
 #' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
 #' @param theme Plotting theme to use, default is classic.
 #' @param option Colour palette to use.
+#' @param y_min Minimum y-axis value, default is 0
+#' @param y_max MAximum y-axis value, default is NULL (autoscale)
 #' @param direction Orientation of the colour palette.
 #' @param plot.text Should non-references bases be indicated above the bar?
 #' @param plot.ref If true show reference base instead of position on x-axis.
@@ -396,10 +398,11 @@ generateAmpliconPlots <- function(
 
     if(plot.text){
       amplicon_plot <- amplicon_plot +
-        geom_text(data = cons.table,
-                  mapping = aes(label = `Max Non-ref Allele`),
-                  position = position_dodge(width = 1),
-                  size = 4
+        geom_text(
+          data = cons.table,
+          mapping = aes_(label = ~(`Max Non-ref Allele`)),
+          position = position_dodge(width = 1),
+          size = 4
         )
     }
 
@@ -649,6 +652,8 @@ vizNormalization <- function(cons.data){
 #' @param theme Plotting theme
 #' @param plot.ref If true, shows reference base on x-axis
 #' @param abs.count Plot absolute countsinstead of frequencies.
+#' @param option Coour scheme
+#' @param direction Direction of the colour scale
 #'
 #' @return A ggplot object.
 stacked_amplicon_plot <- function(

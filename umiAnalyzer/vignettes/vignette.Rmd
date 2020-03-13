@@ -184,7 +184,7 @@ per group will be used. If we specify 'replicate' that means only variants in
 at least 2 out of 3 replicates will be considered. The default value for
 group.by is NULL and each sample will be analysed and plotted independently.
 
-```{r time_course, eval=TRUE}
+```{r time_course, eval=FALSE}
 simsen <- analyzeTimeSeries(
   object = simsen,
   time.var = 'time',

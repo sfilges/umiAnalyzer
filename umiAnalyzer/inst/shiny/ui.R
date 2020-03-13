@@ -18,7 +18,6 @@ library(umiAnalyzer, quietly = TRUE)
 
 
 #----UI----
-
 # Maximum 5GB data upload
 options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
 
