@@ -261,10 +261,10 @@ plotUmiCounts <- function(
 #' @export
 #'
 #' @import ggplot2
+#' @import scales
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
 #' @importFrom viridis scale_fill_viridis
-#' @importFrom scales rescale_none
 #'
 #' @examples
 #' \dontrun{
@@ -292,7 +292,8 @@ generateAmpliconPlots <- function(
   direction = 'default',
   plot.text = TRUE,
   plot.ref = TRUE,
-  stack.plot = FALSE
+  stack.plot = FALSE,
+  ...
   ) {
 
   if (missing(x = object)) {
@@ -654,6 +655,8 @@ vizNormalization <- function(cons.data){
 #' @param abs.count Plot absolute countsinstead of frequencies.
 #' @param option Coour scheme
 #' @param direction Direction of the colour scale
+#'
+#' @export
 #'
 #' @return A ggplot object.
 stacked_amplicon_plot <- function(
