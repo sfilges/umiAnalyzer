@@ -688,6 +688,7 @@ stacked_amplicon_plot <- function(
 
   # Rename variables
   out.file <- out.file %>% dplyr::select(
+    .data$`Sample Name`,
     .data$Name, .data$Position,
     .data$Coverage,.data$Reference,
     .data$A,.data$T,.data$C,.data$G,
@@ -696,6 +697,7 @@ stacked_amplicon_plot <- function(
       "variant",
       "count",
       -c(.data$Name,
+         .data$`Sample Name`,
          .data$Position,
          .data$Reference,
          .data$Coverage
@@ -718,7 +720,7 @@ stacked_amplicon_plot <- function(
       use_theme +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
-      facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
+      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
       theme(axis.text.x = element_text(angle = 90))
   } else {
     # Stacked count plot.
@@ -730,7 +732,7 @@ stacked_amplicon_plot <- function(
       use_theme +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
-      facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
+      facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
       theme(axis.text.x = element_text(angle = 90))
   }
 
