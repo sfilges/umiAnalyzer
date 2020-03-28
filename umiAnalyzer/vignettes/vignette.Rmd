@@ -128,7 +128,13 @@ plot only the selection.
 ### All data
 
 ```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(simsen,do.plot = TRUE)
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  do.plot = TRUE,
+  amplicons = 'KIT_125',
+  plot.ref = TRUE,
+  plot.text = FALSE
+)
 ```
 
 ### Selection

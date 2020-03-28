@@ -62,7 +62,8 @@ createUmiSample <- function(
   ) {
 
   if(!dir.exists(sampleDir)){
-    stop("You need to provide a valid path.")
+    warning("You need to provide a valid path.")
+    return(NULL)
   } else if(!is.logical(importBam)){
     warning("importBam needs to be of type boolean. Using defaults instead.")
     importbam = FALSE
@@ -72,7 +73,8 @@ createUmiSample <- function(
   summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
   if(length(consFile) == 0 | length(summaryFile) == 0){
-    stop("No consensus or summary file found. Did you supply a correct data folder?")
+    warning("No consensus or summary file found. Did you supply a correct data folder?")
+    return(NULL)
   }
 
   consTable <- readr::read_delim(
@@ -183,7 +185,8 @@ createUmiExperiment <- function(
   as.shiny = FALSE){
 
   if (!dir.exists(mainDir)) {
-    stop("Must provide a valid directory.")
+    warning("Must provide a valid directory.")
+    return(NULL)
   } else if(!is.null(experimentName)) {
     if( !is.character(experimentName) && length(experimentName) == 1 ) {
       warning("experimentName needs to be a string or NULL. Using default.")
@@ -538,6 +541,15 @@ filterUmiObject <- function(
 
   cons.table <- object@cons.data
 
+  raw.error <- cons.table %>%
+    dplyr::filter(
+      .data$`Consensus group size` == 0,
+      .data$Coverage >= minCoverage,
+      .data$Name != '',
+      .data$`Max Non-ref Allele Frequency` >= minFreq,
+      .data$`Max Non-ref Allele Count` >= minCount
+    )
+
   cons.table <- cons.table %>%
     dplyr::filter(
       .data$`Consensus group size` == minDepth,
@@ -548,6 +560,7 @@ filterUmiObject <- function(
     )
 
   object@filters[[name]] <- cons.table
+  object@raw.error <- raw.error
 
   return(object)
 }
