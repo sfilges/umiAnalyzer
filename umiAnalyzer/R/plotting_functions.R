@@ -257,6 +257,7 @@ plotUmiCounts <- function(
 #' @param plot.text Should non-references bases be indicated above the bar?
 #' @param plot.ref If true show reference base instead of position on x-axis.
 #' @param stack.plot Show all variant alleles in a stacked bar plot.
+#' @param classic.plot Show classical debarcer amplicon plot with raw error.
 #'
 #' @export
 #'
