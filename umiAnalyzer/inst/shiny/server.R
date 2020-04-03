@@ -551,7 +551,8 @@ server <- function(input, output, session, plotFun) {
         y_max = input$y_max,
         plot.text = input$plot_mutation,
         plot.ref = input$plot_reference,
-        stack.plot = input$stacked
+        stack.plot = input$stacked,
+        classic.plot = input$classic
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))

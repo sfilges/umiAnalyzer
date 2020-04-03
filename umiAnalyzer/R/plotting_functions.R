@@ -257,6 +257,7 @@ plotUmiCounts <- function(
 #' @param plot.text Should non-references bases be indicated above the bar?
 #' @param plot.ref If true show reference base instead of position on x-axis.
 #' @param stack.plot Show all variant alleles in a stacked bar plot.
+#' @param classic.plot Show classical debarcer amplicon plot with raw error.
 #'
 #' @export
 #'
@@ -292,7 +293,9 @@ generateAmpliconPlots <- function(
   direction = 'default',
   plot.text = TRUE,
   plot.ref = TRUE,
-  stack.plot = FALSE
+  stack.plot = FALSE,
+  classic.plot = TRUE,
+  ...
   ) {
 
   if (missing(x = object)) {
@@ -335,12 +338,32 @@ generateAmpliconPlots <- function(
   cons.table$Position %<>% as.factor
   cons.table$Name %<>% as.factor
   cons.table$sample %<>% as.factor
+  cons.table$`Consensus group size` %<>% as.factor
 
   cons.table <- filterConsensusTable(
     cons.table,
     amplicons = amplicons,
     samples = samples
   )
+
+  # Get raw error data (cons0)
+  raw_error <- object@raw.error
+
+  # Make variables factors to ensure equidistance on the x-axis
+  raw_error$`Sample Name` %<>% as.factor
+  raw_error$Position %<>% as.factor
+  raw_error$Name %<>% as.factor
+  raw_error$sample %<>% as.factor
+  raw_error$`Consensus group size` %<>% as.factor
+
+  # Filter selected amplicons and samples
+  raw_error <- filterConsensusTable(
+    raw_error,
+    amplicons = amplicons,
+    samples = samples
+  )
+
+  classic_data <- dplyr::bind_rows(cons.table,raw_error)
 
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
@@ -350,6 +373,20 @@ generateAmpliconPlots <- function(
   if(is.null(y_max)){
     y_max <- ceiling(100*max(cons.table$`Max Non-ref Allele Frequency`))
   }
+
+  # If classic plot is chosen make a raw vs consN plot
+  classic_plot <- ggplot(classic_data, aes_(
+      x = ~Position,
+      y = ~ (100 * `Max Non-ref Allele Frequency`),
+      fill = ~(`Consensus group size`))
+    ) +
+    use_theme +
+    geom_bar(stat="identity", width=.5, position = "dodge") +
+    theme(axis.text.x = element_text(size = 6, angle = 90)) +
+    ylab("Variant Allele Frequency (%)") +
+    xlab("Assay") +
+    scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
+    facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
@@ -396,6 +433,10 @@ generateAmpliconPlots <- function(
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
     }
 
+    if(classic.plot){
+      amplicon_plot <- classic_plot
+    }
+
     if(plot.text){
       amplicon_plot <- amplicon_plot +
         geom_text(
@@ -416,7 +457,6 @@ generateAmpliconPlots <- function(
           axis.text.x = element_text(size = 9, angle = 0)
         )
     }
-
   }
 
   if(direction == 'default'){

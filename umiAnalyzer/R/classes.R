@@ -31,6 +31,7 @@ UMIsample <- setClass(
 #' @slot name Optional project name for record keeping.
 #' @slot cons.data The raw consensus data supplied by the user.
 #' @slot summary.data Summary data from umierrorcorrect.
+#' @slot raw.error Cons0 error profile
 #' @slot reads Consensus reads imported using the parseBamFiles function.
 #' @slot meta.data Sample data optionally supplied by the user.
 #' @slot filters A list of filtered cons.data, which can be accessed separately.
@@ -45,6 +46,7 @@ UMIexperiment <- setClass(
     name = "ANY",
     cons.data = "tbl_df",
     summary.data = "tbl_df",
+    raw.error = "tbl_df",
     reads = "tbl_df",
     meta.data = "data.frame",
     filters = "list",
@@ -58,6 +60,7 @@ UMIexperiment <- setClass(
     name = NULL,
     cons.data = NULL,
     summary.data = NULL,
+    raw.error = tibble(),
     reads = tibble(),
     meta.data = data.frame(),
     filters = list(),

@@ -16,7 +16,6 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
-
 #----UI----
 # Maximum 5GB data upload
 options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
@@ -182,38 +181,47 @@ ui <- dashboardPage(
             collapsible = FALSE,
             height = 420,
             style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
-            sliderInput(
-              inputId = "minFreq",
-              label = "Minimum Variant allele frequency:",
-              min = 0, max = 1,
-              value = 0, step = 0.01,
-              post = "%", sep = ","
-            ),
-            sliderInput(
-              inputId = "minCount",
-              label = "Minimum Variant allele count:",
-              min = 0, max = 10,
-              value = 0, step = 1,
-              post = " reads", sep = ","
-            ),
-            sliderInput(
-              inputId = "famSize",
-              label =  "Minimum and Maximum family size to show:",
-              min = 0, max = 500,
-              value = c(0,100), step = 1,
-              post = " reads", sep = ","
-            ),
             fluidRow(
-              style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
-              materialSwitch(
-                inputId = "abs_counts",
-                label = "Absolute counts: ",
-                status = "primary"
+              column(6,
+                sliderInput(
+                  inputId = "minFreq",
+                  label = "Minimum Variant allele frequency:",
+                  min = 0, max = 1,
+                  value = 0, step = 0.01,
+                  post = "%", sep = ","
+                ),
+                sliderInput(
+                  inputId = "minCount",
+                  label = "Minimum Variant allele count:",
+                  min = 0, max = 10,
+                  value = 0, step = 1,
+                  post = " reads", sep = ","
+                ),
+                sliderInput(
+                  inputId = "famSize",
+                  label =  "Minimum and Maximum family size to show:",
+                  min = 0, max = 500,
+                  value = c(0,100), step = 1,
+                  post = " reads", sep = ","
+                )
               ),
-              materialSwitch(
-                inputId = "stacked",
-                label = "Stacked plot: ",
-                status = "primary"
+              column(4,
+                style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
+                materialSwitch(
+                  inputId = "abs_counts",
+                  label = "Absolute counts: ",
+                  status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "stacked",
+                  label = "Stacked plot: ",
+                  status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "classic",
+                  label = "Raw error plot: ",
+                  status = "primary"
+                )
               )
             )
           ),
