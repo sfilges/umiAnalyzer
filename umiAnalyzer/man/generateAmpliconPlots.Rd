@@ -19,8 +19,7 @@ generateAmpliconPlots(
   direction = "default",
   plot.text = TRUE,
   plot.ref = TRUE,
-  stack.plot = FALSE,
-  ...
+  stack.plot = FALSE
 )
 }
 \arguments{

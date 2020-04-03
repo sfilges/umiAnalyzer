@@ -261,7 +261,7 @@ plotUmiCounts <- function(
 #' @export
 #'
 #' @import ggplot2
-#' @import scales
+#' @importFrom scales rescale_none
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
 #' @importFrom viridis scale_fill_viridis
@@ -292,8 +292,7 @@ generateAmpliconPlots <- function(
   direction = 'default',
   plot.text = TRUE,
   plot.ref = TRUE,
-  stack.plot = FALSE,
-  ...
+  stack.plot = FALSE
   ) {
 
   if (missing(x = object)) {

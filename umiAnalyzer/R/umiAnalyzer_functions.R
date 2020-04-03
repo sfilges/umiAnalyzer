@@ -49,8 +49,8 @@ addUmiSample <- function(
 #'
 #' @export
 #'
-#' @import readr
 #' @import tibble
+#' @importFrom readr read_delim
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
@@ -72,7 +72,13 @@ createUmiSample <- function(
   summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
   if(length(consFile) == 0 | length(summaryFile) == 0){
-    stop("No consensus or summary file found. Did you supply a correct data folder?")
+    warning(
+      paste(
+        "No consensus or summary file found for sample: ",
+        sampleName,". Did you supply a correct data folder?"
+        )
+      )
+    return(NULL)
   }
 
   consTable <- readr::read_delim(
@@ -219,7 +225,7 @@ createUmiExperiment <- function(
     }
 
     if(!dir.exists(file.path(mainDir, sampleNames[i]))){
-      stop("Sample directory not found. Did you provide a top level directory
+      warning("Sample directory not found. Did you provide a top level directory
            containing you sample folders?")
     }
 
@@ -235,6 +241,11 @@ createUmiExperiment <- function(
       sampleDir= file.path(mainDir, sampleNames[i]),
       importBam = importBam
     )
+
+    # Sample returns NULL if no consensus file is present, skip that sample
+    if(is.null(sample)){
+      next
+    }
 
     cons <- sample@cons.data
     cons$sample <- consFile
@@ -741,7 +752,7 @@ callVariants <- function(
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
-  padj <- p.adjust(pval, method = 'fdr')
+  padj <- stats::p.adjust(pval, method = 'fdr')
 
   cons.table <- dplyr::mutate(cons.table, pval = pval)
   cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
@@ -749,7 +760,10 @@ callVariants <- function(
   # object@cons.data <- cons.table
   object@variants <- cons.table
 
-  object <- addMetaData(object = object, attributeName = "varCalls", "varCalls")
+  object <- addMetaData(
+    object = object,
+    attributeName = "varCalls", "varCalls"
+  )
 
   return(object)
 }
