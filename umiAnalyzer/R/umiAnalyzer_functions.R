@@ -50,7 +50,7 @@ addUmiSample <- function(
 #' @export
 #'
 #' @import tibble
-#' @importFrom readr read_delim
+#' @importFrom readr read_delim cols col_character col_double
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
@@ -85,24 +85,24 @@ createUmiSample <- function(
   consTable <- readr::read_delim(
     file = file.path(sampleDir, consFile),
     delim = "\t",
-    col_types = cols(
-      `Sample Name` = col_character(),
-      Contig = col_character(),
-      Position = col_double(),
-      Name = col_character(),
-      Reference = col_character(),
-      A = col_double(),
-      C = col_double(),
-      G = col_double(),
-      T = col_double(),
-      I = col_double(),
-      D = col_double(),
-      N = col_double(),
-      Coverage = col_double(),
-      `Consensus group size` = col_double(),
-      `Max Non-ref Allele Count` = col_double(),
-      `Max Non-ref Allele Frequency` = col_double(),
-      `Max Non-ref Allele` = col_character()
+    col_types = readr::cols(
+      `Sample Name` = readr::col_character(),
+      Contig = readr::col_character(),
+      Position = readr::col_double(),
+      Name = readr::col_character(),
+      Reference = readr::col_character(),
+      A = readr::col_double(),
+      C = readr::col_double(),
+      G = readr::col_double(),
+      T = readr::col_double(),
+      I = readr::col_double(),
+      D = readr::col_double(),
+      N = readr::col_double(),
+      Coverage = readr::col_double(),
+      `Consensus group size` = readr::col_double(),
+      `Max Non-ref Allele Count` = readr::col_double(),
+      `Max Non-ref Allele Frequency` = readr::col_double(),
+      `Max Non-ref Allele` = readr::col_character()
     )
   )
 
@@ -110,14 +110,14 @@ createUmiSample <- function(
     file = file.path(sampleDir, summaryFile),
     delim = "\t",
     col_names = FALSE,
-    col_types = cols(
-      X1 = col_character(),
-      X2 = col_character(),
-      X3 = col_character(),
-      X4 = col_double(),
-      X5 = col_double(),
-      X6 = col_double(),
-      X7 = col_double()
+    col_types = readr::cols(
+      X1 = readr::col_character(),
+      X2 = readr::col_character(),
+      X3 = readr::col_character(),
+      X4 = readr::col_double(),
+      X5 = readr::col_double(),
+      X6 = readr::col_double(),
+      X7 = readr::col_double()
     )
   ) %>%
     dplyr::rename(

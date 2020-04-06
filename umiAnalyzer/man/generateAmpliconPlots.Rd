@@ -19,7 +19,9 @@ generateAmpliconPlots(
   direction = "default",
   plot.text = TRUE,
   plot.ref = TRUE,
-  stack.plot = FALSE
+  stack.plot = FALSE,
+  classic.plot = TRUE,
+  ...
 )
 }
 \arguments{
@@ -52,6 +54,8 @@ generateAmpliconPlots(
 \item{plot.ref}{If true show reference base instead of position on x-axis.}
 
 \item{stack.plot}{Show all variant alleles in a stacked bar plot.}
+
+\item{classic.plot}{Show classical debarcer amplicon plot with raw error.}
 }
 \value{
 A umiExperiment object containing a ggplot object with the

@@ -22,7 +22,7 @@ stacked_amplicon_plot(
 
 \item{abs.count}{Plot absolute countsinstead of frequencies.}
 
-\item{option}{Coour scheme}
+\item{option}{Colour scheme}
 
 \item{direction}{Direction of the colour scale}
 }

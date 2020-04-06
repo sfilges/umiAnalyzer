@@ -686,13 +686,14 @@ vizNormalization <- function(cons.data){
 #' Plot all variant allele bases
 #'
 #' @import ggplot2
+#' @importFrom forcats fct_relevel
 #' @importFrom magrittr "%>%" "%<>%"
 #'
 #' @param cons.data Consensus data table
 #' @param theme Plotting theme
 #' @param plot.ref If true, shows reference base on x-axis
 #' @param abs.count Plot absolute countsinstead of frequencies.
-#' @param option Coour scheme
+#' @param option Colour scheme
 #' @param direction Direction of the colour scale
 #'
 #' @export
@@ -745,6 +746,12 @@ stacked_amplicon_plot <- function(
 
   out.file$Name %<>% as.factor
   out.file$Position %<>% as.factor
+  out.file$variant %<>% as.factor
+
+  out.file$variant  <- forcats::fct_relevel(
+    .f = out.file$variant,
+    "A","C","G","T","D","I","N"
+  )
 
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)

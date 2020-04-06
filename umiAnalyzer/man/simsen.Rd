@@ -4,7 +4,9 @@
 \name{simsen}
 \alias{simsen}
 \title{UMIexperiment data generated with SiMSen-Seq}
-\format{Anobject of class \code{"UMIexperiment"}}
+\format{
+Anobject of class \code{"UMIexperiment"}
+}
 \usage{
 data(simsen)
 }
