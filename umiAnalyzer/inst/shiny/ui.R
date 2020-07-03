@@ -64,7 +64,7 @@ ui <- dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
-            height = 420,
+            height = 460,
             # Tab box with two panels
             tabBox(
               width = 12,
@@ -77,16 +77,22 @@ ui <- dashboardPage(
                 fluidRow(
                   style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
                   fileInput(
-                    inputId = 'zipFile', width = "100%",
+                    inputId = 'zipFile', width = "80%",
                     label = 'Choose a zip file (Max. 5 GB)',
                     multiple = FALSE,
                     accept = c('.zip')
                   ),
                   fileInput(
-                    inputId = 'file', width = "100%",
+                    inputId = 'file', width = "80%",
                     label = 'Choose a file containing sample metadata',
                     multiple = FALSE,
                     accept = c('.txt','.csv','.tsv')
+                  ),
+                  fileInput(
+                    inputId = 'bed_file', width = "80%",
+                    label = 'Choose a bed file with known mutations',
+                    multiple = FALSE,
+                    accept = c('.bed','.txt','.csv','.tsv')
                   ),
                   dropdown(
                     label = "Options",
@@ -135,7 +141,7 @@ ui <- dashboardPage(
                 selectInput(
                   inputId = 'consensus', width = "50%",
                   label = 'Consensus Depth:',
-                  choices = c(1,2,3,4,5,10,20,30),
+                  choices = c(0,1,2,3,4,5,10,20,30),
                   selected = 3
                 ),
                 selectInput(
@@ -179,7 +185,7 @@ ui <- dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
-            height = 420,
+            height = 460,
             style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
             fluidRow(
               column(6,
@@ -260,6 +266,11 @@ ui <- dashboardPage(
               tabBox(
                 type = 'tabs',
                 width = 12,
+                # Panel for mutation heatmap
+                tabPanel(
+                  title = "Heatmap",
+                  plotOutput("heatmap")
+                ),
                 # Panel for the amplicon plots with download button
                 tabPanel(
                   title = 'Amplicons',

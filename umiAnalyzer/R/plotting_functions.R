@@ -294,8 +294,7 @@ generateAmpliconPlots <- function(
   plot.text = TRUE,
   plot.ref = TRUE,
   stack.plot = FALSE,
-  classic.plot = TRUE,
-  ...
+  classic.plot = TRUE
   ) {
 
   if (missing(x = object)) {
@@ -390,7 +389,11 @@ generateAmpliconPlots <- function(
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
-  if (length(unique(cons.table$`Sample Name`)) > 6) {
+  n_samples <- length(unique(cons.table$`Sample Name`))
+  n_positions <- length(unique(cons.table$Position))
+
+
+  if ( (n_samples > 6) | (n_positions > 300) ) {
     amplicon_plot <- ggplot(
       cons.table, aes_(
         x = ~Name,
@@ -505,6 +508,135 @@ generateAmpliconPlots <- function(
   return(object)
 }
 
+
+#' Amplicon heatmap
+#'
+#'
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param filter.name Name of the filter to be plotted.
+#' @param do.plot Logical. Should plots be shown?
+#' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
+#' @param amplicons (Optional) character vector of amplicons to be plotted.
+#' @param samples (Optional) character vector of samples to be plotted.
+#' @param left.side Show assays or sample on the left side of the heatmap. Default is assays
+#' @param abs.count Logical. Should absolute counts be used instead of frequencies?
+#'
+#' @export
+#'
+#' @import magrittr
+#' @importFrom pheatmap pheatmap
+#' @importFrom tidyr spread
+#' @importFrom dplyr select
+#' @importFrom RColorBrewer brewer.pal
+#'
+#'
+amplicon_heatmap <- function(
+  object,
+  filter.name = 'default',
+  cut.off = 5,
+  left.side = 'assay',
+  amplicons = NULL,
+  samples = NULL,
+  abs.count = FALSE
+){
+
+  # Check if variant caller has been run on object
+  if (identical(dim(object@variants), dim(tibble()))) {
+    cons.table <- getFilteredData(
+      object = object,
+      name = filter.name
+    )
+
+    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+  } else {
+    cons.table <- object@variants
+    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
+  }
+
+  print(cons.table)
+
+  # Make variables factors to ensure equidistance on the x-axis
+  cons.table$`Sample Name` %<>% as.factor
+  cons.table$Position %<>% as.factor
+  cons.table$Name %<>% as.factor
+  cons.table$sample %<>% as.factor
+  cons.table$`Consensus group size` %<>% as.factor
+
+  cons.table <- filterConsensusTable(
+    cons.table,
+    amplicons = amplicons,
+    samples = samples
+  )
+
+  if(length(samples) > 1){
+    do.cluster = TRUE
+  } else {
+    do.cluster = FALSE
+  }
+
+  print(cons.table)
+
+  # Should absolute counts of frequencies be plotted?
+  if(abs.count){
+    cons_wide <- cons.table %>%
+      dplyr::select(.data$`Sample Name`, .data$Position, .data$Name, .data$`Max Non-ref Allele Count`)  %>%
+      tidyr::spread(.data$`Sample Name`, .data$`Max Non-ref Allele Count`)
+  } else {
+    cons_wide <- cons.table %>%
+      dplyr::select(.data$`Sample Name`, .data$Position, .data$Name, .data$`Max Non-ref Allele Frequency`)  %>%
+      tidyr::spread(.data$`Sample Name`, .data$`Max Non-ref Allele Frequency`)
+  }
+
+  print(cons_wide)
+
+  # Create matrix for heatmap and plot heatmap
+  cons_mat <- cons_wide %>% dplyr::select(-c(.data$Position, .data$Name))
+  cons_mat <- as.matrix(cons_mat)
+  rownames(cons_mat) <- cons_wide$Position
+
+  hcluster_clean <- data.frame(Amplicon = as.factor(cons_wide$Name))
+  rownames(hcluster_clean) <- cons_wide$Position
+
+
+  if(left.side == 'assay'){
+    heatmap_DNA_clean <- pheatmap::pheatmap(
+      mat = cons_mat,
+      angle_col = 45,
+      scale = 'none',
+      color = RColorBrewer::brewer.pal(n = 5, name = "Blues"),
+      cluster_rows = FALSE,
+      cluster_cols = do.cluster,
+      clustering_method = 'ward.D2',
+      drop_levels = TRUE,
+      fontsize_col = 6,
+      annotation_row = hcluster_clean,
+      show_rownames = FALSE,
+      na_col = "gray80"
+    )
+  } else{
+    heatmap_DNA_clean <- pheatmap::pheatmap(
+      mat = t(cons_mat),
+      angle_col = 45,
+      scale = 'none',
+      color = RColorBrewer::brewer.pal(n = 5, name = "Blues"),
+      cluster_rows = do.cluster,
+      cluster_cols = FALSE,
+      clustering_method = 'ward.D2',
+      drop_levels = TRUE,
+      fontsize_col = 6,
+      annotation_col = hcluster_clean,
+      show_rownames = TRUE,
+      show_colnames = FALSE,
+      na_col = "gray80"
+    )
+
+  }
+
+  print(heatmap_DNA_clean)
+}
+
+
+
 #' Generate Merged data plots
 #'
 #' @param object Requires a UMI sample or UMI experiment object
@@ -528,24 +660,37 @@ vizMergedData <- function(
   ){
 
   # Plotting maximum alternate alle count on merged data
-  data <- object@merged.data
+  data <- object@merged.data %>%
+    dplyr::rename(replicate = group.by)
   data$Position %<>% as.factor
 
   if (!is.null(amplicons)) {
     data <- data %>% dplyr::filter(.data$Name %in% amplicons)
   }
 
-  data$Variants <- ifelse(data$avg.MaxAC > cut.off, 'Variant', 'Background')
+  data$Variants <- ifelse(data$avg.MaxAC >= cut.off, 'Variant', 'Background')
+
+  mdata <- object@meta.data
+  new <- dplyr::left_join(data, mdata, by = "replicate")
+  new <- new %>% dplyr::ungroup()
+
+  View(new)
+
+  col <- "inputDNA"
+  new <- new %>% dplyr::filter(!!as.name(col) == "20ng")
+
+  col <- "depth"
+  new <- new %>% dplyr::filter(!!as.name(col) == "10x")
 
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
-  plot <- ggplot(data, aes_(x=~Position, y=~avg.MaxAC,fill=~Variants)) +
+  plot <- ggplot(new, aes_(x=~Position, y=~avg.Max.AF,fill=~Variants)) +
     geom_bar(stat = 'identity') +
     use_theme +
-    geom_errorbar(aes_(ymin=~avg.MaxAC, ymax=~avg.MaxAC+std.MaxAC), width=.1) +
+    geom_errorbar(aes_(ymin=~avg.Max.AF, ymax=~avg.Max.AF+std.MaxAF), width=.1) +
     theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(group.by ~ Name, scales = 'free_x', space = 'free_x')
+    facet_grid(replicate ~ Name, scales = 'free_x', space = 'free_x')
 
   if(do.plot) {
     print(plot)

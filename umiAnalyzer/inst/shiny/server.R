@@ -586,6 +586,22 @@ server <- function(input, output, session, plotFun) {
     })
   })
 
+
+  #------ Output the heatmap  -------
+
+  output$heatmap <- renderPlot({
+
+    if(is.null(filteredData())){
+      return(NULL)
+    }
+    umiAnalyzer::amplicon_heatmap(
+      object = filteredData(),
+      amplicons = input$assays,
+      samples = input$samples
+    )
+  })
+
+
   #------ Time series plots --------
 
   observeEvent(input$timeSeries, {

@@ -223,7 +223,7 @@ simsen <- mergeTechnicalReplicates(
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=TRUE}
+```{r vizMerge, eval=FALSE}
 
 vizMergedData(
   simsen,

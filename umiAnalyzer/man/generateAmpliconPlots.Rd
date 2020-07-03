@@ -20,8 +20,7 @@ generateAmpliconPlots(
   plot.text = TRUE,
   plot.ref = TRUE,
   stack.plot = FALSE,
-  classic.plot = TRUE,
-  ...
+  classic.plot = TRUE
 )
 }
 \arguments{
