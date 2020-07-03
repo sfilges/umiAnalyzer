@@ -1,4 +1,4 @@
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -6,100 +6,118 @@ knitr::opts_chunk$set(
   fig.height=6
 )
 
-## ----runApp, eval=FALSE--------------------------------------------------
+## ----runApp, eval=FALSE-------------------------------------------------------
 #  library(umiAnalyzer)
 #  
 #  runUmiVisualiser()
 
-## ----example1, eval=TRUE-------------------------------------------------
+## ----example1, eval=TRUE------------------------------------------------------
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-samples <- list.dirs(
-  path = main,
-  full.names = FALSE,
-  recursive = FALSE
+simsen <- createUmiExperiment(main)
+
+simsen <- mergeAssays(
+  object = simsen,
+  name = "new",
+  assay.list = c("PIK3CA_123", "PIK3CA_234")
 )
 
-simsen <- createUmiExperiment(
-  experimentName = "simsen",
-  mainDir = main,
-  sampleNames = samples
-)
-
-## ----bam-files, eval=TRUE------------------------------------------------
-reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
+## ----bam-files, eval=TRUE-----------------------------------------------------
+reads <- parseBamFiles(main, consDepth = 10)
 
 plotFamilyHistogram(reads)
 
-## ----example1continued, eval=TRUE----------------------------------------
-simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
+## ----example1continued, eval=TRUE---------------------------------------------
+simsen <- generateQCplots(simsen, group.by = 'assay')
 
-simsen <- filterUmiobject(
-  object = simsen, 
-  name = "myfilter", 
-  minDepth = 3,
-  minCoverage = 100, 
-  minFreq = 0, 
-  minCount = 0
-)
+## ----example1continued_2, eval=TRUE-------------------------------------------
+simsen <- filterUmiObject(simsen)
 
-myfilter <- getFilterdData(object = simsen, name = "myfilter")
+myfilter <- getFilteredData(simsen)
 myfilter
 
-## ---- eval=TRUE----------------------------------------------------------
+## ----example1continued_3, eval=TRUE-------------------------------------------
+simsen <- plotUmiCounts(object = simsen)
+
+## ---- eval=TRUE---------------------------------------------------------------
 simsen <- generateAmpliconPlots(
   object = simsen,
-  filter.name = "myfilter",
-  do.plot = TRUE)
+  do.plot = TRUE,
+  amplicons = 'KIT_125',
+  plot.ref = TRUE,
+  plot.text = FALSE
+)
 
-## ---- eval=TRUE----------------------------------------------------------
+## ---- eval=TRUE---------------------------------------------------------------
 simsen <- generateAmpliconPlots(
   object = simsen,
-  filter.name = "myfilter",
-  do.plot = TRUE, 
-  amplicons = c("PIK3CA_123", "PIK3CA_234"),
-  samples = "VAF-1-5ng-1-10x")
+  amplicons = c("new"),
+  samples = "VAF-1-5ng-1-10x"
+)
 
-## ----replicates, eval=TRUE-----------------------------------------------
+## ----metaDataImport, eval=TRUE------------------------------------------------
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-simsen <- importDesign(object = simsen, file = metaData)
 
-simsen <- mergeTechnicalReplicates(object = simsen, filter.name = "myfilter")
-simsen@merged.data
+simsen <- importDesign(
+  object = simsen,
+  file = metaData
+)
 
-vizMergedData(simsen)
+design <- getMetaData(
+  object = simsen, 
+  attributeName = "design"
+)
 
-## ----example2, eval=FALSE------------------------------------------------
-#  data <- simsen
-#  data <- callVariants(data)
+design
+
+## ----time_course, eval=FALSE--------------------------------------------------
+#  simsen <- analyzeTimeSeries(
+#    object = simsen,
+#    time.var = 'time',
+#    group.by = 'replicate'
+#  )
+
+## ----replicates, eval=TRUE----------------------------------------------------
+simsen <- mergeTechnicalReplicates(
+  object = simsen,
+  group.by = 'replicate',
+  option = 'magma',
+  direction = -1, 
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+)
+
+#viewNormPlot(simsen)
+#simsen@plots$stacked_counts
+#simsen@merged.data
+
+## ----vizMerge, eval=TRUE------------------------------------------------------
+
+vizMergedData(
+  simsen,
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+)
+
+
+## ----example2, eval=FALSE-----------------------------------------------------
+#  simsen <- callVariants(simsen)
 #  
-#  data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
-
-## ----design, eval=FALSE--------------------------------------------------
-#  metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#  simsen <- filterVariants(simsen)
 #  
-#  data <- importDesign(object = simsen, file = metaData)
+#  simsen <- generateAmpliconPlots(
+#    object = simsen
+#  )
 
-## ----getmetadata, eval=FALSE---------------------------------------------
-#  design <- getMetaData(object = data, attributeName = "design")
-#  
-#  design
-
-## ----addmetadata, eval=FALSE---------------------------------------------
-#  comment <- "fix this"
-#  data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
-#  
-#  myattribute <- getMetaData(object = data, attributeName = "my-comment")
-#  myattribute
-
-## ----vcf, eval=FALSE-----------------------------------------------------
+## ----vcf, eval=FALSE----------------------------------------------------------
 #  generateVCF(object = simsen, outFile = 'simsen.vcf', printAll = FALSE, save = FALSE)
 
-## ----csv, eval=FALSE-----------------------------------------------------
+## ----csv, eval=FALSE----------------------------------------------------------
 #  consensus_data <- saveConsData(object = simsen)
 #  
-#  outDir <- "~/Documents/"
-#  saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
+#  outDir <- getwd()
+#  saveConsData(object = simsen, outDir = outDir, delim = ';', save = TRUE)
+
+## ----sessionInfo--------------------------------------------------------------
+sessionInfo()
 

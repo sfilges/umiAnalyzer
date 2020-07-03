@@ -55,6 +55,9 @@ select_theme <- function(theme){
 #' @param consensus.data A consensus fdata table.
 #' @param amplicons Null or list of amplicons to use.
 #' @param samples Null or a list of samples to use.
+#'
+#' @export
+#'
 #' @return A consensus table.
 filterConsensusTable <- function(
   consensus.data,
@@ -62,17 +65,28 @@ filterConsensusTable <- function(
   samples = NULL
   ) {
 
+  #if (!is.null(amplicons)) {
+  #  consensus.data <- consensus.data %>%
+  #  dplyr::filter(.data$Name %in% amplicons)
+  #}
+
+  consensus.data.bind = consensus.data
+
   if (!is.null(amplicons)) {
-    consensus.data <- consensus.data %>%
-      dplyr::filter(.data$Name %in% amplicons)
+    consensus.data.bind <- tibble()
+
+    for (name in amplicons ){
+      bind <- consensus.data[stringr::str_detect(string = consensus.data$Name, pattern = name),]
+      consensus.data.bind <- dplyr::bind_rows(consensus.data.bind,bind)
+    }
   }
 
   if (!is.null(samples)) {
-    consensus.data <- consensus.data %>%
+    consensus.data.bind <- consensus.data.bind %>%
       dplyr::filter(.data$`Sample Name` %in% samples)
   }
 
-  return(consensus.data)
+  return(consensus.data.bind)
 }
 
 #' Merge assays
@@ -179,7 +193,7 @@ analyzeTimeSeries <- function(
   summaryData <- dplyr::inner_join(
     consData,
     metaData,
-    by = c(`Sample Name` =  colnames(metaData[,1]))
+    by = c(`Sample Name` ="Sample_Name")
   )
 
   print(summaryData)
@@ -208,7 +222,7 @@ analyzeTimeSeries <- function(
     summaryData, aes_(
       x = ~time_var,
       y = ~VAF,
-      group = ~Position,
+      group = ~Change,
       shape = ~Name)) +
     theme_bw() +
     xlab("Time") +

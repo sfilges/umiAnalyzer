@@ -19,6 +19,8 @@ slots storing raw data, graphs and processed data.
 
 \item{\code{summary.data}}{Summary data from umierrorcorrect.}
 
+\item{\code{raw.error}}{Cons0 error profile}
+
 \item{\code{reads}}{Consensus reads imported using the parseBamFiles function.}
 
 \item{\code{meta.data}}{Sample data optionally supplied by the user.}

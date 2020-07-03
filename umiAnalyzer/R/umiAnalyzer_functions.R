@@ -49,8 +49,8 @@ addUmiSample <- function(
 #'
 #' @export
 #'
-#' @import readr
 #' @import tibble
+#' @importFrom readr read_delim cols col_character col_double
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
@@ -62,7 +62,8 @@ createUmiSample <- function(
   ) {
 
   if(!dir.exists(sampleDir)){
-    stop("You need to provide a valid path.")
+    warning("You need to provide a valid path.")
+    return(NULL)
   } else if(!is.logical(importBam)){
     warning("importBam needs to be of type boolean. Using defaults instead.")
     importbam = FALSE
@@ -72,30 +73,36 @@ createUmiSample <- function(
   summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
 
   if(length(consFile) == 0 | length(summaryFile) == 0){
-    stop("No consensus or summary file found. Did you supply a correct data folder?")
+    warning(
+      paste(
+        "No consensus or summary file found for sample: ",
+        sampleName,". Did you supply a correct data folder?"
+        )
+      )
+    return(NULL)
   }
 
   consTable <- readr::read_delim(
     file = file.path(sampleDir, consFile),
     delim = "\t",
-    col_types = cols(
-      `Sample Name` = col_character(),
-      Contig = col_character(),
-      Position = col_double(),
-      Name = col_character(),
-      Reference = col_character(),
-      A = col_double(),
-      C = col_double(),
-      G = col_double(),
-      T = col_double(),
-      I = col_double(),
-      D = col_double(),
-      N = col_double(),
-      Coverage = col_double(),
-      `Consensus group size` = col_double(),
-      `Max Non-ref Allele Count` = col_double(),
-      `Max Non-ref Allele Frequency` = col_double(),
-      `Max Non-ref Allele` = col_character()
+    col_types = readr::cols(
+      `Sample Name` = readr::col_character(),
+      Contig = readr::col_character(),
+      Position = readr::col_double(),
+      Name = readr::col_character(),
+      Reference = readr::col_character(),
+      A = readr::col_double(),
+      C = readr::col_double(),
+      G = readr::col_double(),
+      T = readr::col_double(),
+      I = readr::col_double(),
+      D = readr::col_double(),
+      N = readr::col_double(),
+      Coverage = readr::col_double(),
+      `Consensus group size` = readr::col_double(),
+      `Max Non-ref Allele Count` = readr::col_double(),
+      `Max Non-ref Allele Frequency` = readr::col_double(),
+      `Max Non-ref Allele` = readr::col_character()
     )
   )
 
@@ -103,14 +110,14 @@ createUmiSample <- function(
     file = file.path(sampleDir, summaryFile),
     delim = "\t",
     col_names = FALSE,
-    col_types = cols(
-      X1 = col_character(),
-      X2 = col_character(),
-      X3 = col_character(),
-      X4 = col_double(),
-      X5 = col_double(),
-      X6 = col_double(),
-      X7 = col_double()
+    col_types = readr::cols(
+      X1 = readr::col_character(),
+      X2 = readr::col_character(),
+      X3 = readr::col_character(),
+      X4 = readr::col_double(),
+      X5 = readr::col_double(),
+      X6 = readr::col_double(),
+      X7 = readr::col_double()
     )
   ) %>%
     dplyr::rename(
@@ -183,7 +190,8 @@ createUmiExperiment <- function(
   as.shiny = FALSE){
 
   if (!dir.exists(mainDir)) {
-    stop("Must provide a valid directory.")
+    warning("Must provide a valid directory.")
+    return(NULL)
   } else if(!is.null(experimentName)) {
     if( !is.character(experimentName) && length(experimentName) == 1 ) {
       warning("experimentName needs to be a string or NULL. Using default.")
@@ -219,7 +227,7 @@ createUmiExperiment <- function(
     }
 
     if(!dir.exists(file.path(mainDir, sampleNames[i]))){
-      stop("Sample directory not found. Did you provide a top level directory
+      warning("Sample directory not found. Did you provide a top level directory
            containing you sample folders?")
     }
 
@@ -235,6 +243,11 @@ createUmiExperiment <- function(
       sampleDir= file.path(mainDir, sampleNames[i]),
       importBam = importBam
     )
+
+    # Sample returns NULL if no consensus file is present, skip that sample
+    if(is.null(sample)){
+      next
+    }
 
     cons <- sample@cons.data
     cons$sample <- consFile
@@ -538,16 +551,26 @@ filterUmiObject <- function(
 
   cons.table <- object@cons.data
 
+  raw.error <- cons.table %>%
+    dplyr::filter(
+      .data$`Consensus group size` == 0,
+      .data$Coverage >= minCoverage,
+      .data$Name != '',
+      .data$`Max Non-ref Allele Frequency` >= minFreq,
+      .data$`Max Non-ref Allele Count` >= minCount
+    )
+
   cons.table <- cons.table %>%
     dplyr::filter(
       .data$`Consensus group size` == minDepth,
       .data$Coverage >= minCoverage,
-      .data$Name != "",
+      .data$Name != '',
       .data$`Max Non-ref Allele Frequency` >= minFreq,
       .data$`Max Non-ref Allele Count` >= minCount
     )
 
   object@filters[[name]] <- cons.table
+  object@raw.error <- raw.error
 
   return(object)
 }
@@ -741,7 +764,7 @@ callVariants <- function(
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
-  padj <- p.adjust(pval, method = 'fdr')
+  padj <- stats::p.adjust(pval, method = 'fdr')
 
   cons.table <- dplyr::mutate(cons.table, pval = pval)
   cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
@@ -749,7 +772,10 @@ callVariants <- function(
   # object@cons.data <- cons.table
   object@variants <- cons.table
 
-  object <- addMetaData(object = object, attributeName = "varCalls", "varCalls")
+  object <- addMetaData(
+    object = object,
+    attributeName = "varCalls", "varCalls"
+  )
 
   return(object)
 }

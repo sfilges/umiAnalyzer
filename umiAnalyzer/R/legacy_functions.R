@@ -24,7 +24,7 @@ DebarcerExperiment <- setClass(
 
 #' Method for creating a UMI sample
 #' @export
-#' @import readr
+#' @importFrom readr read_delim
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename

@@ -69,16 +69,12 @@ library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
 
-samples <- list.dirs(
-  path = main,
-  full.names = FALSE,
-  recursive = FALSE
-)
+simsen <- createUmiExperiment(main)
 
-simsen <- createUmiExperiment(
-  experimentName = "simsen",
-  mainDir = main,
-  sampleNames = samples
+simsen <- mergeAssays(
+  object = simsen,
+  name = "new",
+  assay.list = c("PIK3CA_123", "PIK3CA_234")
 )
 ```
 
@@ -90,7 +86,7 @@ especially if consDepth is set lower than 10, the size of the experiment object
 may become too large.
 
 ```{r bam-files, eval=TRUE}
-reads <- parseBamFiles(mainDir = main, sampleNames = samples, consDepth = 10)
+reads <- parseBamFiles(main, consDepth = 10)
 
 plotFamilyHistogram(reads)
 ```
@@ -103,19 +99,23 @@ data set can be retrieved using getFilteredData and assigned to a new variable o
 with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
-simsen <- generateQCplots(simsen, do.plot = TRUE, group.by = "assay")
+simsen <- generateQCplots(simsen, group.by = 'assay')
+```
 
-simsen <- filterUmiobject(
-  object = simsen, 
-  name = "myfilter", 
-  minDepth = 3,
-  minCoverage = 100, 
-  minFreq = 0, 
-  minCount = 0
-)
 
-myfilter <- getFilterdData(object = simsen, name = "myfilter")
+```{r example1continued_2, eval=TRUE}
+simsen <- filterUmiObject(simsen)
+
+myfilter <- getFilteredData(simsen)
 myfilter
+```
+
+Error correction depends on UMI depth, i.e. how many reads per barcode are 
+required to form a barcode family. We can plot the number of available reads
+for different consensus depths.
+
+```{r example1continued_3, eval=TRUE}
+simsen <- plotUmiCounts(object = simsen)
 ```
 
 Next we generate plots for the amplicons and samples in the umiExperiment object.
@@ -130,8 +130,11 @@ plot only the selection.
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  filter.name = "myfilter",
-  do.plot = TRUE)
+  do.plot = TRUE,
+  amplicons = 'KIT_125',
+  plot.ref = TRUE,
+  plot.text = FALSE
+)
 ```
 
 ### Selection
@@ -139,22 +142,94 @@ simsen <- generateAmpliconPlots(
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  filter.name = "myfilter",
-  do.plot = TRUE, 
-  amplicons = c("PIK3CA_123", "PIK3CA_234"),
-  samples = "VAF-1-5ng-1-10x")
+  amplicons = c("new"),
+  samples = "VAF-1-5ng-1-10x"
+)
 ```
 
-## Using metadata
+## Merging technical replicates
+
+In the above analyses potential replicates are treated as indiviual samples, but
+it is possible to merge replicate information for statistical analyses and
+more convenient plotting.
+
+Merging data requires the user to supply a file with meta data using the 
+importDesign function. This will create a metadata attribute called "design",
+which can be retrieved using getMetaData.
+
+```{r metaDataImport, eval=TRUE}
+metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+
+simsen <- importDesign(
+  object = simsen,
+  file = metaData
+)
+
+design <- getMetaData(
+  object = simsen, 
+  attributeName = "design"
+)
+
+design
+```
+
+## Time series data
+
+We can generate time course data using the analyzeTimeSeries function. This
+requires some information from the meta data that was uploaded above. Most
+importantly a time variable needs to be available in the meta data object called
+"time" by default. However the variable can have any name, which can be specified
+using the time.var parameter. If time.var has a date format that will be used 
+for plotting, otherwise it will convert time.var to a categorical. If you have
+time.var in date format but want the plot to use categorical instead set the
+categorical parameter to TRUE. 
+
+We can also make use of replicate data to remove background noise. If you specify
+a group.by variable from the meta data only variants that occur at least twice
+per group will be used. If we specify 'replicate' that means only variants in
+at least 2 out of 3 replicates will be considered. The default value for
+group.by is NULL and each sample will be analysed and plotted independently.
+
+```{r time_course, eval=FALSE}
+simsen <- analyzeTimeSeries(
+  object = simsen,
+  time.var = 'time',
+  group.by = 'replicate'
+)
+```
+
+We can now use the mergeTechnicalReplicates function to create a summarised
+data table. Merging replicates also performs coverage normalization. This can 
+remove bias incurred when comparing samples sequenced at different read depths,
+because background noise is expected to be higher in a sample that was sequenced
+to a greater depth. A drawback is that it is not possible to scale a count of
+zero variant reads one can set all 0 to a small value, such as 0.5, first and then
+scale the data.
 
 ```{r replicates, eval=TRUE}
-metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-simsen <- importDesign(object = simsen, file = metaData)
+simsen <- mergeTechnicalReplicates(
+  object = simsen,
+  group.by = 'replicate',
+  option = 'magma',
+  direction = -1, 
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+)
 
-simsen <- mergeTechnicalReplicates(object = simsen, filter.name = "myfilter")
-simsen@merged.data
+#viewNormPlot(simsen)
+#simsen@plots$stacked_counts
+#simsen@merged.data
+```
 
-vizMergedData(simsen)
+We can also have a look at the merged amplicon plots which now show the average
+maximum alternate allele count and standard deviation.
+
+```{r vizMerge, eval=TRUE}
+
+vizMergedData(
+  simsen,
+  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+)
+
 ```
 
 # Calling variants
@@ -167,45 +242,15 @@ and use the callVariants function. You can then filter the resulting consensus d
 the object, e.g. for significant variants.
 
 ```{r example2, eval=FALSE}
-data <- simsen
-data <- callVariants(data)
+simsen <- callVariants(simsen)
 
-data <- filterVariants(object = data, p.adjust = 0.2, minDepth = 5)
+simsen <- filterVariants(simsen)
+
+simsen <- generateAmpliconPlots(
+  object = simsen
+)
 ```
 
-# Importing experimental designs and statistics
-## Experimental design
-umiAnalyzer supports adding meta data to a UMIsample or UMIexperiment object, such as experimental 
-design matrices or clinical parameters. This is done using the importDesign function and requires a 
-simple formatted table supplied by the user as a tab separated file. It is important that the order 
-of the samples in the meta data file is the same as when building the UMIexperiment object.
-
-```{r design, eval=FALSE}
-metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-
-data <- importDesign(object = simsen, file = metaData)
-```
-
-## Working with meta data
-
-It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
-matrix loaded with importDesign can be retrieved as follows:
-
-```{r getmetadata, eval=FALSE}
-design <- getMetaData(object = data, attributeName = "design")
-
-design
-```
-
-Similarly, any kind of meta data can be added and retrieved from an object using addMetaData:
-
-```{r addmetadata, eval=FALSE}
-comment <- "fix this"
-data <- addMetaData(object = data, attributeName = "my-comment", attributeValue = comment)
-
-myattribute <- getMetaData(object = data, attributeName = "my-comment")
-myattribute
-```
 
 # Other functions (experimental)
 
@@ -224,10 +269,14 @@ output directory (default is the working directory), filename (default is 'conse
 ```{r csv, eval=FALSE}
 consensus_data <- saveConsData(object = simsen)
 
-outDir <- "~/Documents/"
-saveConsData(object = simsen, outDir = outDir, delim = ";", save = TRUE)
+outDir <- getwd()
+saveConsData(object = simsen, outDir = outDir, delim = ';', save = TRUE)
 ```
 
+# System info
 
+```{r sessionInfo}
+sessionInfo()
+```
 
 

@@ -16,9 +16,7 @@ library(DT, quietly = TRUE)
 library(shinydashboard, quietly = TRUE)
 library(umiAnalyzer, quietly = TRUE)
 
-
 #----UI----
-
 # Maximum 5GB data upload
 options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
 
@@ -66,7 +64,7 @@ ui <- dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
-            height = 420,
+            height = 460,
             # Tab box with two panels
             tabBox(
               width = 12,
@@ -79,16 +77,22 @@ ui <- dashboardPage(
                 fluidRow(
                   style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
                   fileInput(
-                    inputId = 'zipFile', width = "100%",
+                    inputId = 'zipFile', width = "80%",
                     label = 'Choose a zip file (Max. 5 GB)',
                     multiple = FALSE,
                     accept = c('.zip')
                   ),
                   fileInput(
-                    inputId = 'file', width = "100%",
+                    inputId = 'file', width = "80%",
                     label = 'Choose a file containing sample metadata',
                     multiple = FALSE,
                     accept = c('.txt','.csv','.tsv')
+                  ),
+                  fileInput(
+                    inputId = 'bed_file', width = "80%",
+                    label = 'Choose a bed file with known mutations',
+                    multiple = FALSE,
+                    accept = c('.bed','.txt','.csv','.tsv')
                   ),
                   dropdown(
                     label = "Options",
@@ -137,7 +141,7 @@ ui <- dashboardPage(
                 selectInput(
                   inputId = 'consensus', width = "50%",
                   label = 'Consensus Depth:',
-                  choices = c(1,2,3,4,5,10,20,30),
+                  choices = c(0,1,2,3,4,5,10,20,30),
                   selected = 3
                 ),
                 selectInput(
@@ -181,34 +185,50 @@ ui <- dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             collapsible = FALSE,
-            height = 420,
+            height = 460,
             style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
-            sliderInput(
-              inputId = "minFreq",
-              label = "Minimum Variant allele frequency:",
-              min = 0, max = 1,
-              value = 0, step = 0.01,
-              post = "%", sep = ","
-            ),
-            sliderInput(
-              inputId = "minCount",
-              label = "Minimum Variant allele count:",
-              min = 0, max = 10,
-              value = 0, step = 1,
-              post = " reads", sep = ","
-            ),
-            sliderInput(
-              inputId = "famSize",
-              label =  "Minimum and Maximum family size to show:",
-              min = 0, max = 500,
-              value = c(0,100), step = 1,
-              post = " reads", sep = ","
-            ),
-            br(),
-            materialSwitch(
-              inputId = "abs_counts",
-              label = "Absolute counts: ",
-              status = "primary"
+            fluidRow(
+              column(6,
+                sliderInput(
+                  inputId = "minFreq",
+                  label = "Minimum Variant allele frequency:",
+                  min = 0, max = 1,
+                  value = 0, step = 0.01,
+                  post = "%", sep = ","
+                ),
+                sliderInput(
+                  inputId = "minCount",
+                  label = "Minimum Variant allele count:",
+                  min = 0, max = 10,
+                  value = 0, step = 1,
+                  post = " reads", sep = ","
+                ),
+                sliderInput(
+                  inputId = "famSize",
+                  label =  "Minimum and Maximum family size to show:",
+                  min = 0, max = 500,
+                  value = c(0,100), step = 1,
+                  post = " reads", sep = ","
+                )
+              ),
+              column(4,
+                style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
+                materialSwitch(
+                  inputId = "abs_counts",
+                  label = "Absolute counts: ",
+                  status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "stacked",
+                  label = "Stacked plot: ",
+                  status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "classic",
+                  label = "Raw error plot: ",
+                  status = "primary"
+                )
+              )
             )
           ),
           # View data tables in collapsable box
@@ -246,19 +266,30 @@ ui <- dashboardPage(
               tabBox(
                 type = 'tabs',
                 width = 12,
+                # Panel for mutation heatmap
+                tabPanel(
+                  title = "Heatmap",
+                  plotOutput("heatmap")
+                ),
                 # Panel for the amplicon plots with download button
                 tabPanel(
                   title = 'Amplicons',
                   icon = icon('chart-bar'),
                   style = 'margin-left: 10px;',
                   fluidRow(
-                    # Option for plot customisation
+                    # Options for plot customisation:
+                    #     - Select colour scheme
+                    #     - Select orientation of colors
+                    #     - Select ggplot plot theme
+                    #     - Set y-axis range
                     dropdownButton(
                       tags$h3('Customise plot'),
                       selectInput(
                         inputId = 'colors',
                         label = 'Choose colour palette:',
-                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                        choices = c('default','viridis','magma','plasma','inferno','cividis',
+                                    'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
+                                    'Set1', 'Set2', 'Set3')
                       ),
                       selectInput(
                         inputId = 'direction',
@@ -269,6 +300,30 @@ ui <- dashboardPage(
                         inputId = 'theme',
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      numericInput(
+                        inputId = 'y_min',
+                        label = 'y_min',
+                        value = 0,
+                        min = 0,
+                        max = 100
+                      ),
+                      numericInput(
+                        inputId = 'y_max',
+                        label = 'y_max',
+                        value = NULL,
+                        min = 0,
+                        max = 100
+                      ),
+                      materialSwitch(
+                        inputId = "plot_mutation",
+                        label = "Show mutant allele: ",
+                        status = "primary"
+                      ),
+                      materialSwitch(
+                        inputId = "plot_reference",
+                        label = "Show reference base: ",
+                        status = "primary"
                       ),
                       circle = FALSE,
                       status = 'default',
@@ -351,7 +406,7 @@ ui <- dashboardPage(
                       width = '300px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
-                    plotOutput("umiCounts"),
+                    plotOutput('umiCounts'),
                     downloadButton(
                       outputId = 'download_umi_plot',
                       label = 'Download figure'

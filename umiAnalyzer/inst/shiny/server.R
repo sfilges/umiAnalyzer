@@ -42,7 +42,6 @@ server <- function(input, output, session, plotFun) {
   )
 
   #----Output_report-----
-
   output$report <- downloadHandler(
     # For PDF output, change this to "report.pdf"
     file = 'report.html',
@@ -445,6 +444,7 @@ server <- function(input, output, session, plotFun) {
     return(data)
   })
 
+  #------------- Update assays list -------------
   # Update assay and sample list based on initially loaded object, meaning that
   # the lists will be visible even if filter are applied
   observe({
@@ -458,7 +458,8 @@ server <- function(input, output, session, plotFun) {
     updateSelectInput(
       session = session,
       inputId = 'assay_list',
-      choices = unlist(strsplit(unique(data$Name), split = ',')),
+      #choices = unlist(strsplit(unique(data$Name), split = ',')),
+      choices = unique(data$Name),
       selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
     )
 
@@ -466,6 +467,7 @@ server <- function(input, output, session, plotFun) {
       session = session,
       inputId = 'assays',
       choices = unlist(strsplit(unique(data$Name), split = ',')),
+      #choices = unique(data$Name),
       selected = head(unlist(strsplit(unique(data$Name), split = ',')),1)
     )
 
@@ -499,7 +501,6 @@ server <- function(input, output, session, plotFun) {
     lengthMenu = c(5, 10, 50, 100)
   ))
 
-
   output$metaDataTable <- DT::renderDataTable({
 
     if (is.null(metaData())){
@@ -520,11 +521,11 @@ server <- function(input, output, session, plotFun) {
   amplicon_settings <- reactive({input$assays})
   sample_settings <- reactive({input$samples})
 
-
   # delay amplicon plot until reactive stop changing
   amplicon_settings_d <- amplicon_settings %>% debounce(500)
   sample_settings_d <- sample_settings %>% debounce(500)
 
+  #------------------- Amplicon plot ---------------------
   # plot amplicon plot reactive value
   output$amplicon_plot <- renderPlot({
 
@@ -545,15 +546,19 @@ server <- function(input, output, session, plotFun) {
         abs.count = input$abs_counts,
         theme = input$theme,
         option = input$colors,
-        direction = input$direction
+        direction = input$direction,
+        y_min = input$y_min,
+        y_max = input$y_max,
+        plot.text = input$plot_mutation,
+        plot.ref = input$plot_reference,
+        stack.plot = input$stacked,
+        classic.plot = input$classic
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))
 
     })
     object@plots$amplicon_plot
-
-
   })
 
 
@@ -581,6 +586,22 @@ server <- function(input, output, session, plotFun) {
     })
   })
 
+
+  #------ Output the heatmap  -------
+
+  output$heatmap <- renderPlot({
+
+    if(is.null(filteredData())){
+      return(NULL)
+    }
+    umiAnalyzer::amplicon_heatmap(
+      object = filteredData(),
+      amplicons = input$assays,
+      samples = input$samples
+    )
+  })
+
+
   #------ Time series plots --------
 
   observeEvent(input$timeSeries, {
@@ -600,8 +621,7 @@ server <- function(input, output, session, plotFun) {
 
       umiAnalyzer::analyzeTimeSeries(
         object = data,
-        time.var = input$timeVar,
-        group.by = input$replicates
+        time.var = input$timeVar
       )
     })
   })

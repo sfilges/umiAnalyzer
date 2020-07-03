@@ -128,7 +128,13 @@ plot only the selection.
 ### All data
 
 ```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(simsen,do.plot = TRUE)
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  do.plot = TRUE,
+  amplicons = 'KIT_125',
+  plot.ref = TRUE,
+  plot.text = FALSE
+)
 ```
 
 ### Selection
@@ -184,7 +190,7 @@ per group will be used. If we specify 'replicate' that means only variants in
 at least 2 out of 3 replicates will be considered. The default value for
 group.by is NULL and each sample will be analysed and plotted independently.
 
-```{r time_course, eval=TRUE}
+```{r time_course, eval=FALSE}
 simsen <- analyzeTimeSeries(
   object = simsen,
   time.var = 'time',
@@ -217,7 +223,7 @@ simsen <- mergeTechnicalReplicates(
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=TRUE}
+```{r vizMerge, eval=FALSE}
 
 vizMergedData(
   simsen,
