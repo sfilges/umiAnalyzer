@@ -79,17 +79,41 @@ server <- function(input, output, session, plotFun) {
     filename <- function() {
       paste('amplicon-plot-', Sys.time(),'.pdf',sep='') },
     content <- function(file) {
-      pdf(file, width = 7, height = 3)
-      object <- umiAnalyzer::generateAmpliconPlots(
-        object = filteredData(),
-        do.plot = TRUE,
-        amplicons = input$assays,
-        samples = input$samples,
-        abs.count = input$abs_counts,
-        theme = input$theme,
-        option = input$colors,
-        direction = input$direction
-      )
+      pdf(file, width = 9, height = 6)
+        object <- umiAnalyzer::generateAmpliconPlots(
+          object = filteredData(),
+          do.plot = TRUE,
+          amplicons = input$assays,
+          samples = input$samples,
+          abs.count = input$abs_counts,
+          theme = input$theme,
+          option = input$colors,
+          direction = input$direction
+        )
+      dev.off()
+    }
+  )
+
+
+  #----Download heatmap plot-----
+
+  # Output pdf report upon button click
+  output$download_heatmap.pdf <- downloadHandler(
+    filename <- function() {
+      paste('heatmap-', Sys.time(),'.pdf',sep='') },
+
+    content <- function(file) {
+
+      pdf(file,width = 9, height = 6)
+        umiAnalyzer::amplicon_heatmap(
+          object = filteredData(),
+          amplicons = input$assays,
+          samples = input$samples,
+          abs.count = input$abs_counts,
+          font.size = input$font_size,
+          left.side = input$cluster_by,
+          colours = input$heatmap_colors
+        )
       dev.off()
     }
   )
@@ -427,7 +451,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    withProgress(message = 'Filtering object', value = 0.25, {
+    withProgress(message = 'Filtering', value = 0, {
 
       data <- umiAnalyzer::filterUmiObject(
         object = experiment(),
@@ -437,7 +461,11 @@ server <- function(input, output, session, plotFun) {
         minCount = input$minCount
       )
 
-      shiny::incProgress(1, detail = paste("Filtering"))
+      shiny::incProgress(0.25, detail = paste("Calling Variants"))
+
+      data <- umiAnalyzer::callVariants(object = data)
+
+      shiny::incProgress(1, detail = paste("Done!"))
 
     })
 
@@ -522,12 +550,12 @@ server <- function(input, output, session, plotFun) {
   sample_settings <- reactive({input$samples})
 
   # delay amplicon plot until reactive stop changing
-  amplicon_settings_d <- amplicon_settings %>% debounce(500)
-  sample_settings_d <- sample_settings %>% debounce(500)
+  amplicon_settings_d <- amplicon_settings %>% shiny::debounce(500)
+  sample_settings_d <- sample_settings %>% shiny::debounce(500)
 
   #------------------- Amplicon plot ---------------------
   # plot amplicon plot reactive value
-  output$amplicon_plot <- renderPlot({
+  output$amplicon_plot <- shiny::renderPlot({
 
     if(is.null(filteredData())){
       return(NULL)
@@ -552,7 +580,9 @@ server <- function(input, output, session, plotFun) {
         plot.text = input$plot_mutation,
         plot.ref = input$plot_reference,
         stack.plot = input$stacked,
-        classic.plot = input$classic
+        classic.plot = input$classic,
+        fdr = input$fdr_cutoff,
+        use.caller = input$use_caller
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))
@@ -587,7 +617,7 @@ server <- function(input, output, session, plotFun) {
   })
 
 
-  #------ Output the heatmap  -------
+  #------ Heatmap of mutations -------
 
   output$heatmap <- renderPlot({
 
@@ -597,7 +627,11 @@ server <- function(input, output, session, plotFun) {
     umiAnalyzer::amplicon_heatmap(
       object = filteredData(),
       amplicons = input$assays,
-      samples = input$samples
+      samples = input$samples,
+      abs.count = input$abs_counts,
+      font.size = input$font_size,
+      left.side = input$cluster_by,
+      colours = input$heatmap_colors
     )
   })
 

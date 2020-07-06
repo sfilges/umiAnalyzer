@@ -8,17 +8,20 @@
 #
 
 # Quietly import required packages
-library(tidyverse, quietly = TRUE)
-library(shiny, quietly = TRUE)
-library(shinyFiles, quietly = TRUE)
-library(shinyWidgets, quietly = TRUE)
-library(DT, quietly = TRUE)
-library(shinydashboard, quietly = TRUE)
-library(umiAnalyzer, quietly = TRUE)
+suppressMessages(library(tidyverse, quietly = TRUE))
+suppressMessages(library(shiny, quietly = TRUE))
+suppressMessages(library(shinyFiles, quietly = TRUE))
+suppressMessages(library(shinyWidgets, quietly = TRUE))
+suppressMessages(library(DT, quietly = TRUE))
+suppressMessages(library(shinydashboard, quietly = TRUE))
+suppressMessages(library(umiAnalyzer, quietly = TRUE))
 
 #----UI----
 # Maximum 5GB data upload
-options(shiny.maxRequestSize=5000*1024^2, shiny.reactlog=TRUE)
+options(
+  shiny.maxRequestSize=5000*1024^2,
+  shiny.reactlog=TRUE
+)
 
 # Define user interface
 ui <- dashboardPage(
@@ -209,6 +212,13 @@ ui <- dashboardPage(
                   min = 0, max = 500,
                   value = c(0,100), step = 1,
                   post = " reads", sep = ","
+                ),
+                sliderInput(
+                  inputId = "fdr_cutoff",
+                  label =  "FDR cut-off for variant caller:",
+                  min = 0, max = 0.2,
+                  value = 0.05, step = 0.01,
+                  sep = ","
                 )
               ),
               column(4,
@@ -226,6 +236,12 @@ ui <- dashboardPage(
                 materialSwitch(
                   inputId = "classic",
                   label = "Raw error plot: ",
+                  status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "use_caller",
+                  label = "Use variant caller: ",
+                  value = TRUE,
                   status = "primary"
                 )
               )
@@ -269,7 +285,42 @@ ui <- dashboardPage(
                 # Panel for mutation heatmap
                 tabPanel(
                   title = "Heatmap",
-                  plotOutput("heatmap")
+                  style = 'margin-left: 20px;',
+                  fluidRow(
+                    # Option for plot customisation
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      selectInput(
+                        inputId = 'heatmap_colors',
+                        label = 'Choose colour palette:',
+                        choices = c('Blues','Reds','Greens','YlOrRd','YlGnBu','RdPu',
+                                    'Purples', 'PuBuGn', 'PuBu', 'OrRd', 'Greys',
+                                    'GnBu', 'BuPu', 'BuGn', 'Spectral', 'RdYlBu')
+                      ),
+                      selectInput(
+                        inputId = 'cluster_by',
+                        label = 'Samples in:',
+                        choices = c('columns','rows')
+                      ),
+                      numericInput(
+                        inputId = 'font_size',
+                        label = 'Font Size',
+                        value = 10,
+                        min = 1,
+                        max = 30
+                      ),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '300px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!')
+                    ),
+                  plotOutput("heatmap"),
+                  downloadButton(
+                    outputId = 'download_heatmap.pdf',
+                    label = 'Download figure'
+                  )
+                  )
                 ),
                 # Panel for the amplicon plots with download button
                 tabPanel(

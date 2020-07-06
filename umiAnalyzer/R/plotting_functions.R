@@ -258,6 +258,8 @@ plotUmiCounts <- function(
 #' @param plot.ref If true show reference base instead of position on x-axis.
 #' @param stack.plot Show all variant alleles in a stacked bar plot.
 #' @param classic.plot Show classical debarcer amplicon plot with raw error.
+#' @param fdr False-discovery-rate cut-off for variants.
+#' @param use.caller Should data from variant caller be used? Default is FALSE
 #'
 #' @export
 #'
@@ -294,7 +296,9 @@ generateAmpliconPlots <- function(
   plot.text = TRUE,
   plot.ref = TRUE,
   stack.plot = FALSE,
-  classic.plot = TRUE
+  classic.plot = TRUE,
+  fdr = 0.05,
+  use.caller = FALSE
   ) {
 
   if (missing(x = object)) {
@@ -318,18 +322,21 @@ generateAmpliconPlots <- function(
     }
   }
 
-  # Check if variant caller has been run on object
-  if (identical(dim(object@variants), dim(tibble()))) {
-    cons.table <- getFilteredData(
-      object = object,
-      name = filter.name
-    )
+  # Use depth cut-off to call variants
+  cons.table.default <- getFilteredData(object = object,name = filter.name)
+  cons.table.default$Variants <- ifelse(cons.table.default$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
 
-    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
-  }
-  else {
-    cons.table <- object@variants
-    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
+  if(use.caller){
+    # Check if variant caller has been run on object
+    if(!identical(dim(object@variants), dim(tibble()))) {
+      cons.table <- object@variants
+      cons.table$Variants <- ifelse(cons.table$p.adjust <= fdr, "Variant", "Background")
+    } else {
+      warning("Variant caller has not been run, using default cut-off instead!")
+      cons.table <- cons.table.default
+    }
+  } else {
+    cons.table <- cons.table.default
   }
 
   # Make variables factors to ensure equidistance on the x-axis
@@ -511,6 +518,7 @@ generateAmpliconPlots <- function(
 
 #' Amplicon heatmap
 #'
+#' Generates a heatmap of mutations with sample clustering using pheatmap.
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
@@ -520,6 +528,9 @@ generateAmpliconPlots <- function(
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param left.side Show assays or sample on the left side of the heatmap. Default is assays
 #' @param abs.count Logical. Should absolute counts be used instead of frequencies?
+#' @param font.size Font size to use for sample labels
+#' @param n_col Number of colours to use
+#' @param colours Colour scheme to use
 #'
 #' @export
 #'
@@ -534,10 +545,13 @@ amplicon_heatmap <- function(
   object,
   filter.name = 'default',
   cut.off = 5,
-  left.side = 'assay',
+  left.side = 'columns',
   amplicons = NULL,
   samples = NULL,
-  abs.count = FALSE
+  abs.count = FALSE,
+  font.size = 10,
+  n_col = 5,
+  colours = 'Blues'
 ){
 
   # Check if variant caller has been run on object
@@ -553,8 +567,6 @@ amplicon_heatmap <- function(
     cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
   }
 
-  print(cons.table)
-
   # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
   cons.table$Position %<>% as.factor
@@ -562,21 +574,21 @@ amplicon_heatmap <- function(
   cons.table$sample %<>% as.factor
   cons.table$`Consensus group size` %<>% as.factor
 
+  # Select samples and amplicons chosen by user
   cons.table <- filterConsensusTable(
     cons.table,
     amplicons = amplicons,
     samples = samples
   )
 
+  # Do not cluster if only a single sample has been selected
   if(length(samples) > 1){
     do.cluster = TRUE
   } else {
     do.cluster = FALSE
   }
 
-  print(cons.table)
-
-  # Should absolute counts of frequencies be plotted?
+  # Should absolute counts or frequencies be plotted?
   if(abs.count){
     cons_wide <- cons.table %>%
       dplyr::select(.data$`Sample Name`, .data$Position, .data$Name, .data$`Max Non-ref Allele Count`)  %>%
@@ -587,8 +599,6 @@ amplicon_heatmap <- function(
       tidyr::spread(.data$`Sample Name`, .data$`Max Non-ref Allele Frequency`)
   }
 
-  print(cons_wide)
-
   # Create matrix for heatmap and plot heatmap
   cons_mat <- cons_wide %>% dplyr::select(-c(.data$Position, .data$Name))
   cons_mat <- as.matrix(cons_mat)
@@ -598,32 +608,32 @@ amplicon_heatmap <- function(
   rownames(hcluster_clean) <- cons_wide$Position
 
 
-  if(left.side == 'assay'){
+  if(left.side == 'columns'){
     heatmap_DNA_clean <- pheatmap::pheatmap(
-      mat = cons_mat,
+      mat = 100*cons_mat,
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = 5, name = "Blues"),
+      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
       cluster_rows = FALSE,
       cluster_cols = do.cluster,
       clustering_method = 'ward.D2',
       drop_levels = TRUE,
-      fontsize_col = 6,
+      fontsize_col = font.size,
       annotation_row = hcluster_clean,
       show_rownames = FALSE,
       na_col = "gray80"
     )
   } else{
     heatmap_DNA_clean <- pheatmap::pheatmap(
-      mat = t(cons_mat),
+      mat = t(100*cons_mat),
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = 5, name = "Blues"),
+      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
       cluster_rows = do.cluster,
       cluster_cols = FALSE,
       clustering_method = 'ward.D2',
       drop_levels = TRUE,
-      fontsize_col = 6,
+      fontsize_row = font.size,
       annotation_col = hcluster_clean,
       show_rownames = TRUE,
       show_colnames = FALSE,

@@ -319,11 +319,12 @@ readBamFile <- function(
       seq = as.data.frame(bam[[1]]$seq)$x
     )
 
-    sequences <- tidyr::separate(sequences,
-                                 col = .data$qname,
-                                 into = c(NA, NA, NA, 'barcode', 'count'),
-                                 sep = '_',
-                                 remove = TRUE
+    sequences <- tidyr::separate(
+      sequences,
+      col = .data$qname,
+      into = c(NA, NA, NA, 'barcode', 'count'),
+      sep = '_',
+      remove = TRUE
     ) %>%
       tidyr::separate(
         col = .data$count,
@@ -675,10 +676,10 @@ betaNLL <- function(params, data) {
 #'
 #' @export
 #'
-#' @param object A UMierrorcorrect object.
+#' @param object A UMIerrorcorrect object.
 #' @param minDepth Minimum consensus depth required fedault is 3
 #' @param minCoverage Minimum Coverage to use, default is 100 reads.
-#' @param computePrior Should a new distribution be derived from data.
+#' @param computePrior Should a new distribution be derived from data? Default is FALSE.
 #'
 #' @importFrom dplyr mutate progress_estimated
 #' @importFrom tibble as_tibble
@@ -764,12 +765,11 @@ callVariants <- function(
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
-  padj <- stats::p.adjust(pval, method = 'fdr')
+  padj <- stats::p.adjust(p = pval, method = 'fdr')
 
   cons.table <- dplyr::mutate(cons.table, pval = pval)
   cons.table <- dplyr::mutate(cons.table, p.adjust = padj)
 
-  # object@cons.data <- cons.table
   object@variants <- cons.table
 
   object <- addMetaData(
