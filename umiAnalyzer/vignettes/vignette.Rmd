@@ -210,26 +210,19 @@ scale the data.
 simsen <- mergeTechnicalReplicates(
   object = simsen,
   group.by = 'replicate',
-  option = 'magma',
-  direction = -1, 
-  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+  option = 'Set1', 
+  amplicons = c('new', 'TP53_1', 'TP53_7')
 )
-
-#viewNormPlot(simsen)
-#simsen@plots$stacked_counts
-#simsen@merged.data
 ```
 
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=FALSE}
-
+```{r vizMerge, eval=TRUE}
 vizMergedData(
   simsen,
-  amplicons = c('PIK3CA_234', 'TP53_1', 'TP53_7')
+  amplicons = c('new')
 )
-
 ```
 
 # Calling variants

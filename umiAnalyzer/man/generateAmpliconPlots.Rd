@@ -20,7 +20,9 @@ generateAmpliconPlots(
   plot.text = TRUE,
   plot.ref = TRUE,
   stack.plot = FALSE,
-  classic.plot = TRUE
+  classic.plot = TRUE,
+  fdr = 0.05,
+  use.caller = FALSE
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ generateAmpliconPlots(
 \item{stack.plot}{Show all variant alleles in a stacked bar plot.}
 
 \item{classic.plot}{Show classical debarcer amplicon plot with raw error.}
+
+\item{fdr}{False-discovery-rate cut-off for variants.}
+
+\item{use.caller}{Should data from variant caller be used? Default is FALSE}
 }
 \value{
 A umiExperiment object containing a ggplot object with the

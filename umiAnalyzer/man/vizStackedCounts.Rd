@@ -9,7 +9,8 @@ vizStackedCounts(
   do.plot = TRUE,
   option = "viridis",
   direction = 1,
-  theme = "classic"
+  theme = "bw",
+  plot.ref = TRUE
 )
 }
 \arguments{

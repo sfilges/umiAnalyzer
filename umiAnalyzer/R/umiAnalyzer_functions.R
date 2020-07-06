@@ -1064,7 +1064,11 @@ mergeTechnicalReplicates <- function(
     )
 
   # Plot normalised counts stacked by variant allele
-  stacked.counts <- vizStackedCounts(consData, option = option, direction = direction)
+  stacked.counts <- vizStackedCounts(
+    consData,
+    option = option,
+    direction = direction
+  )
 
   if(do.plot){
     # Return object
