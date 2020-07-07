@@ -28,7 +28,7 @@ ui <- dashboardPage(
   dashboardHeader(
     title = 'umiVisualiser'
   ),
-  # Define menu items on the sidebar
+  #--------- Define menu items on the sidebar -----------------
   dashboardSidebar(
     sidebarMenu(
       menuItem(
@@ -61,7 +61,7 @@ ui <- dashboardPage(
       # ... each tab-item correponds to a menu-item in the sidebar
       tabItem(tabName = 'dashboard',
         fluidRow(
-          # Box for primary data upload and selection
+          #------------- Box for data upload and selection ---------------
           box(
             title = "Input",
             status = "primary",
@@ -120,7 +120,7 @@ ui <- dashboardPage(
                       style = "margin-bottom: 10px;margin-left: 5px;"
                     ),
                     downloadButton(
-                      outputId = 'report',
+                      outputId = 'report.html',
                       label = 'Print Report',
                       style = "margin-bottom: 10px;margin-left: 5px;"
                     ),
@@ -182,7 +182,7 @@ ui <- dashboardPage(
               )
             )
           ),
-          # Box for interactive parameter selection
+          #---------- Box for parameter selection ------------
           box(
             title = "Parameters",
             status = "primary",
@@ -194,21 +194,21 @@ ui <- dashboardPage(
               column(6,
                 sliderInput(
                   inputId = "minFreq",
-                  label = "Minimum Variant allele frequency:",
+                  label = "Minimum Variant allele frequency (to plot):",
                   min = 0, max = 1,
                   value = 0, step = 0.01,
                   post = "%", sep = ","
                 ),
                 sliderInput(
                   inputId = "minCount",
-                  label = "Minimum Variant allele count:",
+                  label = "Minimum Variant allele count (to plot):",
                   min = 0, max = 10,
                   value = 0, step = 1,
                   post = " reads", sep = ","
                 ),
                 sliderInput(
                   inputId = "famSize",
-                  label =  "Minimum and Maximum family size to show:",
+                  label =  "Minimum and Maximum family size (histogram):",
                   min = 0, max = 500,
                   value = c(0,100), step = 1,
                   post = " reads", sep = ","
@@ -225,7 +225,7 @@ ui <- dashboardPage(
                 style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
                 materialSwitch(
                   inputId = "abs_counts",
-                  label = "Absolute counts: ",
+                  label = "Use absolute counts: ",
                   status = "primary"
                 ),
                 materialSwitch(
@@ -247,7 +247,7 @@ ui <- dashboardPage(
               )
             )
           ),
-          # View data tables in collapsable box
+          #-------------- View data tables in collapsable box ------------------
           box(
             title = "Data Viewer",
             status = "primary",
@@ -266,7 +266,7 @@ ui <- dashboardPage(
                   DT::dataTableOutput("metaDataTable")
                 )
               ),
-              downloadButton("downloadData", "Download")
+              downloadButton("downloadData.csv", "Download")
             )
           ),
           # Show plots in collapsable box containing a tabBox with a tab for
@@ -282,7 +282,7 @@ ui <- dashboardPage(
               tabBox(
                 type = 'tabs',
                 width = 12,
-                # Panel for mutation heatmap
+                #-------------- Panel for mutation heatmap --------------
                 tabPanel(
                   title = "Heatmap",
                   style = 'margin-left: 20px;',
@@ -322,7 +322,7 @@ ui <- dashboardPage(
                   )
                   )
                 ),
-                # Panel for the amplicon plots with download button
+                #--------- Panel for the amplicon plots ------
                 tabPanel(
                   title = 'Amplicons',
                   icon = icon('chart-bar'),
@@ -392,7 +392,7 @@ ui <- dashboardPage(
                     )
                   )
                 ),
-                # Panel for quality control plot
+                #---------- Panel for quality control plot -------------
                 tabPanel(
                   title = 'QC Plot',
                   style = 'margin-left: 10px;',

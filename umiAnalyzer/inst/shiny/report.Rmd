@@ -39,31 +39,43 @@ assays
 
 ## Amplicons
 
-```{r}
-simsen <- generateAmpliconPlots(
+```{r, message=FALSE}
+simsen <- umiAnalyzer::generateAmpliconPlots(
   object = data,
   filter.name = 'user_filter',
   do.plot = TRUE,
   amplicons = assays,
-  samples = samples)
+  samples = samples
+)
 ```
 
 ## UMI counts
 
-```{r}
-simsen <- plotUmiCounts(
+```{r, message=FALSE}
+simsen <- umiAnalyzer::plotUmiCounts(
   object = data
 )
 ```
 
+## Heatmap
+
+```{r, message=FALSE}
+simsen <- umiAnalyzer::amplicon_heatmap(
+  object = data, 
+  amplicons = assays, 
+  samples = samples,
+  filter.name = 'user_filter'
+)
+```
+
+
 # Data table
 
-```{r}
-filter <- umiAnalyzer::getFilterdData(
+```{r, message=FALSE}
+filter <- umiAnalyzer::getFilteredData(
   object = data,
   name = 'user_filter'
 )
-filter <- filter['user_filter'][[1]]
 
 filter %>%
   dplyr::filter(Name %in% assays) %>%
