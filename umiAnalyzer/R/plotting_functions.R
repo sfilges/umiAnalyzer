@@ -63,6 +63,8 @@ generateQCplots <- function(
   cdepths$assay %<>% as.factor
   cdepths$sample %<>% as.factor
 
+  print(as.data.frame(cdepths))
+
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
   # aes_() replaces aes_q(). It also supports formulas, so the most concise
@@ -298,6 +300,8 @@ generateAmpliconPlots <- function(
   stack.plot = FALSE,
   classic.plot = TRUE,
   fdr = 0.05,
+  font.size = 6,
+  angle = 45,
   use.caller = FALSE
   ) {
 
@@ -388,7 +392,7 @@ generateAmpliconPlots <- function(
     ) +
     use_theme +
     geom_bar(stat="identity", width=.5, position = "dodge") +
-    theme(axis.text.x = element_text(size = 6, angle = 90)) +
+    theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
     ylab("Variant Allele Frequency (%)") +
     xlab("Assay") +
     scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -412,7 +416,7 @@ generateAmpliconPlots <- function(
           size = .data$`Max Non-ref Allele Count`)
       ) +
       use_theme +
-      theme(axis.text.x = element_text(size = 8, angle = 90)) +
+      theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
       labs(
@@ -429,7 +433,7 @@ generateAmpliconPlots <- function(
       ) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
         ylab("Variant UMI count") +
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
@@ -440,7 +444,7 @@ generateAmpliconPlots <- function(
         fill = ~Variants)) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -468,7 +472,7 @@ generateAmpliconPlots <- function(
           labels = cons.table$Reference
         ) +
         theme(
-          axis.text.x = element_text(size = 9, angle = 0)
+          axis.text.x = element_text(size = font.size, angle = 0)
         )
     }
   }

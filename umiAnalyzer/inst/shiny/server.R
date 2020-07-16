@@ -2,7 +2,6 @@
 server <- function(input, output, session, plotFun) {
 
   #----- Download metadata template----
-
   output$template <- downloadHandler(
 
     filename = function() {
@@ -19,7 +18,6 @@ server <- function(input, output, session, plotFun) {
   )
 
   #----- Download selected data csv ----
-
   output$downloadData.csv <- downloadHandler(
 
     filename = function() {
@@ -300,6 +298,31 @@ server <- function(input, output, session, plotFun) {
     return(main)
   })
 
+
+  #------------- Set up bed_file_handle --------------------
+  bed <- reactiveValues(bed=NULL)
+
+  observe({
+
+    if (is.null(experiment())){
+      return(NULL)
+    }
+
+    # Path selected by the user
+    bed_dir <- input$bed_file$datapath
+
+    # Create umiExperiment object
+    if ( is.null(bed_dir) ){
+      return(NULL)
+    } else {
+
+      bed$bed <- umiAnalyzer::importBedFile(path = bed_dir)
+      print(bed$bed)
+
+      return(bed$bed)
+    }
+  })
+
   # Values is a reactive object to which a umiExperiment object is added in
   # the data slot.
   values <- reactiveValues(data=NULL, merge=FALSE)
@@ -531,15 +554,40 @@ server <- function(input, output, session, plotFun) {
       object = filteredData()
     )
 
-    filter %>%
+    filter <- filter %>%
       dplyr::filter(.data$Name %in% input$assays) %>%
       dplyr::filter(.data$`Sample Name` %in% input$samples)
 
-  }, options = list(
-    orderClasses = TRUE,
-    pageLength = 5,
-    lengthMenu = c(5, 10, 50, 100)
-  ))
+
+    if(input$use_bed){
+      if(!is.null(bed$bed)){
+        print("Using user-defined mutations")
+
+        filter <- filter %>%
+          dplyr::filter(.data$Position %in% bed$bed)
+      }
+    }
+
+    DT::datatable(
+      data = filter,
+      options = list(
+        orderClasses = TRUE,
+        lengthMenu = c(5, 15, 30, 50, 100),
+        pageLength = 15)
+      ) %>%
+      DT::formatStyle(
+        columns = 'Max Non-ref Allele Count',
+        backgroundColor = DT::styleInterval(5, c('gray', 'yellow'))
+      ) %>%
+      DT::formatStyle(
+        columns = 'Max Non-ref Allele Frequency',
+        background = styleColorBar(filter$`Max Non-ref Allele Frequency`, 'steelblue'),
+        backgroundSize = '100% 90%',
+        backgroundRepeat = 'no-repeat',
+        backgroundPosition = 'center'
+      ) %>%
+      formatPercentage('Max Non-ref Allele Frequency', 2)
+  })
 
   output$metaDataTable <- DT::renderDataTable({
 
@@ -595,7 +643,9 @@ server <- function(input, output, session, plotFun) {
         stack.plot = input$stacked,
         classic.plot = input$classic,
         fdr = input$fdr_cutoff,
-        use.caller = input$use_caller
+        use.caller = input$use_caller,
+        font.size = input$font_size_amplicons,
+        angle = input$font_angle_amplicons
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))

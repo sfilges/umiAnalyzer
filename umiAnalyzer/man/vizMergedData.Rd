@@ -9,7 +9,8 @@ vizMergedData(
   cut.off = 5,
   amplicons = NULL,
   do.plot = TRUE,
-  theme = "classic"
+  theme = "classic",
+  plot.ref = TRUE
 )
 }
 \arguments{

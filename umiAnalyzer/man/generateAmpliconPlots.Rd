@@ -22,6 +22,8 @@ generateAmpliconPlots(
   stack.plot = FALSE,
   classic.plot = TRUE,
   fdr = 0.05,
+  font.size = 6,
+  angle = 45,
   use.caller = FALSE
 )
 }

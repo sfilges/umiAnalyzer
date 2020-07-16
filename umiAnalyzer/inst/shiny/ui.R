@@ -243,6 +243,12 @@ ui <- dashboardPage(
                   label = "Use variant caller: ",
                   value = TRUE,
                   status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "use_bed",
+                  label = "Use bed mutations: ",
+                  value = FALSE,
+                  status = "primary"
                 )
               )
             )
@@ -259,7 +265,7 @@ ui <- dashboardPage(
                 tabPanel(
                   title = "Data",
                   DT::dataTableOutput("dataTable"),
-                  style = "font-size: 10px;"
+                  style = "font-size: 10px;height:500px; overflow-y: scroll;overflow-x: scroll;"
                 ),
                 tabPanel(
                   title = "Sample info",
@@ -351,6 +357,18 @@ ui <- dashboardPage(
                         inputId = 'theme',
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      sliderInput(
+                        inputId = 'font_size_amplicons',
+                        label = 'Font size',
+                        value = 8, step = 1,
+                        min = 1, max = 14
+                      ),
+                      sliderInput(
+                        inputId = 'font_angle_amplicons',
+                        label = 'Font angle',
+                        value = 90, step = 45,
+                        min = 0, max = 90
                       ),
                       numericInput(
                         inputId = 'y_min',
