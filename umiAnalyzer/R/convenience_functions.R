@@ -55,6 +55,7 @@ select_theme <- function(theme){
 #' @param consensus.data A consensus fdata table.
 #' @param amplicons Null or list of amplicons to use.
 #' @param samples Null or a list of samples to use.
+#' @param positions Null or a list of positions to use.
 #'
 #' @export
 #'
@@ -62,7 +63,8 @@ select_theme <- function(theme){
 filterConsensusTable <- function(
   consensus.data,
   amplicons = NULL,
-  samples = NULL
+  samples = NULL,
+  positions = NULL
   ) {
 
   #if (!is.null(amplicons)) {
@@ -85,6 +87,12 @@ filterConsensusTable <- function(
     consensus.data.bind <- consensus.data.bind %>%
       dplyr::filter(.data$`Sample Name` %in% samples)
   }
+
+  if (!is.null(positions)) {
+    consensus.data.bind <- consensus.data.bind %>%
+      dplyr::filter(.data$Position %in% positions)
+  }
+
 
   return(consensus.data.bind)
 }
@@ -347,3 +355,46 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   writeLines(lines, fileConn)
   close(fileConn)
 }
+
+
+#' Import bed file
+#'
+#' @param path path to bed file
+#'
+#'
+#' @import readr
+#' @importFrom dplyr rename
+#'
+#' @export
+#'
+importBedFile <- function(path){
+
+  bed <- readr::read_delim(
+    file = path,
+    delim = "\t",
+    col_names = FALSE,
+    col_types = readr::cols(
+      X1 = readr::col_character(),
+      X2 = readr::col_integer(),
+      X3 = readr::col_integer()
+    )
+  ) %>%
+    dplyr::rename(
+      chrom = .data$X1,
+      chromStart = .data$X2,
+      chromEnd = .data$X3
+    )
+
+  l <- NULL
+
+  for(i in 1:nrow(bed)){
+
+    l <- append(l, bed$chromStart[i]:bed$chromEnd[i])
+
+  }
+
+  return(l)
+}
+
+
+

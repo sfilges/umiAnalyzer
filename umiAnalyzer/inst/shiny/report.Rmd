@@ -18,7 +18,7 @@ params:
 
 # Import data
 
-```{r, echo=TRUE, message=FALSE}
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
 library(umiAnalyzer, quietly = TRUE)
 library(DT, quietly = TRUE)
 
@@ -30,7 +30,7 @@ data <- params$data
 UMI-based sequencing data processed with umi-error-correct was analysed in the 
 umiVisualiser shiny app. Data for the following samples and assays will be shown:
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 samples
 assays
 ```
@@ -39,31 +39,43 @@ assays
 
 ## Amplicons
 
-```{r}
-simsen <- generateAmpliconPlots(
+```{r, message=FALSE, warning=FALSE}
+simsen <- umiAnalyzer::generateAmpliconPlots(
   object = data,
   filter.name = 'user_filter',
   do.plot = TRUE,
   amplicons = assays,
-  samples = samples)
+  samples = samples
+)
 ```
 
 ## UMI counts
 
-```{r}
-simsen <- plotUmiCounts(
+```{r, message=FALSE, warning=FALSE}
+simsen <- umiAnalyzer::plotUmiCounts(
   object = data
 )
 ```
 
+## Heatmap
+
+```{r, message=FALSE, warning=FALSE}
+simsen <- umiAnalyzer::amplicon_heatmap(
+  object = data, 
+  amplicons = assays, 
+  samples = samples,
+  filter.name = 'user_filter'
+)
+```
+
+
 # Data table
 
-```{r}
-filter <- umiAnalyzer::getFilterdData(
+```{r, message=FALSE, warning=FALSE}
+filter <- umiAnalyzer::getFilteredData(
   object = data,
   name = 'user_filter'
 )
-filter <- filter['user_filter'][[1]]
 
 filter %>%
   dplyr::filter(Name %in% assays) %>%

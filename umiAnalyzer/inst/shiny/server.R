@@ -2,7 +2,6 @@
 server <- function(input, output, session, plotFun) {
 
   #----- Download metadata template----
-
   output$template <- downloadHandler(
 
     filename = function() {
@@ -19,8 +18,7 @@ server <- function(input, output, session, plotFun) {
   )
 
   #----- Download selected data csv ----
-
-  output$downloadData <- downloadHandler(
+  output$downloadData.csv <- downloadHandler(
 
     filename = function() {
       paste("consensus_data_", Sys.time(), ".csv", sep = "")
@@ -42,33 +40,44 @@ server <- function(input, output, session, plotFun) {
   )
 
   #----Output_report-----
-  output$report <- downloadHandler(
+  output$report.html <- downloadHandler(
     # For PDF output, change this to "report.pdf"
     file = 'report.html',
     content = function(file) {
-      # Copy the report file to a temporary directory before processing it, in
-      # case we don't have write permissions to the current working dir (which
-      # can happen when deployed).
-      tempReport <- file.path(tempdir(), 'report.Rmd')
-      file.copy('report.Rmd', tempReport, overwrite = TRUE)
+      # Start progress bar for report generation
+      withProgress(message = 'Generating report', value = 0, {
 
-      # Set up parameters to pass to Rmd document
-      params <- list(
-        data = filteredData(),
-        assays = input$assays,
-        samples = input$samples,
-        minDepth =  input$consensus
-      )
+        # Copy the report file to a temporary directory before processing it, in
+        # case we don't have write permissions to the current working dir (which
+        # can happen when deployed).
+        tempReport <- file.path(tempdir(), 'report.Rmd')
+        file.copy('report.Rmd', tempReport, overwrite = TRUE)
 
-      # Knit the document, passing in the `params` list, and eval it in a
-      # child of the global environment (this isolates the code in the document
-      # from the code in this app).
-      rmarkdown::render(
-        tempReport,
-        output_file = file,
-        params = params,
-        envir = new.env(parent = globalenv())
-      )
+        # Set up parameters to pass to Rmd document
+        params <- list(
+          data = filteredData(),
+          assays = input$assays,
+          samples = input$samples,
+          minDepth =  input$consensus
+        )
+
+        # Update progress bar
+        shiny::incProgress(0.25, detail = paste("Rendering"))
+
+        # Knit the document, passing in the `params` list, and eval it in a
+        # child of the global environment (this isolates the code in the document
+        # from the code in this app).
+        rmarkdown::render(
+          tempReport,
+          output_file = file,
+          params = params,
+          envir = new.env(parent = globalenv())
+        )
+
+        # Update progress bar
+        shiny::incProgress(1, detail = paste("Rendering complete"))
+
+      })
     }
   )
 
@@ -151,13 +160,13 @@ server <- function(input, output, session, plotFun) {
         return(NULL)
       }
 
-      pdf(file, width = 7, height = 3)
-      umiAnalyzer::plotUmiCounts(
-        object = experiment(),
-        do.plot = TRUE,
-        amplicons = input$assays,
-        samples = input$samples
-      )
+      pdf(file, width = 9, height = 6)
+        umiAnalyzer::plotUmiCounts(
+          object = experiment(),
+          do.plot = TRUE,
+          amplicons = input$assays,
+          samples = input$samples
+        )
       dev.off()
     }
   )
@@ -165,10 +174,9 @@ server <- function(input, output, session, plotFun) {
   #----Shiny files setup-----
 
   # Define avalible volumes for shinyFiles
-  volumes <- c(Home = fs::path_home(),
-               'R Installation' = R.home(),
-               getVolumes()())
+  volumes <- c(Home = fs::path_home(), 'R Installation' = R.home(), getVolumes()())
 
+  # Upload from directory (top-level dir containing subfolders with umierrorcorrect output)
   shinyDirChoose(
     input = input,
     id = 'dir',
@@ -177,6 +185,7 @@ server <- function(input, output, session, plotFun) {
     restrictions = system.file(package = 'base')
   )
 
+  # Upload meta data file; first column needs to match sample names
   shinyFileChoose(
     input = input,
     id = 'file',
@@ -184,6 +193,7 @@ server <- function(input, output, session, plotFun) {
     filetypes = c('.csv','.txt','.tsv')
   )
 
+  # Upload zipped top level directory
   shinyFileChoose(
     input = input,
     id = 'zipFile',
@@ -286,6 +296,31 @@ server <- function(input, output, session, plotFun) {
   test_data_main <- eventReactive(input$importTest,{
     main <- system.file('extdata', package = 'umiAnalyzer')
     return(main)
+  })
+
+
+  #------------- Set up bed_file_handle --------------------
+  bed <- reactiveValues(bed=NULL)
+
+  observe({
+
+    if (is.null(experiment())){
+      return(NULL)
+    }
+
+    # Path selected by the user
+    bed_dir <- input$bed_file$datapath
+
+    # Create umiExperiment object
+    if ( is.null(bed_dir) ){
+      return(NULL)
+    } else {
+
+      bed$bed <- umiAnalyzer::importBedFile(path = bed_dir)
+      print(bed$bed)
+
+      return(bed$bed)
+    }
   })
 
   # Values is a reactive object to which a umiExperiment object is added in
@@ -519,15 +554,40 @@ server <- function(input, output, session, plotFun) {
       object = filteredData()
     )
 
-    filter %>%
+    filter <- filter %>%
       dplyr::filter(.data$Name %in% input$assays) %>%
       dplyr::filter(.data$`Sample Name` %in% input$samples)
 
-  }, options = list(
-    orderClasses = TRUE,
-    pageLength = 5,
-    lengthMenu = c(5, 10, 50, 100)
-  ))
+
+    if(input$use_bed){
+      if(!is.null(bed$bed)){
+        print("Using user-defined mutations")
+
+        filter <- filter %>%
+          dplyr::filter(.data$Position %in% bed$bed)
+      }
+    }
+
+    DT::datatable(
+      data = filter,
+      options = list(
+        orderClasses = TRUE,
+        lengthMenu = c(5, 15, 30, 50, 100),
+        pageLength = 15)
+      ) %>%
+      DT::formatStyle(
+        columns = 'Max Non-ref Allele Count',
+        backgroundColor = DT::styleInterval(5, c('gray', 'yellow'))
+      ) %>%
+      DT::formatStyle(
+        columns = 'Max Non-ref Allele Frequency',
+        background = styleColorBar(filter$`Max Non-ref Allele Frequency`, 'steelblue'),
+        backgroundSize = '100% 90%',
+        backgroundRepeat = 'no-repeat',
+        backgroundPosition = 'center'
+      ) %>%
+      formatPercentage('Max Non-ref Allele Frequency', 2)
+  })
 
   output$metaDataTable <- DT::renderDataTable({
 
@@ -572,6 +632,7 @@ server <- function(input, output, session, plotFun) {
         amplicons = amplicon_settings_d(),
         samples = sample_settings_d(),
         abs.count = input$abs_counts,
+        cut.off = 5,                  # TODO make this parameter interactive?
         theme = input$theme,
         option = input$colors,
         direction = input$direction,
@@ -582,7 +643,9 @@ server <- function(input, output, session, plotFun) {
         stack.plot = input$stacked,
         classic.plot = input$classic,
         fdr = input$fdr_cutoff,
-        use.caller = input$use_caller
+        use.caller = input$use_caller,
+        font.size = input$font_size_amplicons,
+        angle = input$font_angle_amplicons
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))

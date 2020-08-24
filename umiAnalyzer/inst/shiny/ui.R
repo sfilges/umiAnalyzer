@@ -28,7 +28,7 @@ ui <- dashboardPage(
   dashboardHeader(
     title = 'umiVisualiser'
   ),
-  # Define menu items on the sidebar
+  #--------- Define menu items on the sidebar -----------------
   dashboardSidebar(
     sidebarMenu(
       menuItem(
@@ -61,7 +61,7 @@ ui <- dashboardPage(
       # ... each tab-item correponds to a menu-item in the sidebar
       tabItem(tabName = 'dashboard',
         fluidRow(
-          # Box for primary data upload and selection
+          #------------- Box for data upload and selection ---------------
           box(
             title = "Input",
             status = "primary",
@@ -120,7 +120,7 @@ ui <- dashboardPage(
                       style = "margin-bottom: 10px;margin-left: 5px;"
                     ),
                     downloadButton(
-                      outputId = 'report',
+                      outputId = 'report.html',
                       label = 'Print Report',
                       style = "margin-bottom: 10px;margin-left: 5px;"
                     ),
@@ -182,7 +182,7 @@ ui <- dashboardPage(
               )
             )
           ),
-          # Box for interactive parameter selection
+          #---------- Box for parameter selection ------------
           box(
             title = "Parameters",
             status = "primary",
@@ -194,21 +194,21 @@ ui <- dashboardPage(
               column(6,
                 sliderInput(
                   inputId = "minFreq",
-                  label = "Minimum Variant allele frequency:",
+                  label = "Minimum Variant allele frequency (to plot):",
                   min = 0, max = 1,
                   value = 0, step = 0.01,
                   post = "%", sep = ","
                 ),
                 sliderInput(
                   inputId = "minCount",
-                  label = "Minimum Variant allele count:",
+                  label = "Minimum Variant allele count (to plot):",
                   min = 0, max = 10,
                   value = 0, step = 1,
                   post = " reads", sep = ","
                 ),
                 sliderInput(
                   inputId = "famSize",
-                  label =  "Minimum and Maximum family size to show:",
+                  label =  "Minimum and Maximum family size (histogram):",
                   min = 0, max = 500,
                   value = c(0,100), step = 1,
                   post = " reads", sep = ","
@@ -225,7 +225,7 @@ ui <- dashboardPage(
                 style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
                 materialSwitch(
                   inputId = "abs_counts",
-                  label = "Absolute counts: ",
+                  label = "Use absolute counts: ",
                   status = "primary"
                 ),
                 materialSwitch(
@@ -243,11 +243,17 @@ ui <- dashboardPage(
                   label = "Use variant caller: ",
                   value = TRUE,
                   status = "primary"
+                ),
+                materialSwitch(
+                  inputId = "use_bed",
+                  label = "Use bed mutations: ",
+                  value = FALSE,
+                  status = "primary"
                 )
               )
             )
           ),
-          # View data tables in collapsable box
+          #-------------- View data tables in collapsable box ------------------
           box(
             title = "Data Viewer",
             status = "primary",
@@ -259,14 +265,14 @@ ui <- dashboardPage(
                 tabPanel(
                   title = "Data",
                   DT::dataTableOutput("dataTable"),
-                  style = "font-size: 10px;"
+                  style = "font-size: 10px;height:500px; overflow-y: scroll;overflow-x: scroll;"
                 ),
                 tabPanel(
                   title = "Sample info",
                   DT::dataTableOutput("metaDataTable")
                 )
               ),
-              downloadButton("downloadData", "Download")
+              downloadButton("downloadData.csv", "Download")
             )
           ),
           # Show plots in collapsable box containing a tabBox with a tab for
@@ -282,7 +288,7 @@ ui <- dashboardPage(
               tabBox(
                 type = 'tabs',
                 width = 12,
-                # Panel for mutation heatmap
+                #-------------- Panel for mutation heatmap --------------
                 tabPanel(
                   title = "Heatmap",
                   style = 'margin-left: 20px;',
@@ -322,7 +328,7 @@ ui <- dashboardPage(
                   )
                   )
                 ),
-                # Panel for the amplicon plots with download button
+                #--------- Panel for the amplicon plots ------
                 tabPanel(
                   title = 'Amplicons',
                   icon = icon('chart-bar'),
@@ -351,6 +357,18 @@ ui <- dashboardPage(
                         inputId = 'theme',
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
+                      ),
+                      sliderInput(
+                        inputId = 'font_size_amplicons',
+                        label = 'Font size',
+                        value = 8, step = 1,
+                        min = 1, max = 14
+                      ),
+                      sliderInput(
+                        inputId = 'font_angle_amplicons',
+                        label = 'Font angle',
+                        value = 90, step = 45,
+                        min = 0, max = 90
                       ),
                       numericInput(
                         inputId = 'y_min',
@@ -392,7 +410,7 @@ ui <- dashboardPage(
                     )
                   )
                 ),
-                # Panel for quality control plot
+                #---------- Panel for quality control plot -------------
                 tabPanel(
                   title = 'QC Plot',
                   style = 'margin-left: 10px;',

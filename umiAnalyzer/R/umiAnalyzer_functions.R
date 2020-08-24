@@ -231,13 +231,15 @@ createUmiExperiment <- function(
            containing you sample folders?")
     }
 
-    ## TODO import sample names based on cons file
-
+    # Find .cons file
     consFile <- list.files(
       path = file.path(mainDir, sampleNames[i]),
       pattern = "\\.cons$")
+
+    # Remove file ending
     consFile <- stringr::str_remove(consFile, '.cons')
 
+    # Create UMI sample
     sample <- createUmiSample(
       sampleName = consFile,
       sampleDir= file.path(mainDir, sampleNames[i]),
@@ -264,11 +266,13 @@ createUmiExperiment <- function(
     }
   }
 
+  # Save experiment object
   UMIexperiment <- UMIexperiment(
     name = experimentName,
     cons.data = cons.data.merged,
     summary.data = summary.data.merged,
-    reads = reads.merged)
+    reads = reads.merged
+  )
 
   return(UMIexperiment)
 }
@@ -659,10 +663,8 @@ betaNLL <- function(params, data) {
   a <- params[1]
   b <- params[2]
 
-  #print(paste("a= ", a, " b= ", b, sep = ""))
-
   # negative log likelihood for beta
-  return(-sum(dbeta(data, shape1 = a, shape2 = b, log = TRUE)))
+  return(-sum(stats::dbeta(data, shape1 = a, shape2 = b, log = TRUE)))
 }
 
 #' callVariants using beta binomial distribution
@@ -832,9 +834,9 @@ filterVariants <- function(
     # (provided that you have also imported rlang::.data with @importFrom rlang .data).
 
     vars.to.print <- filterConsensusTable(
-      vars.to.print,
-      amplicons,
-      samples
+      consensus.data = vars.to.print,
+      amplicons =  amplicons,
+      samples = samples
     )
 
     vars.to.print <- vars.to.print %>%
@@ -1064,7 +1066,11 @@ mergeTechnicalReplicates <- function(
     )
 
   # Plot normalised counts stacked by variant allele
-  stacked.counts <- vizStackedCounts(consData, option = option, direction = direction)
+  stacked.counts <- vizStackedCounts(
+    consData,
+    option = option,
+    direction = direction
+  )
 
   if(do.plot){
     # Return object

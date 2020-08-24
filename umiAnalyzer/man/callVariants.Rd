@@ -7,13 +7,13 @@
 callVariants(object, minDepth = 3, minCoverage = 100, computePrior = FALSE)
 }
 \arguments{
-\item{object}{A UMierrorcorrect object.}
+\item{object}{A UMIerrorcorrect object.}
 
 \item{minDepth}{Minimum consensus depth required fedault is 3}
 
 \item{minCoverage}{Minimum Coverage to use, default is 100 reads.}
 
-\item{computePrior}{Should a new distribution be derived from data.}
+\item{computePrior}{Should a new distribution be derived from data? Default is FALSE.}
 }
 \value{
 Object containing raw and FDR-adjusted P-Values

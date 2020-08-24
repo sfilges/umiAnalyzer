@@ -63,6 +63,8 @@ generateQCplots <- function(
   cdepths$assay %<>% as.factor
   cdepths$sample %<>% as.factor
 
+  print(as.data.frame(cdepths))
+
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
   # aes_() replaces aes_q(). It also supports formulas, so the most concise
@@ -298,6 +300,8 @@ generateAmpliconPlots <- function(
   stack.plot = FALSE,
   classic.plot = TRUE,
   fdr = 0.05,
+  font.size = 6,
+  angle = 45,
   use.caller = FALSE
   ) {
 
@@ -388,7 +392,7 @@ generateAmpliconPlots <- function(
     ) +
     use_theme +
     geom_bar(stat="identity", width=.5, position = "dodge") +
-    theme(axis.text.x = element_text(size = 6, angle = 90)) +
+    theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
     ylab("Variant Allele Frequency (%)") +
     xlab("Assay") +
     scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -403,12 +407,16 @@ generateAmpliconPlots <- function(
   if ( (n_samples > 6) | (n_positions > 300) ) {
     amplicon_plot <- ggplot(
       cons.table, aes_(
-        x = ~Name,
+        x = ~ Name,
         y = ~ (100 * `Max Non-ref Allele Frequency`))
       ) +
-      geom_point(aes(col = .data$Variants, size = .data$`Max Non-ref Allele Count`)) +
+      geom_point(
+        mapping = aes(
+          col = .data$Variants,
+          size = .data$`Max Non-ref Allele Count`)
+      ) +
       use_theme +
-      theme(axis.text.x = element_text(size = 8, angle = 90)) +
+      theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
       labs(
@@ -425,7 +433,7 @@ generateAmpliconPlots <- function(
       ) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
         ylab("Variant UMI count") +
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
@@ -436,7 +444,7 @@ generateAmpliconPlots <- function(
         fill = ~Variants)) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = 6, angle = 90)) +
+        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -464,7 +472,7 @@ generateAmpliconPlots <- function(
           labels = cons.table$Reference
         ) +
         theme(
-          axis.text.x = element_text(size = 9, angle = 0)
+          axis.text.x = element_text(size = font.size, angle = 0)
         )
     }
   }
@@ -666,7 +674,8 @@ vizMergedData <- function(
   cut.off = 5,
   amplicons = NULL,
   do.plot = TRUE,
-  theme = 'classic'
+  theme = 'classic',
+  plot.ref = TRUE
   ){
 
   # Plotting maximum alternate alle count on merged data
@@ -680,27 +689,46 @@ vizMergedData <- function(
 
   data$Variants <- ifelse(data$avg.MaxAC >= cut.off, 'Variant', 'Background')
 
-  mdata <- object@meta.data
-  new <- dplyr::left_join(data, mdata, by = "replicate")
-  new <- new %>% dplyr::ungroup()
-
-  View(new)
-
-  col <- "inputDNA"
-  new <- new %>% dplyr::filter(!!as.name(col) == "20ng")
-
-  col <- "depth"
-  new <- new %>% dplyr::filter(!!as.name(col) == "10x")
-
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
-  plot <- ggplot(new, aes_(x=~Position, y=~avg.Max.AF,fill=~Variants)) +
+  plot <- ggplot(
+    data = data,
+    mapping = aes_(
+      x=~Position,
+      y=~avg.Max.AF,
+      fill=~Variants
+      )
+    ) +
     geom_bar(stat = 'identity') +
     use_theme +
-    geom_errorbar(aes_(ymin=~avg.Max.AF, ymax=~avg.Max.AF+std.MaxAF), width=.1) +
+    geom_errorbar(
+      mapping = aes_(
+        ymin=~.data$avg.Max.AF,
+        ymax=~(.data$avg.Max.AF + .data$std.MaxAF)
+      ),
+      width=.1
+    ) +
     theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(replicate ~ Name, scales = 'free_x', space = 'free_x')
+    facet_grid(replicate ~ Name, scales = 'free_x', space = 'free_x') +
+    ylab("Variant Allele Frequency (%)") +
+    xlab("Amplicon position") +
+    ggplot2::scale_fill_brewer(palette = 'Set1')
+
+
+  if(plot.ref){
+    plot <- plot +
+      scale_x_discrete(
+        breaks = data$Position,
+        labels = data$Reference
+      ) +
+      theme(
+        axis.text.x = element_text(
+          size = 9,
+          angle = 0
+        )
+      )
+  }
 
   if(do.plot) {
     print(plot)
@@ -1022,7 +1050,8 @@ vizStackedCounts <- function(
   do.plot = TRUE,
   option = 'viridis',
   direction = 1,
-  theme = 'classic'
+  theme = 'bw',
+  plot.ref = TRUE
   ){
 
   # For each row in consensus data, set the reference count to 0.
@@ -1063,6 +1092,11 @@ vizStackedCounts <- function(
                                         .data$Reference,
                                         .data$avg.Depth))
 
+  out.file$variant  <- forcats::fct_relevel(
+    .f = out.file$variant,
+    ">A",">C",">G",">T",">D",">I",">N"
+  )
+
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
@@ -1070,9 +1104,43 @@ vizStackedCounts <- function(
   stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
     geom_bar( stat="identity") +
     use_theme +
-    viridis::scale_fill_viridis(discrete = TRUE,option = option,direction = direction) +
     facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
     theme(axis.text.x = element_text(angle = 90))
+
+  allowed_colours <- c('viridis','magma','plasma','inferno','cividis',
+                       'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
+                       'Set1', 'Set2', 'Set3')
+
+  if(! option %in% allowed_colours){
+    option = 'Set1'
+  }
+
+  if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
+    stacked <- stacked + viridis::scale_fill_viridis(
+      discrete = TRUE,
+      option = option
+    )
+  } else {
+    # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+    stacked <- stacked +
+      ggplot2::scale_fill_brewer(
+        palette = option
+      )
+  }
+
+  if(plot.ref){
+    stacked <- stacked +
+      scale_x_discrete(
+        breaks = out.file$Position,
+        labels = out.file$Reference
+      ) +
+      theme(
+        axis.text.x = element_text(
+          size = 9,
+          angle = 0
+        )
+      )
+  }
 
   if(do.plot){
     return(stacked)

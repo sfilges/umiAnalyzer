@@ -4,7 +4,12 @@
 \alias{filterConsensusTable}
 \title{Filter samples and amplicons from a consensus tabel}
 \usage{
-filterConsensusTable(consensus.data, amplicons = NULL, samples = NULL)
+filterConsensusTable(
+  consensus.data,
+  amplicons = NULL,
+  samples = NULL,
+  positions = NULL
+)
 }
 \arguments{
 \item{consensus.data}{A consensus fdata table.}
@@ -12,6 +17,8 @@ filterConsensusTable(consensus.data, amplicons = NULL, samples = NULL)
 \item{amplicons}{Null or list of amplicons to use.}
 
 \item{samples}{Null or a list of samples to use.}
+
+\item{positions}{Null or a list of positions to use.}
 }
 \value{
 A consensus table.
