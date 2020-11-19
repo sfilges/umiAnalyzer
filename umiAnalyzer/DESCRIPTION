@@ -1,8 +1,8 @@
 Package: umiAnalyzer
 Type: Package
 Title: Tools for Analyzing Umierrorcorrect Output
-Version: 0.8.8
-Date: 16-07-2020
+Version: 0.8.10
+Date: 19-11-2020
 Authors@R: c(
     person("Stefan", "Filges", email = "stefan.filges@gu.se", 
     role = c("aut", "cre"))
