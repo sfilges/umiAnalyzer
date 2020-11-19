@@ -4,10 +4,12 @@
 \alias{runUmiVisualiser}
 \title{Function to run the umiVisualiser shiny app}
 \usage{
-runUmiVisualiser(docker = FALSE)
+runUmiVisualiser(docker = FALSE, path = NULL)
 }
 \arguments{
 \item{docker}{Boolean. Are you running in a docker container?}
+
+\item{path}{Path to directory containing umierrorocorrect output.}
 }
 \description{
 Function to run the umiVisualiser shiny app

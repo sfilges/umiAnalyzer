@@ -278,6 +278,11 @@ server <- function(input, output, session, plotFun) {
 
   # Set up user_data_main
   user_data_main <- reactive({
+
+    if(!is.null(path_to_umierrorcorrect_data)){
+      main <- path_to_umierrorcorrect_data
+    }
+
     # Path selected by the user
     main <- shinyFiles::parseDirPath(
       roots = volumes,
