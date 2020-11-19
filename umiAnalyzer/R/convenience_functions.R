@@ -371,18 +371,20 @@ importBedFile <- function(path){
 
   bed <- readr::read_delim(
     file = path,
-    delim = "\t",
+    delim = '\t',
     col_names = FALSE,
     col_types = readr::cols(
       X1 = readr::col_character(),
       X2 = readr::col_integer(),
-      X3 = readr::col_integer()
+      X3 = readr::col_integer(),
+      X4 = readr::col_character()
     )
   ) %>%
     dplyr::rename(
       chrom = .data$X1,
       chromStart = .data$X2,
-      chromEnd = .data$X3
+      chromEnd = .data$X3,
+      Variant = .data$X4
     )
 
   l <- NULL

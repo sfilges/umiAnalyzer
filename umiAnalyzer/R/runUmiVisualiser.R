@@ -14,7 +14,11 @@ runUmiVisualiser <- function(docker=FALSE, path=NULL) {
     .GlobalEnv$path_to_umierrorcorrect_data <- path
     on.exit(rm(path_to_umierrorcorrect_data, envir=.GlobalEnv))
 
-    print(paste("Loading data from: ", path_to_umierrorcorrect_data, sep =""))
+    print(path_to_umierrorcorrect_data)
+    if(!is.null(path)) {
+      print(paste("Loading data from: ", path_to_umierrorcorrect_data, sep =""))
+    }
+
     # run app
     shiny::runApp(appDir, display.mode = "normal")
   } else {

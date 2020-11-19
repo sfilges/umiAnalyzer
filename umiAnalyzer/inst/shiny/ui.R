@@ -14,6 +14,7 @@ suppressMessages(library(shinyFiles, quietly = TRUE))
 suppressMessages(library(shinyWidgets, quietly = TRUE))
 suppressMessages(library(DT, quietly = TRUE))
 suppressMessages(library(shinydashboard, quietly = TRUE))
+suppressMessages(library(plotly, quietly = TRUE))
 suppressMessages(library(umiAnalyzer, quietly = TRUE))
 
 #----UI----
@@ -288,46 +289,6 @@ ui <- dashboardPage(
               tabBox(
                 type = 'tabs',
                 width = 12,
-                #-------------- Panel for mutation heatmap --------------
-                tabPanel(
-                  title = "Heatmap",
-                  style = 'margin-left: 20px;',
-                  fluidRow(
-                    # Option for plot customisation
-                    dropdownButton(
-                      tags$h3('Customise plot'),
-                      selectInput(
-                        inputId = 'heatmap_colors',
-                        label = 'Choose colour palette:',
-                        choices = c('Blues','Reds','Greens','YlOrRd','YlGnBu','RdPu',
-                                    'Purples', 'PuBuGn', 'PuBu', 'OrRd', 'Greys',
-                                    'GnBu', 'BuPu', 'BuGn', 'Spectral', 'RdYlBu')
-                      ),
-                      selectInput(
-                        inputId = 'cluster_by',
-                        label = 'Samples in:',
-                        choices = c('columns','rows')
-                      ),
-                      numericInput(
-                        inputId = 'font_size',
-                        label = 'Font Size',
-                        value = 10,
-                        min = 1,
-                        max = 30
-                      ),
-                      circle = FALSE,
-                      status = 'default',
-                      icon = icon('gear'),
-                      width = '300px',
-                      tooltip = tooltipOptions(title = 'Click to customise plot!')
-                    ),
-                  plotOutput("heatmap"),
-                  downloadButton(
-                    outputId = 'download_heatmap.pdf',
-                    label = 'Download figure'
-                  )
-                  )
-                ),
                 #--------- Panel for the amplicon plots ------
                 tabPanel(
                   title = 'Amplicons',
@@ -361,13 +322,13 @@ ui <- dashboardPage(
                       sliderInput(
                         inputId = 'font_size_amplicons',
                         label = 'Font size',
-                        value = 8, step = 1,
+                        value = 7, step = 1,
                         min = 1, max = 14
                       ),
                       sliderInput(
                         inputId = 'font_angle_amplicons',
                         label = 'Font angle',
-                        value = 90, step = 45,
+                        value = 45, step = 45,
                         min = 0, max = 90
                       ),
                       numericInput(
@@ -384,15 +345,17 @@ ui <- dashboardPage(
                         min = 0,
                         max = 100
                       ),
-                      materialSwitch(
+                      shinyWidgets::materialSwitch(
                         inputId = "plot_mutation",
                         label = "Show mutant allele: ",
-                        status = "primary"
+                        status = "primary",
+                        value = FALSE
                       ),
-                      materialSwitch(
+                      shinyWidgets::materialSwitch(
                         inputId = "plot_reference",
                         label = "Show reference base: ",
-                        status = "primary"
+                        status = "primary",
+                        value = TRUE
                       ),
                       circle = FALSE,
                       status = 'default',
@@ -400,7 +363,7 @@ ui <- dashboardPage(
                       width = '300px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
-                    plotOutput(
+                    plotly::plotlyOutput(
                       outputId = 'amplicon_plot',
                       width = '100%'
                     ),
@@ -439,9 +402,49 @@ ui <- dashboardPage(
                       width = '300px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
-                    plotOutput('qcPlot'),
+                    plotly::plotlyOutput('qcPlot'),
                     downloadButton(
                       outputId = 'download_qc_plot',
+                      label = 'Download figure'
+                    )
+                  )
+                ),
+                #-------------- Panel for mutation heatmap --------------
+                tabPanel(
+                  title = "Heatmap",
+                  style = 'margin-left: 20px;',
+                  fluidRow(
+                    # Option for plot customisation
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      selectInput(
+                        inputId = 'heatmap_colors',
+                        label = 'Choose colour palette:',
+                        choices = c('Blues','Reds','Greens','YlOrRd','YlGnBu','RdPu',
+                                    'Purples', 'PuBuGn', 'PuBu', 'OrRd', 'Greys',
+                                    'GnBu', 'BuPu', 'BuGn', 'Spectral', 'RdYlBu')
+                      ),
+                      selectInput(
+                        inputId = 'cluster_by',
+                        label = 'Samples in:',
+                        choices = c('columns','rows')
+                      ),
+                      numericInput(
+                        inputId = 'font_size',
+                        label = 'Font Size',
+                        value = 10,
+                        min = 1,
+                        max = 30
+                      ),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '300px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!')
+                    ),
+                    plotOutput("heatmap"),
+                    downloadButton(
+                      outputId = 'download_heatmap.pdf',
                       label = 'Download figure'
                     )
                   )

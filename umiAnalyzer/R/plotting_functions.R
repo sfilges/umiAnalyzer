@@ -21,6 +21,7 @@
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom stats median
 #' @importFrom viridis scale_fill_viridis
+#' @importFrom plotly ggplotly
 #'
 generateQCplots <- function(
   object,
@@ -140,6 +141,7 @@ generateQCplots <- function(
     )
   }
 
+  depth_plot <- plotly::ggplotly(depth_plot)
   # Plot consensus depth distribution
   if (do.plot) {
     print(depth_plot)
@@ -266,6 +268,7 @@ plotUmiCounts <- function(
 #' @export
 #'
 #' @import ggplot2
+#' @importFrom plotly ggplotly
 #' @importFrom scales rescale_none
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
@@ -428,7 +431,7 @@ generateAmpliconPlots <- function(
     if(abs.count) {
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
-        y = ~(`Max Non-ref Allele Count`),
+        y = ~`Max Non-ref Allele Count`,
         fill = ~Variants)
       ) +
         use_theme +
@@ -438,9 +441,13 @@ generateAmpliconPlots <- function(
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
     } else {
+
+      cons.table <- cons.table %>%
+        dplyr::mutate(`Max Non-ref Allele Frequency` = 100*`Max Non-ref Allele Frequency`)
+
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
-        y = ~ (100 * `Max Non-ref Allele Frequency`),
+        y = ~`Max Non-ref Allele Frequency`,
         fill = ~Variants)) +
         use_theme +
         geom_bar(stat = "identity") +
@@ -515,9 +522,13 @@ generateAmpliconPlots <- function(
 
   # Show plot and add ggplot object to the UMIexperiment object
   if (do.plot) {
+
+    amplicon_plot <- plotly::ggplotly(amplicon_plot)
+
     print(amplicon_plot)
     object@plots$amplicon_plot <- amplicon_plot
   } else {
+    amplicon_plot <- plotly::ggplotly(amplicon_plot)
     object@plots$amplicon_plot <- amplicon_plot
   }
   return(object)
@@ -650,6 +661,7 @@ amplicon_heatmap <- function(
 
   }
 
+  dev.off()
   print(heatmap_DNA_clean)
 }
 

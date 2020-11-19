@@ -620,7 +620,7 @@ server <- function(input, output, session, plotFun) {
 
   #------------------- Amplicon plot ---------------------
   # plot amplicon plot reactive value
-  output$amplicon_plot <- shiny::renderPlot({
+  output$amplicon_plot <- plotly::renderPlotly({
 
     if(is.null(filteredData())){
       return(NULL)
@@ -656,22 +656,24 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering complete"))
 
     })
+
     object@plots$amplicon_plot
   })
 
 
+
   #------ Output the QC plot -------
 
-  output$qcPlot <- renderPlot({
+  output$qcPlot <- renderPlotly({
 
     if(is.null(experiment())){
       return(NULL)
     }
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
-      umiAnalyzer::generateQCplots(
+      object <- umiAnalyzer::generateQCplots(
         object = experiment(),
-        do.plot = TRUE,
+        do.plot = FALSE,
         group.by = 'sample',
         plotDepth = input$consensus,
         assays = input$assays,
@@ -682,16 +684,18 @@ server <- function(input, output, session, plotFun) {
       )
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })
+
+    object@plots$qc_depth_plot
   })
 
 
   #------ Heatmap of mutations -------
-
   output$heatmap <- renderPlot({
 
     if(is.null(filteredData())){
       return(NULL)
     }
+
     umiAnalyzer::amplicon_heatmap(
       object = filteredData(),
       amplicons = input$assays,
