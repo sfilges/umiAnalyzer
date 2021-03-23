@@ -88,18 +88,36 @@ server <- function(input, output, session, plotFun) {
     filename <- function() {
       paste('amplicon-plot-', Sys.time(),'.pdf',sep='') },
     content <- function(file) {
-      pdf(file, width = 9, height = 6)
-        object <- umiAnalyzer::generateAmpliconPlots(
+
+
+      object <- umiAnalyzer::generateAmpliconPlots(
           object = filteredData(),
-          do.plot = TRUE,
+          do.plot = FALSE,
           amplicons = input$assays,
           samples = input$samples,
           abs.count = input$abs_counts,
+          cut.off = 5,                  # TODO make this parameter interactive?
           theme = input$theme,
           option = input$colors,
-          direction = input$direction
+          direction = input$direction,
+          y_min = input$y_min,
+          y_max = input$y_max,
+          plot.text = input$plot_mutation,
+          plot.ref = input$plot_reference,
+          stack.plot = input$stacked,
+          classic.plot = input$classic,
+          fdr = input$fdr_cutoff,
+          use.caller = input$use_caller,
+          font.size = input$font_size_amplicons,
+          angle = input$font_angle_amplicons,
+          use.plotly = FALSE
         )
-      dev.off()
+
+      plot <- object@plots$amplicon_plot
+
+      ggplot2::ggsave(filename = file, plot = plot, device = "pdf")
+
+
     }
   )
 
@@ -563,13 +581,20 @@ server <- function(input, output, session, plotFun) {
       dplyr::filter(.data$Name %in% input$assays) %>%
       dplyr::filter(.data$`Sample Name` %in% input$samples)
 
-
+    # If user selects to use bed file...
     if(input$use_bed){
+      #... and a bed file has been uploaded
       if(!is.null(bed$bed)){
         print("Using user-defined mutations")
 
+        # Positions in bed file
+        pos <- as.numeric(bed$bed)
+
+        # Select positions from bed file
         filter <- filter %>%
-          dplyr::filter(.data$Position %in% bed$bed)
+          dplyr::filter(.data$Position %in% pos)
+      } else {
+        return(NULL)
       }
     }
 
@@ -680,7 +705,10 @@ server <- function(input, output, session, plotFun) {
         samples = input$samples,
         theme = input$theme_qc,
         option = input$colors_qc,
-        direction = input$direction_qc
+        direction = input$direction_qc,
+        toggle_mean = input$show_mean,
+        center = input$centerpoint,
+        line_col = input$line_col_qc
       )
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })

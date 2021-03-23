@@ -396,6 +396,22 @@ ui <- dashboardPage(
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
                       ),
+                      shinyWidgets::materialSwitch(
+                        inputId = "show_mean",
+                        label = "Show mean depth: ",
+                        status = "primary",
+                        value = TRUE
+                      ),
+                      selectInput(
+                        inputId = 'line_col_qc',
+                        label = 'Choose line colour :',
+                        choices = c('blue','red','green','black')
+                      ),
+                      selectInput(
+                        inputId = 'centerpoint',
+                        label = 'Choose center:',
+                        choices = c('mean','median')
+                      ),
                       circle = FALSE,
                       status = 'default',
                       icon = icon('gear'),

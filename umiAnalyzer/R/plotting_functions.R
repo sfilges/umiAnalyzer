@@ -13,6 +13,9 @@
 #' @param theme ggplot theme to use.
 #' @param option Colour palette to use, etiher ggplot default or viridis colours.
 #' @param direction If viridis colours are used, choose orientation of colour scale.
+#' @param toggle_mean Show mean or median
+#' @param center Choose mean or median
+#' @param line_col Choose color for mean/median line
 #'
 #' @export
 #'
@@ -32,7 +35,10 @@ generateQCplots <- function(
   samples = NULL,
   theme = 'classic',
   option = 'default',
-  direction = 'default'
+  direction = 'default',
+  toggle_mean = TRUE,
+  center = "mean",
+  line_col = "blue"
   ) {
 
   if (missing(x = object)) {
@@ -81,16 +87,9 @@ generateQCplots <- function(
       geom_bar(position = "dodge", stat = "identity") +
       use_theme +
       theme(
+        axis.title.x = element_blank(),
         axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
         axis.text.y = element_text(size = 14)
-      ) +
-      geom_hline(
-        yintercept = median(cdepths$UMIcount),
-        linetype = "dashed", color = "red"
-      ) +
-      geom_hline(
-        yintercept = mean(cdepths$UMIcount),
-        linetype = "dashed", color = "blue"
       ) +
       labs(
         title = paste("Consensus ", plotDepth, " depths by assay", sep = ""),
@@ -105,17 +104,10 @@ generateQCplots <- function(
       geom_bar(position = "dodge", stat = "identity") +
       use_theme +
       theme(
+        axis.title.x = element_blank(),
         axis.text.x = element_text(size = 14),
         axis.text.y = element_text(size = 14)
       ) +
-      geom_hline(
-        yintercept = median(cdepths$UMIcount),
-        linetype = "dashed",
-        color = "red") +
-      geom_hline(
-        yintercept = mean(cdepths$UMIcount),
-        linetype = "dashed",
-        color = "blue") +
       labs(
         title = paste("Consensus ", plotDepth, " depths by sample", sep = ""),
         subtitle = paste(
@@ -124,6 +116,23 @@ generateQCplots <- function(
         ),
         caption = ""
       )
+  }
+
+  if(toggle_mean){
+
+    if(center == "mean"){
+      depth_plot <- depth_plot + geom_hline(
+        yintercept = mean(cdepths$UMIcount),
+        linetype = "dashed",
+        color = line_col)
+    } else {
+      depth_plot <- depth_plot + geom_hline(
+        yintercept = median(cdepths$UMIcount),
+        linetype = "dashed",
+        color = line_col)
+    }
+
+
   }
 
   if(option != 'default'){
@@ -264,6 +273,7 @@ plotUmiCounts <- function(
 #' @param classic.plot Show classical debarcer amplicon plot with raw error.
 #' @param fdr False-discovery-rate cut-off for variants.
 #' @param use.caller Should data from variant caller be used? Default is FALSE
+#' @param use.plotly Should plotly be used instead of the regular ggplot device? Default is TRUE
 #'
 #' @export
 #'
@@ -305,7 +315,8 @@ generateAmpliconPlots <- function(
   fdr = 0.05,
   font.size = 6,
   angle = 45,
-  use.caller = FALSE
+  use.caller = FALSE,
+  use.plotly = TRUE
   ) {
 
   if (missing(x = object)) {
@@ -395,7 +406,10 @@ generateAmpliconPlots <- function(
     ) +
     use_theme +
     geom_bar(stat="identity", width=.5, position = "dodge") +
-    theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
+    theme(
+      axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+      axis.title.x = element_blank()
+      ) +
     ylab("Variant Allele Frequency (%)") +
     xlab("Assay") +
     scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -419,7 +433,10 @@ generateAmpliconPlots <- function(
           size = .data$`Max Non-ref Allele Count`)
       ) +
       use_theme +
-      theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
+      theme(
+        axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+        axis.title.x = element_blank()
+        ) +
       ylab("Variant Allele Frequency (%)") +
       xlab("Assay") +
       labs(
@@ -436,7 +453,10 @@ generateAmpliconPlots <- function(
       ) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
+        theme(
+          axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+          axis.title.x = element_blank()
+          ) +
         ylab("Variant UMI count") +
         xlab("Assay") +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
@@ -451,7 +471,10 @@ generateAmpliconPlots <- function(
         fill = ~Variants)) +
         use_theme +
         geom_bar(stat = "identity") +
-        theme(axis.text.x = element_text(size = font.size, angle = angle, hjust = 1)) +
+        theme(
+          axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+          axis.title.x = element_blank()
+          ) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
@@ -479,7 +502,8 @@ generateAmpliconPlots <- function(
           labels = cons.table$Reference
         ) +
         theme(
-          axis.text.x = element_text(size = font.size, angle = 0)
+          axis.text.x = element_text(size = font.size, angle = 0),
+          axis.title.x = element_blank()
         )
     }
   }
@@ -523,12 +547,18 @@ generateAmpliconPlots <- function(
   # Show plot and add ggplot object to the UMIexperiment object
   if (do.plot) {
 
-    amplicon_plot <- plotly::ggplotly(amplicon_plot)
+    if(use.plotly){
+      amplicon_plot <- plotly::ggplotly(amplicon_plot)
+    }
 
     print(amplicon_plot)
     object@plots$amplicon_plot <- amplicon_plot
   } else {
-    amplicon_plot <- plotly::ggplotly(amplicon_plot)
+
+    if(use.plotly){
+      amplicon_plot <- plotly::ggplotly(amplicon_plot)
+    }
+
     object@plots$amplicon_plot <- amplicon_plot
   }
   return(object)
