@@ -58,7 +58,15 @@ server <- function(input, output, session, plotFun) {
           data = filteredData(),
           assays = input$assays,
           samples = input$samples,
-          minDepth =  input$consensus
+          minDepth =  input$consensus,
+          theme = input$theme,
+          option = input$colors,
+          direction = input$direction,
+          y_min = input$y_min,
+          y_max = input$y_max,
+          plot.text = input$plot_mutation,
+          plot.ref = input$plot_reference,
+          classic.plot = input$classic
         )
 
         # Update progress bar
@@ -106,10 +114,6 @@ server <- function(input, output, session, plotFun) {
           plot.ref = input$plot_reference,
           stack.plot = input$stacked,
           classic.plot = input$classic,
-          fdr = input$fdr_cutoff,
-          use.caller = input$use_caller,
-          font.size = input$font_size_amplicons,
-          angle = input$font_angle_amplicons,
           use.plotly = FALSE
         )
 
@@ -708,7 +712,9 @@ server <- function(input, output, session, plotFun) {
         direction = input$direction_qc,
         toggle_mean = input$show_mean,
         center = input$centerpoint,
-        line_col = input$line_col_qc
+        line_col = input$line_col_qc,
+        angle = input$font_angle_qc,
+        plotly = FALSE
       )
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })

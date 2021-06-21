@@ -16,6 +16,8 @@
 #' @param toggle_mean Show mean or median
 #' @param center Choose mean or median
 #' @param line_col Choose color for mean/median line
+#' @param angle Angle of labels on x-axis.
+#' @param plotly Should plotly be used for rendering?
 #'
 #' @export
 #'
@@ -37,38 +39,56 @@ generateQCplots <- function(
   option = 'default',
   direction = 'default',
   toggle_mean = TRUE,
-  center = "mean",
-  line_col = "blue"
+  center = 'mean',
+  line_col = 'blue',
+  angle = 0,
+  plotly = FALSE
   ) {
 
   if (missing(x = object)) {
-    stop("Must provide a umiExperiment object and filter names")
-  } else if(!class(object) == "UMIexperiment"){
-    stop("Object is not of class UMIexperiment.")
+    stop('Must provide a umiExperiment object and filter names')
+  } else if(!class(object) == 'UMIexperiment'){
+    stop('Object is not of class UMIexperiment.')
   }
 
   cons.table <- object@cons.data
   summary.table <- object@summary.data
 
   # Consensus depth plot per assay
-  cdepths <- summary.table %>% dplyr::filter(
-    .data$assay != '',
-    .data$depth == plotDepth
-  )
+  #cdepths <- summary.table %>% dplyr::filter(
+  #  .data$assay != '',
+  #  .data$depth == plotDepth
+  #)
+
+  cdepths <- cons.table %>%
+    dplyr::filter(
+      .data$Name != '',
+      .data$`Consensus group size` == plotDepth
+    )
+
 
   if (!is.null(assays)) {
     cdepths <- cdepths %>%
-      dplyr::filter(.data$assay %in% assays)
+      dplyr::filter(.data$Name %in% assays)
   }
 
   if (!is.null(samples)) {
     cdepths <- cdepths %>%
-      dplyr::filter(.data$sample %in% samples)
+      dplyr::filter(.data$`Sample Name` %in% samples)
   }
+
+  cdepths <- dplyr::rename(cdepths, UMIcount = Coverage, assay = Name)
+
+  cdepths <- cdepths %>%
+    dplyr::group_by(`Sample Name`, assay) %>%
+    dplyr::summarise(UMIcount = mean(UMIcount))
+
+  cdepths
+
 
   # Set assay and sample to factor for better plotting
   cdepths$assay %<>% as.factor
-  cdepths$sample %<>% as.factor
+  cdepths$`Sample Name` %<>% as.factor
 
   print(as.data.frame(cdepths))
 
@@ -82,53 +102,53 @@ generateQCplots <- function(
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
-  if (group.by == "assay") {
-    depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount, fill=~sample)) +
-      geom_bar(position = "dodge", stat = "identity") +
+  if (group.by == 'assay') {
+    depth_plot <- ggplot(cdepths, aes_(x = ~assay, y = ~UMIcount, fill=~(`Sample Name`))) +
+      geom_bar(position = 'dodge', stat = 'identity') +
       use_theme +
       theme(
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 14, angle = 45, hjust = 1),
+        axis.text.x = element_text(size = 14, angle = angle, hjust = 1),
         axis.text.y = element_text(size = 14)
       ) +
       labs(
-        title = paste("Consensus ", plotDepth, " depths by assay", sep = ""),
+        title = paste('Consensus ', plotDepth, ' depths by assay', sep = ""),
         subtitle = paste(
-          "Mean depth: ", round(mean(cdepths$UMIcount)),
-          "Median depth: ", round(median(cdepths$UMIcount))
+          'Mean depth: ', round(mean(cdepths$UMIcount)),
+          'Median depth: ', round(median(cdepths$UMIcount))
         ),
-        caption = ""
+        caption = ''
       )
-  } else if (group.by == "sample") {
-    depth_plot <- ggplot(cdepths, aes_(x = ~sample, y = ~UMIcount, fill=~assay)) +
-      geom_bar(position = "dodge", stat = "identity") +
+  } else if (group.by == 'sample') {
+    depth_plot <- ggplot(cdepths, aes_(x = ~(`Sample Name`), y = ~UMIcount, fill=~assay)) +
+      geom_bar(position = 'dodge', stat = 'identity') +
       use_theme +
       theme(
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 14),
+        axis.text.x = element_text(size = 14, angle = angle),
         axis.text.y = element_text(size = 14)
       ) +
       labs(
-        title = paste("Consensus ", plotDepth, " depths by sample", sep = ""),
+        title = paste('Consensus ', plotDepth, ' depths by sample', sep = ''),
         subtitle = paste(
-          "Mean depth: ", round(mean(cdepths$UMIcount)),
-          "Median depth: ", round(median(cdepths$UMIcount))
+          'Mean depth: ', round(mean(cdepths$UMIcount)),
+          'Median depth: ', round(median(cdepths$UMIcount))
         ),
-        caption = ""
+        caption = ''
       )
   }
 
   if(toggle_mean){
 
-    if(center == "mean"){
+    if(center == 'mean'){
       depth_plot <- depth_plot + geom_hline(
         yintercept = mean(cdepths$UMIcount),
-        linetype = "dashed",
+        linetype = 'dashed',
         color = line_col)
     } else {
       depth_plot <- depth_plot + geom_hline(
         yintercept = median(cdepths$UMIcount),
-        linetype = "dashed",
+        linetype = 'dashed',
         color = line_col)
     }
 
@@ -150,7 +170,10 @@ generateQCplots <- function(
     )
   }
 
-  depth_plot <- plotly::ggplotly(depth_plot)
+  if(plotly) {
+    depth_plot <- plotly::ggplotly(depth_plot)
+  }
+
   # Plot consensus depth distribution
   if (do.plot) {
     print(depth_plot)
@@ -228,15 +251,15 @@ plotUmiCounts <- function(
         discrete = TRUE,option = option,direction = direction) +
         geom_col(alpha=0.6) +
         facet_grid(assay ~ sample) +
-        ylab("UMI count") +
-        xlab("Consensus depth cut-off")
+        ylab('UMI count') +
+        xlab('Consensus depth cut-off')
   } else {
     plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
       use_theme +
       geom_col(alpha=0.6) +
       facet_grid(assay ~ sample) +
-      ylab("UMI count") +
-      xlab("Consensus depth cut-off")
+      ylab('UMI count') +
+      xlab('Consensus depth cut-off')
   }
 
   # Return object and plot
@@ -421,7 +444,7 @@ generateAmpliconPlots <- function(
   n_positions <- length(unique(cons.table$Position))
 
 
-  if ( (n_samples > 6) | (n_positions > 300) ) {
+  if ( (n_samples > 6) | (n_positions > 500) ) {
     amplicon_plot <- ggplot(
       cons.table, aes_(
         x = ~ Name,
@@ -459,7 +482,12 @@ generateAmpliconPlots <- function(
           ) +
         ylab("Variant UMI count") +
         xlab("Assay") +
-        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
+        geom_hline(
+          yintercept = 0,
+          color = 'gray50',
+          size = 0.3
+        )
     } else {
 
       cons.table <- cons.table %>%
@@ -478,7 +506,12 @@ generateAmpliconPlots <- function(
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
         scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
-        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+        facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
+        geom_hline(
+          yintercept = 0,
+          color = 'gray50',
+          size = 0.3
+        )
     }
 
     if(classic.plot){
@@ -502,11 +535,15 @@ generateAmpliconPlots <- function(
           labels = cons.table$Reference
         ) +
         theme(
-          axis.text.x = element_text(size = font.size, angle = 0),
+          axis.text.x = element_text(
+            size = font.size,
+            angle = 0
+            ),
           axis.title.x = element_blank()
         )
     }
   }
+
 
   if(direction == 'default'){
     orientation = 1
@@ -588,6 +625,7 @@ generateAmpliconPlots <- function(
 #' @importFrom tidyr spread
 #' @importFrom dplyr select
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom grDevices dev.off
 #'
 #'
 amplicon_heatmap <- function(
@@ -610,10 +648,10 @@ amplicon_heatmap <- function(
       name = filter.name
     )
 
-    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+    cons.table$Variants <- ifelse(cons.table$`Max Non-ref Allele Count` >= cut.off, 'Variant', 'Background')
   } else {
     cons.table <- object@variants
-    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, "Variant", "Background")
+    cons.table$Variants <- ifelse(cons.table$p.adjust <= 0.05, 'Variant', 'Background')
   }
 
   # Make variables factors to ensure equidistance on the x-axis
@@ -670,7 +708,7 @@ amplicon_heatmap <- function(
       fontsize_col = font.size,
       annotation_row = hcluster_clean,
       show_rownames = FALSE,
-      na_col = "gray80"
+      na_col = 'gray80'
     )
   } else{
     heatmap_DNA_clean <- pheatmap::pheatmap(
@@ -686,12 +724,12 @@ amplicon_heatmap <- function(
       annotation_col = hcluster_clean,
       show_rownames = TRUE,
       show_colnames = FALSE,
-      na_col = "gray80"
+      na_col = 'gray80'
     )
 
   }
 
-  dev.off()
+  grDevices::dev.off()
   print(heatmap_DNA_clean)
 }
 
@@ -708,7 +746,7 @@ amplicon_heatmap <- function(
 #' @export
 #'
 #' @import ggplot2
-#' @importFrom dplyr filter
+#' @importFrom dplyr filter group_by
 #' @importFrom magrittr "%>%" "%<>%"
 #'
 vizMergedData <- function(

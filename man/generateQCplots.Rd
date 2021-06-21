@@ -13,7 +13,12 @@ generateQCplots(
   samples = NULL,
   theme = "classic",
   option = "default",
-  direction = "default"
+  direction = "default",
+  toggle_mean = TRUE,
+  center = "mean",
+  line_col = "blue",
+  angle = 0,
+  plotly = FALSE
 )
 }
 \arguments{
@@ -34,6 +39,16 @@ generateQCplots(
 \item{option}{Colour palette to use, etiher ggplot default or viridis colours.}
 
 \item{direction}{If viridis colours are used, choose orientation of colour scale.}
+
+\item{toggle_mean}{Show mean or median}
+
+\item{center}{Choose mean or median}
+
+\item{line_col}{Choose color for mean/median line}
+
+\item{angle}{Angle of labels on x-axis.}
+
+\item{plotly}{Should plotly be used for rendering?}
 }
 \description{
 Visualise the UMI count for each selected assay and sample for a given

@@ -14,6 +14,14 @@ params:
   assays: 'NULL'
   samples: 'NULL'
   minDepth: 'NULL'
+  theme: 'NULL'
+  option: 'NULL'
+  direction: 'NULL'
+  y_min: 'NULL'
+  y_max: 'NULL'
+  plot.text: 'NULL'
+  plot.ref: 'NULL'
+  classic.plot: 'NULL'
 ---
 
 # Import data
@@ -25,6 +33,14 @@ library(DT, quietly = TRUE)
 samples <- params$samples
 assays <- params$assays
 data <- params$data
+theme<- params$theme
+option<- params$colors
+direction<- params$direction
+y_min<- params$y_min
+y_max<- params$y_max
+plot.text<- params$plot_mutation
+plot.ref<- params$plot_reference
+classic.plot<- params$classic
 ```
 
 UMI-based sequencing data processed with umi-error-correct was analysed in the 
@@ -40,13 +56,23 @@ assays
 ## Amplicons
 
 ```{r, message=FALSE, warning=FALSE}
+
 simsen <- umiAnalyzer::generateAmpliconPlots(
   object = data,
-  filter.name = 'user_filter',
   do.plot = TRUE,
   amplicons = assays,
-  samples = samples
+  samples = samples,
+  cut.off = 5,
+  theme = theme,
+  option = option,
+  direction = direction,
+  y_min = y_min,
+  y_max = y_max,
+  plot.text = plot_mutation,
+  plot.ref = plot_reference,
+  classic.plot = classic
 )
+
 ```
 
 ## UMI counts

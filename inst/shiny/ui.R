@@ -317,7 +317,7 @@ ui <- dashboardPage(
                       selectInput(
                         inputId = 'theme',
                         label = 'Choose theme:',
-                        choices = c('classic','gray','bw','minimal','light')
+                        choices = c('umiVisualiser', 'classic','gray','bw','minimal','light')
                       ),
                       sliderInput(
                         inputId = 'font_size_amplicons',
@@ -396,6 +396,12 @@ ui <- dashboardPage(
                         label = 'Choose theme:',
                         choices = c('classic','gray','bw','minimal','light')
                       ),
+                      sliderInput(
+                        inputId = 'font_angle_qc',
+                        label = 'Font angle',
+                        value = 0, step = 45,
+                        min = 0, max = 90
+                      ),
                       shinyWidgets::materialSwitch(
                         inputId = "show_mean",
                         label = "Show mean depth: ",
@@ -419,6 +425,7 @@ ui <- dashboardPage(
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
                     plotly::plotlyOutput('qcPlot'),
+                    #plotOutput('qcPlot'),
                     downloadButton(
                       outputId = 'download_qc_plot',
                       label = 'Download figure'

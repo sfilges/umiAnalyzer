@@ -24,7 +24,8 @@ generateAmpliconPlots(
   fdr = 0.05,
   font.size = 6,
   angle = 45,
-  use.caller = FALSE
+  use.caller = FALSE,
+  use.plotly = TRUE
 )
 }
 \arguments{
@@ -63,6 +64,8 @@ generateAmpliconPlots(
 \item{fdr}{False-discovery-rate cut-off for variants.}
 
 \item{use.caller}{Should data from variant caller be used? Default is FALSE}
+
+\item{use.plotly}{Should plotly be used instead of the regular ggplot device? Default is TRUE}
 }
 \value{
 A umiExperiment object containing a ggplot object with the

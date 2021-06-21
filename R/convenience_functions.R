@@ -33,6 +33,77 @@ download_template <- function(object){
 select_theme <- function(theme){
   if(theme == 'classic'){
     use_theme <- ggplot2::theme_classic()
+  } else if(theme == 'umiVisualiser') {
+
+    use_theme <- ggplot2::theme_bw() +
+      theme(
+        # remove the plot background
+        plot.background = ggplot2::element_blank(),
+        panel.background = ggplot2::element_blank(),
+
+        # make the legend and strip background transparent
+        legend.background = ggplot2::element_rect(
+          fill = "transparent",
+          colour = NA
+        ),
+        legend.key = ggplot2::element_rect(
+          fill = "transparent",
+          colour = NA),
+        strip.background = ggplot2::element_rect(
+          fill = "transparent",
+          colour = NA
+        ),
+
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+
+    # remove the axis tick marks and hide axis lines
+    axis.ticks = ggplot2::element_line(colour = "#454545", size = 0.3),
+    axis.line = ggplot2::element_line(color = "#454545", size = 0.3),
+
+    # modify the bottom margins of the title and subtitle
+    plot.title = ggplot2::element_text(
+      size = 18, colour = "#454545",
+      hjust = 0.5,
+      margin = ggplot2::margin(b = 10)
+    ),
+    plot.subtitle = ggplot2::element_text(
+      size = 12, colour = "#454545",
+      hjust = 0.5,
+      margin = ggplot2::margin(b = 10)
+    ),
+
+    # add padding to the caption
+    plot.caption = ggplot2::element_text(
+      size = 10, colour = "#454545",
+      hjust = 1,
+      margin = ggplot2::margin(t = 15)
+      ),
+
+    # Adjust text size and axis title position
+    axis.title = ggplot2::element_text(
+      size = 13,
+      colour = "#454545",
+      hjust = 0.95
+    ),
+    axis.text = ggplot2::element_text(
+      size = 10,
+      colour = "#212121"
+    ),
+    legend.title = ggplot2::element_text(
+      size = 12,
+      colour = "#454545"
+    ),
+    legend.text = ggplot2::element_text(
+      size = 10,
+      colour = "#454545"
+    ),
+    strip.text = ggplot2::element_text(
+      size = 12, colour = "#454545",
+      margin = ggplot2::margin(10, 10, 10, 10, "pt")
+      )
+    )
+
   } else if(theme == 'bw'){
     use_theme <- ggplot2::theme_bw()
   } else if(theme == 'gray'){

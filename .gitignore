@@ -1,6 +1,11 @@
+Meta
+doc
+data
+.git
 .Rproj.user
 .Rhistory
-.RData
+.Rdata
 .Ruserdata
 *.DS_Store
-umiAnalyzer/inst/.DS_Store
+inst/.DS_Store
+cran-comments.md
