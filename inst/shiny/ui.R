@@ -38,11 +38,6 @@ ui <- dashboardPage(
         icon = icon('dna')
       ),
       menuItem(
-        text = 'Advanced',
-        tabName = 'advanced',
-        icon = icon('magic')
-      ),
-      menuItem(
         text = 'User Guide',
         tabName = 'vignette',
         icon = icon('book')
@@ -59,7 +54,7 @@ ui <- dashboardPage(
   dashboardBody(
     # List tab items ...
     tabItems(
-      # ... each tab-item correponds to a menu-item in the sidebar
+      # ... each tab-item corresponds to a menu-item in the sidebar
       tabItem(tabName = 'dashboard',
         fluidRow(
           #------------- Box for data upload and selection ---------------
@@ -69,6 +64,7 @@ ui <- dashboardPage(
             solidHeader = TRUE,
             collapsible = FALSE,
             height = 460,
+            width = 4,
             # Tab box with two panels
             tabBox(
               width = 12,
@@ -135,33 +131,156 @@ ui <- dashboardPage(
                     width = "100%"
                   )
                 )
-              ),
-              # Panel 2: Data selection - the user chooses consensus depth for
-              # filtering and which samples and assays to show.
-              tabPanel(
-                title = 'Data selection',
-                icon = icon('edit'),
+              )
+            )
+          ),
 
-                selectInput(
-                  inputId = 'consensus', width = "50%",
-                  label = 'Consensus Depth:',
-                  choices = c(0,1,2,3,4,5,10,20,30),
-                  selected = 3
-                ),
-                selectInput(
-                  inputId = 'samples', width = "100%",
-                  label = 'Samples:',
-                  choices = '',
-                  multiple = TRUE
-                ),
-                selectInput(
-                  inputId = 'assays', width = "100%",
-                  label = 'Assays:',
-                  choices = '',
-                  multiple = TRUE
-                )
+          # Box 2: Data selection - the user chooses consensus depth for
+          # filtering and which samples and assays to show.
+          box(
+            title = "Data filters",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            height = 460,
+            width = 4,
+            style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
+
+            tabPanel(
+              title = 'Data selection',
+              icon = icon('edit'),
+
+              selectInput(
+                inputId = 'consensus', width = "50%",
+                label = 'Consensus Depth:',
+                choices = c(0,1,2,3,4,5,10,20,30),
+                selected = 3
               ),
-              # Panel 3: Merging assays
+              selectInput(
+                inputId = 'samples', width = "100%",
+                label = 'Samples:',
+                choices = '',
+                multiple = TRUE
+              ),
+              selectInput(
+                inputId = 'assays', width = "100%",
+                label = 'Assays:',
+                choices = '',
+                multiple = TRUE
+              ),
+              selectInput(
+                inputId = 'facets', width = "100%",
+                label = 'Facets:',
+                choices = '',
+                multiple = TRUE
+              )
+            )
+          ),
+
+          #---------- Box for parameter selection ------------
+          box(
+            title = "Plotting options",
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = FALSE,
+            height = 460,
+            width = 4,
+            style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
+            # Tab box with two panels
+            tabBox(
+              width = 12,
+              type = "tabs",
+              # Panel 1: Basic plot types
+              tabPanel(
+                title = "Plot types",
+                icon = icon("upload"),
+                fluidRow(
+                  column(12,
+                       style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
+                       materialSwitch(
+                         inputId = "abs_counts",
+                         label = "Use absolute counts: ",
+                         status = "primary"
+                       ),
+                       materialSwitch(
+                         inputId = "stacked",
+                         label = "Stacked plot: ",
+                         status = "primary"
+                       ),
+                       materialSwitch(
+                         inputId = "classic",
+                         label = "Raw error plot: ",
+                         status = "primary"
+                       ),
+                       materialSwitch(
+                         inputId = "use_caller",
+                         label = "Use variant caller: ",
+                         value = TRUE,
+                         status = "primary"
+                       ),
+                       materialSwitch(
+                         inputId = "use_bed",
+                         label = "Use bed mutations: ",
+                         value = FALSE,
+                         status = "primary"
+                       ),
+                       materialSwitch(
+                         inputId = "use_facets",
+                         label = "Use facets: ",
+                         value = FALSE,
+                         status = "primary"
+                       )
+                    )
+                  )
+              ),
+              tabPanel(
+                #---------- Box for parameter selection ------------
+                  title = "Filters",
+                  fluidRow(
+                    column(6,
+                           sliderInput(
+                             inputId = "minFreq",
+                             label = "Minimum VAF (to plot):",
+                             min = 0, max = 1,
+                             value = 0, step = 0.01,
+                             post = "%", sep = ","
+                           ),
+                           sliderInput(
+                             inputId = "minCount",
+                             label = "Min variant count (to plot):",
+                             min = 0, max = 10,
+                             value = 0, step = 1,
+                             post = " reads", sep = ","
+                           ),
+                           sliderInput(
+                             inputId = "manual_cutoff",
+                             label =  "Manual cut-off:",
+                             min = 0, max = 100,
+                             value = 5, step = 1,
+                             sep = ","
+                           )
+                    ),
+
+                    column(6,
+                           sliderInput(
+                             inputId = "famSize",
+                             label =  "Min and Max family size (histogram):",
+                             min = 0, max = 500,
+                             value = c(0,100), step = 1,
+                             post = " reads", sep = ","
+                           ),
+                           sliderInput(
+                             inputId = "fdr_cutoff",
+                             label =  "FDR cut-off:",
+                             min = 0, max = 0.2,
+                             value = 0.05, step = 0.01,
+                             sep = ","
+                           )
+                    )
+                  )
+
+              ),
+              # Panel 2: Merging assays
               tabPanel(
                 title = 'Merge assays',
                 icon = icon('hubspot'),
@@ -181,99 +300,6 @@ ui <- dashboardPage(
                   icon = icon('cog')
                 )
               )
-            )
-          ),
-          #---------- Box for parameter selection ------------
-          box(
-            title = "Parameters",
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = FALSE,
-            height = 460,
-            style = "margin-bottom: 10px;margin-left: 10px;margin-right: 10px;",
-            fluidRow(
-              column(6,
-                sliderInput(
-                  inputId = "minFreq",
-                  label = "Minimum Variant allele frequency (to plot):",
-                  min = 0, max = 1,
-                  value = 0, step = 0.01,
-                  post = "%", sep = ","
-                ),
-                sliderInput(
-                  inputId = "minCount",
-                  label = "Minimum Variant allele count (to plot):",
-                  min = 0, max = 10,
-                  value = 0, step = 1,
-                  post = " reads", sep = ","
-                ),
-                sliderInput(
-                  inputId = "famSize",
-                  label =  "Minimum and Maximum family size (histogram):",
-                  min = 0, max = 500,
-                  value = c(0,100), step = 1,
-                  post = " reads", sep = ","
-                ),
-                sliderInput(
-                  inputId = "fdr_cutoff",
-                  label =  "FDR cut-off for variant caller:",
-                  min = 0, max = 0.2,
-                  value = 0.05, step = 0.01,
-                  sep = ","
-                )
-              ),
-              column(4,
-                style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
-                materialSwitch(
-                  inputId = "abs_counts",
-                  label = "Use absolute counts: ",
-                  status = "primary"
-                ),
-                materialSwitch(
-                  inputId = "stacked",
-                  label = "Stacked plot: ",
-                  status = "primary"
-                ),
-                materialSwitch(
-                  inputId = "classic",
-                  label = "Raw error plot: ",
-                  status = "primary"
-                ),
-                materialSwitch(
-                  inputId = "use_caller",
-                  label = "Use variant caller: ",
-                  value = TRUE,
-                  status = "primary"
-                ),
-                materialSwitch(
-                  inputId = "use_bed",
-                  label = "Use bed mutations: ",
-                  value = FALSE,
-                  status = "primary"
-                )
-              )
-            )
-          ),
-          #-------------- View data tables in collapsable box ------------------
-          box(
-            title = "Data Viewer",
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = 12,
-            mainPanel(width = 12,
-              tabBox(width = 12,
-                tabPanel(
-                  title = "Data",
-                  DT::dataTableOutput("dataTable"),
-                  style = "font-size: 10px;height:500px; overflow-y: scroll;overflow-x: scroll;"
-                ),
-                tabPanel(
-                  title = "Sample info",
-                  DT::dataTableOutput("metaDataTable")
-                )
-              ),
-              downloadButton("downloadData.csv", "Download")
             )
           ),
           # Show plots in collapsable box containing a tabBox with a tab for
@@ -302,65 +328,88 @@ ui <- dashboardPage(
                     #     - Set y-axis range
                     dropdownButton(
                       tags$h3('Customise plot'),
-                      selectInput(
-                        inputId = 'colors',
-                        label = 'Choose colour palette:',
-                        choices = c('default','viridis','magma','plasma','inferno','cividis',
-                                    'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
-                                    'Set1', 'Set2', 'Set3')
+                      column(6,
+                             selectInput(
+                               inputId = 'colors',
+                               label = 'Choose colour palette:',
+                               choices = c('default','viridis','magma','plasma','inferno','cividis',
+                                           'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
+                                           'Set1', 'Set2', 'Set3')
+                             ),
+                             selectInput(
+                               inputId = 'direction',
+                               label = 'Color palette direction:',
+                               choices = c('default','reverse')
+                             ),
+                             selectInput(
+                               inputId = 'theme',
+                               label = 'Choose theme:',
+                               choices = c('umiVisualiser', 'classic','gray','bw','minimal','light')
+                             ),
+                             sliderInput(
+                               inputId = 'font_size_amplicons',
+                               label = 'Font size',
+                               value = 7, step = 1,
+                               min = 1, max = 14
+                             ),
+                             sliderInput(
+                               inputId = 'font_angle_amplicons',
+                               label = 'Font angle',
+                               value = 45, step = 45,
+                               min = 0, max = 90
+                             )
                       ),
-                      selectInput(
-                        inputId = 'direction',
-                        label = 'Color palette direction:',
-                        choices = c('default','reverse')
-                      ),
-                      selectInput(
-                        inputId = 'theme',
-                        label = 'Choose theme:',
-                        choices = c('umiVisualiser', 'classic','gray','bw','minimal','light')
-                      ),
-                      sliderInput(
-                        inputId = 'font_size_amplicons',
-                        label = 'Font size',
-                        value = 7, step = 1,
-                        min = 1, max = 14
-                      ),
-                      sliderInput(
-                        inputId = 'font_angle_amplicons',
-                        label = 'Font angle',
-                        value = 45, step = 45,
-                        min = 0, max = 90
-                      ),
-                      numericInput(
-                        inputId = 'y_min',
-                        label = 'y_min',
-                        value = 0,
-                        min = 0,
-                        max = 100
-                      ),
-                      numericInput(
-                        inputId = 'y_max',
-                        label = 'y_max',
-                        value = NULL,
-                        min = 0,
-                        max = 100
-                      ),
-                      shinyWidgets::materialSwitch(
-                        inputId = "plot_mutation",
-                        label = "Show mutant allele: ",
-                        status = "primary",
-                        value = FALSE
-                      ),
-                      shinyWidgets::materialSwitch(
-                        inputId = "plot_reference",
-                        label = "Show reference base: ",
-                        status = "primary",
-                        value = TRUE
+                      column(6,
+                             numericInput(
+                               inputId = 'y_min',
+                               label = 'y_min',
+                               value = 0,
+                               min = 0,
+                               max = 100
+                             ),
+                             numericInput(
+                               inputId = 'y_max',
+                               label = 'y_max',
+                               value = NULL,
+                               min = 0,
+                               max = 100
+                             ),
+                             numericInput(
+                               inputId = 'amplicon_width',
+                               label = 'Plot width:',
+                               value = 12,
+                               min = 1,
+                               max = 20
+                             ),
+                             numericInput(
+                               inputId = 'amplicon_height',
+                               label = 'Plot height:',
+                               value = 6,
+                               min = 1,
+                               max = 20
+                             ),
+                             selectInput(
+                               inputId = 'amplicon_device',
+                               label = 'File type:',
+                               choices = c('pdf','png','svg','eps')
+                             ),
+                             shinyWidgets::materialSwitch(
+                               inputId = 'plot_mutation',
+                               label = 'Show mutant allele: ',
+                               status = 'primary',
+                               value = FALSE
+                             ),
+                             shinyWidgets::materialSwitch(
+                               inputId = 'plot_reference',
+                               label = 'Show reference base: ',
+                               status = 'primary',
+                               value = TRUE
+                             )
                       ),
                       circle = FALSE,
                       status = 'default',
                       icon = icon('gear'),
-                      width = '300px',
+                      width = '500px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
                     plotly::plotlyOutput(
@@ -421,7 +470,7 @@ ui <- dashboardPage(
                       circle = FALSE,
                       status = 'default',
                       icon = icon('gear'),
-                      width = '300px',
+                      width = '500px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
                     plotly::plotlyOutput('qcPlot'),
@@ -437,7 +486,7 @@ ui <- dashboardPage(
                   title = "Heatmap",
                   style = 'margin-left: 20px;',
                   fluidRow(
-                    # Option for plot customisation
+                    # Option for plot customization
                     dropdownButton(
                       tags$h3('Customise plot'),
                       selectInput(
@@ -462,7 +511,7 @@ ui <- dashboardPage(
                       circle = FALSE,
                       status = 'default',
                       icon = icon('gear'),
-                      width = '300px',
+                      width = '500px',
                       tooltip = tooltipOptions(title = 'Click to customise plot!')
                     ),
                     plotOutput("heatmap"),
@@ -515,126 +564,27 @@ ui <- dashboardPage(
                 )
               )
             )
-          )
-        )
-      ),
-
-      shinydashboard::tabItem(tabName = "advanced",
-        shiny::fluidRow(
-          shinydashboard::box(
-            title = 'Advanced data analysis',
-            status = 'primary',
-            solidHeader = TRUE,
-            collapsible = FALSE,
-            width = 6,
-            shiny::actionButton(
-              inputId = 'runVarCaller',
-              label = 'Run variant caller'
-            ),
-            shiny::actionButton(
-              inputId = 'mergeReplicates',
-              label = "Merge Replicates"
-            ),
-            shiny::actionButton(
-              inputId = 'timeSeries',
-              label = "Analyse time series"
-            ),
-            shiny::selectInput(
-              inputId = 'replicates',
-              label = 'Replicates:',
-              choices = '',
-              multiple = FALSE
-            ),
-            shiny::selectInput(
-              inputId = 'timeVar',
-              label = 'Time variable:',
-              choices = '',
-              multiple = FALSE
-            )
           ),
-
-          shinydashboard::box(
-            title = "Parameters",
+          #-------------- View data tables in collapsable box ------------------
+          box(
+            title = "Data Viewer",
             status = "primary",
-            solidHeader = TRUE,
-            collapsible = FALSE,
-            width = 6,
-            shiny::sliderInput(
-              inputId = "minVarCount",
-              label = "Minimum Variant allele count:",
-              min = 0, max = 10,
-              value = 0, step = 1,
-              post = " reads", sep = ","
-            ),
-            shiny::sliderInput(
-              inputId = "pVal",
-              label =  "Minimum adjusted p-value:",
-              min = 0, max = 1,
-              value = 1, step = 0.05,
-              sep = ","
-            )
-          ),
-
-          shinydashboard::box(
-            title = 'Plot Viewer',
-            status = 'primary',
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = 12,
-            mainPanel(
-              width = 12,
-              tabBox(width = 8,
-                tabPanel(
-                  title = 'Normalization',
-                  plotOutput('normPlot')
-                ),
-                tabPanel(
-                  title = 'Stacked counts',
-                  plotOutput('stackPlot')
-                ),
-                tabPanel(
-                  title = 'Merged amplicons',
-                  plotOutput('mergePlot')
-                ),
-                tabPanel(
-                  title = 'Time series',
-                  plotOutput('timeSeriesPlot')
-                ),
-                tabPanel(
-                  title = 'Variant caller',
-                  plotOutput('varPlot')
-                )
-              )
-            )
-          ),
-
-          # View data tables in collapsable box
-          shinydashboard::box(
-            title = 'Data Viewer',
-            status = 'primary',
             solidHeader = TRUE,
             collapsible = TRUE,
             width = 12,
             mainPanel(width = 12,
-              tabBox(
-                width = 12,
+              tabBox(width = 12,
                 tabPanel(
-                  title = 'Amplicons data'
+                  title = "Data",
+                  DT::dataTableOutput("dataTable"),
+                  style = "font-size: 10px;height:500px; overflow-y: scroll;overflow-x: scroll;"
                 ),
                 tabPanel(
-                  title = 'Sample info'
-                ),
-                tabPanel(
-                  title = 'Merged data',
-                  DT::dataTableOutput('mergedDataTable'),
-                  style = "font-size: 10px;"
-                ),
-                tabPanel(
-                  title = 'Variant data',
-                  DT::dataTableOutput('varDataTable'),
-                  style = "font-size: 10px;"
+                  title = "Sample info",
+                  DT::dataTableOutput("metaDataTable")
                 )
-              )
+              ),
+              downloadButton("downloadData.csv", "Download")
             )
           )
         )

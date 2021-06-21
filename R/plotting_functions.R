@@ -282,6 +282,8 @@ plotUmiCounts <- function(
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown?
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
+#' @param min.count Minimum variants counts to plot, default is 0.
+#' @param min.vaf Minimum variants allele frequency to plot, default is 0.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
@@ -323,6 +325,8 @@ generateAmpliconPlots <- function(
   filter.name = 'default',
   do.plot = TRUE,
   cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
@@ -339,7 +343,9 @@ generateAmpliconPlots <- function(
   font.size = 6,
   angle = 45,
   use.caller = FALSE,
-  use.plotly = TRUE
+  use.plotly = TRUE,
+  use.facets = FALSE,
+  facets = NULL
   ) {
 
   if (missing(x = object)) {
@@ -380,6 +386,24 @@ generateAmpliconPlots <- function(
     cons.table <- cons.table.default
   }
 
+  if(use.facets){
+    design <- object@meta.data
+
+    print(design)
+
+    design <- as_tibble(design)
+
+    colnames(design)[1] <- 'Sample Name'
+
+    print(design)
+    print(cons.table)
+
+    cons.table <- full_join(design,cons.table, by = 'Sample Name')
+
+    print(cons.table)
+
+  }
+
   # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
   cons.table$Position %<>% as.factor
@@ -387,11 +411,19 @@ generateAmpliconPlots <- function(
   cons.table$sample %<>% as.factor
   cons.table$`Consensus group size` %<>% as.factor
 
+  # Filter amplicons and samples based on user selection
   cons.table <- filterConsensusTable(
     cons.table,
     amplicons = amplicons,
     samples = samples
   )
+
+  # Filter position based on minimum VAF and counts, default is to use all positions.
+  cons.table <- cons.table %>%
+    dplyr::filter(
+      `Max Non-ref Allele Frequency` >= min.vaf/100,
+      `Max Non-ref Allele Count` >= min.count
+    )
 
   # Get raw error data (cons0)
   raw_error <- object@raw.error
@@ -424,19 +456,19 @@ generateAmpliconPlots <- function(
   # If classic plot is chosen make a raw vs consN plot
   classic_plot <- ggplot(classic_data, aes_(
       x = ~Position,
-      y = ~ (100 * `Max Non-ref Allele Frequency`),
+      y = ~(100 * `Max Non-ref Allele Frequency`),
       fill = ~(`Consensus group size`))
     ) +
     use_theme +
-    geom_bar(stat="identity", width=.5, position = "dodge") +
+    geom_bar(stat = 'identity', width=.5, position = 'dodge') +
     theme(
       axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
       axis.title.x = element_blank()
       ) +
-    ylab("Variant Allele Frequency (%)") +
-    xlab("Assay") +
+    ylab('Variant Allele Frequency (%)') +
+    xlab('Assay') +
     scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
-    facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+    facet_grid(`Sample Name` ~ Name, scales = 'free_x', space = 'free_x')
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
@@ -542,6 +574,15 @@ generateAmpliconPlots <- function(
           axis.title.x = element_blank()
         )
     }
+  }
+
+  if(use.facets){
+    amplicon_plot <- amplicon_plot +
+      facet_grid(
+        rows = vars(!!as.symbol(facets[1])),
+        cols = vars(!!as.symbol(facets[2])),
+        scales = 'free'
+      )
   }
 
 

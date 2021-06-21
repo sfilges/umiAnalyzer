@@ -9,3 +9,4 @@ data
 *.DS_Store
 inst/.DS_Store
 cran-comments.md
+*.Rproj

@@ -17,6 +17,8 @@ runUmiVisualiser <- function(docker=FALSE, path=NULL) {
     print(path_to_umierrorcorrect_data)
     if(!is.null(path)) {
       print(paste("Loading data from: ", path_to_umierrorcorrect_data, sep =""))
+    } else {
+      print("Start app without loading data.")
     }
 
     # run app

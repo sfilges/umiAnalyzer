@@ -114,14 +114,20 @@ server <- function(input, output, session, plotFun) {
           plot.ref = input$plot_reference,
           stack.plot = input$stacked,
           classic.plot = input$classic,
-          use.plotly = FALSE
+          use.plotly = FALSE,
+          fdr = input$fdr_cutoff,
+          use.caller = input$use_caller
         )
 
       plot <- object@plots$amplicon_plot
 
-      ggplot2::ggsave(filename = file, plot = plot, device = "pdf")
-
-
+      ggplot2::ggsave(
+        filename = file,
+        plot = plot,
+        device = input$amplicon_device,
+        width = input$amplicon_width,
+        height = input$amplicon_height
+      )
     }
   )
 
@@ -246,55 +252,6 @@ server <- function(input, output, session, plotFun) {
       )
 
       return(temp_dir)
-    }
-  })
-
-  #----Meta data reactive----
-
-  metaData <- reactive({
-
-    if(is.null(experiment())){
-      return(NULL)
-    }
-
-    #Note "file" is the name of the metadata from the inputUI
-
-    metaData <- input$file$datapath
-
-    if (identical(metaData, character(0))) {
-      return(NULL)
-    } else {
-
-      data <- umiAnalyzer::importDesign(
-        object = experiment(),
-        file = metaData,
-        delim = NULL # automatically select delimiter
-      )
-
-      design <- umiAnalyzer::getMetaData(
-        object = data,
-        attributeName = 'design'
-      )
-
-      choices <- colnames(design)
-
-      # Updates values based on content from metadata file
-
-      updateSelectInput(
-        session = session,
-        inputId = 'replicates',
-        choices = choices,
-        selected = head(choices,1)
-      )
-
-      updateSelectInput(
-        session = session,
-        inputId = 'timeVar',
-        choices = choices,
-        selected = head(choices,1)
-      )
-
-      return(design)
     }
   })
 
@@ -527,6 +484,38 @@ server <- function(input, output, session, plotFun) {
 
       data <- umiAnalyzer::callVariants(object = data)
 
+      #Note "file" is the name of the metadata from the inputUI
+
+      metaData <- input$file$datapath
+
+      print(is.null(metaData))
+
+      if (!is.null(metaData)) {
+
+        data <- umiAnalyzer::importDesign(
+          object = data,
+          file = metaData,
+          delim = NULL # automatically select delimiter
+        )
+
+        design <- data@meta.data
+
+        design <- as_tibble(design)
+        colnames(design)[1] <- 'Sample Name'
+
+        choices <- colnames(design)
+        print(choices)
+
+        # Updates values based on content from metadata file
+
+        updateSelectInput(
+          session = session,
+          inputId = 'facets',
+          choices = choices,
+          selected = head(choices,2)
+        )
+      }
+
       shiny::incProgress(1, detail = paste("Done!"))
 
     })
@@ -577,9 +566,15 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    filter <- umiAnalyzer::getFilteredData(
+    if(input$use_caller){
       object = filteredData()
-    )
+      filter <- object@variants
+    } else {
+      filter <- umiAnalyzer::getFilteredData(
+        object = filteredData()
+      )
+    }
+
 
     filter <- filter %>%
       dplyr::filter(.data$Name %in% input$assays) %>%
@@ -666,7 +661,9 @@ server <- function(input, output, session, plotFun) {
         amplicons = amplicon_settings_d(),
         samples = sample_settings_d(),
         abs.count = input$abs_counts,
-        cut.off = 5,                  # TODO make this parameter interactive?
+        cut.off = input$manual_cutoff,
+        min.count = input$minCount,
+        min.vaf = input$minFreq,
         theme = input$theme,
         option = input$colors,
         direction = input$direction,
@@ -679,7 +676,9 @@ server <- function(input, output, session, plotFun) {
         fdr = input$fdr_cutoff,
         use.caller = input$use_caller,
         font.size = input$font_size_amplicons,
-        angle = input$font_angle_amplicons
+        angle = input$font_angle_amplicons,
+        use.facets = input$use_facets,
+        facets = input$facets
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))
