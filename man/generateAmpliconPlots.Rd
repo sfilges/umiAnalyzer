@@ -9,6 +9,8 @@ generateAmpliconPlots(
   filter.name = "default",
   do.plot = TRUE,
   cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
@@ -25,7 +27,9 @@ generateAmpliconPlots(
   font.size = 6,
   angle = 45,
   use.caller = FALSE,
-  use.plotly = TRUE
+  use.plotly = TRUE,
+  use.facets = FALSE,
+  facets = NULL
 )
 }
 \arguments{
@@ -36,6 +40,10 @@ generateAmpliconPlots(
 \item{do.plot}{Logical. Should plots be shown?}
 
 \item{cut.off}{How many variant reads are necessary to consider a variant above background? Default is 5 reads.}
+
+\item{min.count}{Minimum variants counts to plot, default is 0.}
+
+\item{min.vaf}{Minimum variants allele frequency to plot, default is 0.}
 
 \item{amplicons}{(Optional) character vector of amplicons to be plotted.}
 

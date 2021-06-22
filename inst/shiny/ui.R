@@ -561,6 +561,57 @@ ui <- dashboardPage(
                 tabPanel(
                   title = "Histogram",
                   plotOutput("histogram")
+                ),
+                #-------------- Panel for timeseries  --------------
+                tabPanel(
+                  title = "Time series",
+                  style = 'margin-left: 20px;',
+                  fluidRow(
+                    # Option for plot customization
+                    dropdownButton(
+                      tags$h3('Customise plot'),
+                      circle = FALSE,
+                      status = 'default',
+                      icon = icon('gear'),
+                      width = '500px',
+                      tooltip = tooltipOptions(title = 'Click to customise plot!'),
+                      fluidRow(
+                        column(6,
+                               selectInput(
+                                 inputId = 'columns', width = "100%",
+                                 label = 'Columns',
+                                 choices = '',
+                                 multiple = FALSE
+                               ),
+                               selectInput(
+                                 inputId = 'rows', width = "100%",
+                                 label = 'Rows:',
+                                 choices = '',
+                                 multiple = FALSE
+                               )
+                        ),
+                        column(6,
+                               selectInput(
+                                 inputId = 'color_var', width = "100%",
+                                 label = 'Color variable:',
+                                 choices = '',
+                                 multiple = FALSE
+                               ),
+                               selectInput(
+                                 inputId = 'time_var', width = "100%",
+                                 label = 'Time variable:',
+                                 choices = '',
+                                 multiple = FALSE
+                               )
+                        )
+                      )
+                    ),
+                    plotOutput("time_series"),
+                    downloadButton(
+                      outputId = 'download_time_series.pdf',
+                      label = 'Download figure'
+                    )
+                  )
                 )
               )
             )

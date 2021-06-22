@@ -1270,3 +1270,109 @@ vizStackedCounts <- function(
   }
 }
 
+
+
+#' Plot time series data
+#' @param object A consensus data table
+#' @param do.plot Logical. Should plot be shown?
+
+#' @import tibble
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom tidyr gather
+#' @importFrom rlang .data
+#' @importFrom viridis scale_fill_viridis
+#'
+#' @return A ggplot object.
+#'
+#' @export
+#'
+timeSeriesGrid <- function(
+  object,
+  filter.name = 'default',
+  cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
+  amplicons = NULL,
+  samples = NULL,
+  x_variable = NULL,
+  y_variable = "Max Non-ref Allele Frequency",
+  columns = "Sample Name",
+  rows = "Name",
+  color_by = "Name",
+  fdr = 0.05,
+  do.plot = TRUE,
+  use.caller = TRUE,
+  bed_positions = NULL
+){
+
+  # Use depth cut-off to call variants
+  cons.table.default <- getFilteredData(object = object,name = filter.name)
+  cons.table.default$Variants <- ifelse(cons.table.default$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+
+  if(use.caller){
+    # Check if variant caller has been run on object
+    if(!identical(dim(object@variants), dim(tibble()))) {
+      cons.table <- object@variants
+      cons.table$Variants <- ifelse(cons.table$p.adjust <= fdr, "Variant", "Background")
+    } else {
+      warning("Variant caller has not been run, using default cut-off instead!")
+      cons.table <- cons.table.default
+    }
+  } else {
+    cons.table <- cons.table.default
+  }
+
+  design <- object@meta.data
+  design <- as_tibble(design)
+  colnames(design)[1] <- 'Sample Name'
+
+  cons.table <- full_join(design,cons.table, by = 'Sample Name')
+
+  # Filter amplicons and samples based on user selection
+  cons.table <- filterConsensusTable(
+    cons.table,
+    amplicons = amplicons,
+    samples = samples
+  )
+
+  # Filter position based on minimum VAF and counts, default is to use all positions.
+  cons.table <- cons.table %>%
+    dplyr::filter(
+      `Max Non-ref Allele Frequency` >= min.vaf/100,
+      `Max Non-ref Allele Count` >= min.count
+    )
+
+  if(!is.null(bed_positions)){
+    # Select positions from bed file
+    cons.table <- cons.table %>%
+      dplyr::filter(.data$Position %in% bed_positions) %>%
+      dplyr::mutate("variant" = paste(Name,' ', Contig, ':', Position))
+
+    print(cons.table)
+  }
+
+  # Time course plots
+  plot <- ggplot2::ggplot(
+    data = cons.table,
+    mapping = ggplot2::aes(
+      x= !!as.symbol(x_variable),
+      y= !!as.symbol(y_variable),
+      col = variant
+    )) +
+    ggplot2::geom_point(
+      data = cons.table,
+      size=3
+    ) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(limits=c(0,NA)) +
+    ggplot2::facet_wrap(
+      vars(!!as.symbol(columns)),
+      scales = 'free_y'
+    ) +
+    ggplot2::scale_color_brewer(palette = "Set1") +
+    ggplot2::theme_bw()
+
+  return(plot)
+}

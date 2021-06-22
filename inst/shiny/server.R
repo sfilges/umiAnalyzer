@@ -514,6 +514,34 @@ server <- function(input, output, session, plotFun) {
           choices = choices,
           selected = head(choices,2)
         )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'columns',
+          choices = choices,
+          selected = head(choices,1)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'rows',
+          choices = choices,
+          selected = head(choices,2)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'time_var',
+          choices = choices,
+          selected = head(choices,2)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'color_var',
+          choices = choices,
+          selected = head(choices,2)
+        )
       }
 
       shiny::incProgress(1, detail = paste("Done!"))
@@ -720,6 +748,55 @@ server <- function(input, output, session, plotFun) {
 
     object@plots$qc_depth_plot
   })
+
+
+  #------ Output the time series plot -------
+
+  output$time_series <- renderPlot({
+
+    if(is.null(filteredData())){
+      return(NULL)
+    }
+
+    # If user selects to use bed file...
+    if(input$use_bed){
+      #... and a bed file has been uploaded
+      if(!is.null(bed$bed)){
+        print("Using user-defined mutations")
+
+        # Positions in bed file
+        pos <- as.numeric(bed$bed)
+      } else {
+        pos <- NULL
+      }
+    }
+
+    shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
+
+      object <- umiAnalyzer::timeSeriesGrid(
+        object = filteredData(),
+        filter.name = 'default',
+        cut.off = input$manual_cutoff,
+        min.count = input$minCount,
+        min.vaf = input$minFreq,
+        amplicons = input$assays,
+        samples = input$samples,
+        x_variable = input$time_var,
+        y_variable = "Max Non-ref Allele Frequency",
+        columns = input$columns,
+        rows = input$rows,
+        color_by = "Name",
+        do.plot = TRUE,
+        use.caller = TRUE,
+        bed_positions = pos
+      )
+
+      shiny::incProgress(1, detail = paste("Rendering time series plot"))
+    })
+
+    object
+  })
+
 
 
   #------ Heatmap of mutations -------
