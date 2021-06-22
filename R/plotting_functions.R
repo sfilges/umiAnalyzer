@@ -343,9 +343,7 @@ generateAmpliconPlots <- function(
   font.size = 6,
   angle = 45,
   use.caller = FALSE,
-  use.plotly = TRUE,
-  use.facets = FALSE,
-  facets = NULL
+  use.plotly = TRUE
   ) {
 
   if (missing(x = object)) {
@@ -384,24 +382,6 @@ generateAmpliconPlots <- function(
     }
   } else {
     cons.table <- cons.table.default
-  }
-
-  if(use.facets){
-    design <- object@meta.data
-
-    print(design)
-
-    design <- as_tibble(design)
-
-    colnames(design)[1] <- 'Sample Name'
-
-    print(design)
-    print(cons.table)
-
-    cons.table <- full_join(design,cons.table, by = 'Sample Name')
-
-    print(cons.table)
-
   }
 
   # Make variables factors to ensure equidistance on the x-axis
@@ -574,15 +554,6 @@ generateAmpliconPlots <- function(
           axis.title.x = element_blank()
         )
     }
-  }
-
-  if(use.facets){
-    amplicon_plot <- amplicon_plot +
-      facet_grid(
-        rows = vars(!!as.symbol(facets[1])),
-        cols = vars(!!as.symbol(facets[2])),
-        scales = 'free'
-      )
   }
 
 
@@ -1347,11 +1318,11 @@ timeSeriesGrid <- function(
   if(!is.null(bed_positions)){
     # Select positions from bed file
     cons.table <- cons.table %>%
-      dplyr::filter(.data$Position %in% bed_positions) %>%
-      dplyr::mutate("variant" = paste(Name,' ', Contig, ':', Position))
-
-    print(cons.table)
+      dplyr::filter(.data$Position %in% bed_positions)
   }
+
+  cons.table <- cons.table %>%
+    dplyr::mutate("variant" = paste(Name,' ', Contig, ':', Position))
 
   # Time course plots
   plot <- ggplot2::ggplot(

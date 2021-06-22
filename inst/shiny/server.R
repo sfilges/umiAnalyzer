@@ -510,13 +510,6 @@ server <- function(input, output, session, plotFun) {
 
         updateSelectInput(
           session = session,
-          inputId = 'facets',
-          choices = choices,
-          selected = head(choices,2)
-        )
-
-        updateSelectInput(
-          session = session,
           inputId = 'columns',
           choices = choices,
           selected = head(choices,1)
@@ -542,6 +535,16 @@ server <- function(input, output, session, plotFun) {
           choices = choices,
           selected = head(choices,2)
         )
+
+        output$metaDataTable <- DT::renderDataTable({
+
+          DT::datatable(design, editable = FALSE)
+
+        }, options = list(
+          orderClasses = TRUE,
+          pageLenght = 50,
+          lengthMenu = c(10, 50, 100)
+        ))
       }
 
       shiny::incProgress(1, detail = paste("Done!"))
@@ -646,21 +649,7 @@ server <- function(input, output, session, plotFun) {
       formatPercentage('Max Non-ref Allele Frequency', 2)
   })
 
-  output$metaDataTable <- DT::renderDataTable({
 
-    if (is.null(metaData())){
-      return(NULL)
-    }
-
-    # TODO this table can now be edited by the user, but the changes are
-    # not used by downstream functions.
-    DT::datatable(metaData(), editable = TRUE)
-
-  }, options = list(
-    orderClasses = TRUE,
-    pageLenght = 50,
-    lengthMenu = c(10, 50, 100)
-  ))
 
   # make reactive expresion of input values
   amplicon_settings <- reactive({input$assays})
@@ -704,9 +693,7 @@ server <- function(input, output, session, plotFun) {
         fdr = input$fdr_cutoff,
         use.caller = input$use_caller,
         font.size = input$font_size_amplicons,
-        angle = input$font_angle_amplicons,
-        use.facets = input$use_facets,
-        facets = input$facets
+        angle = input$font_angle_amplicons
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))
@@ -758,17 +745,15 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    # If user selects to use bed file...
-    if(input$use_bed){
-      #... and a bed file has been uploaded
-      if(!is.null(bed$bed)){
-        print("Using user-defined mutations")
 
-        # Positions in bed file
-        pos <- as.numeric(bed$bed)
-      } else {
-        pos <- NULL
-      }
+    #... and a bed file has been uploaded
+    if(!is.null(bed$bed)){
+      print("Using user-defined mutations")
+
+      # Positions in bed file
+      pos <- as.numeric(bed$bed)
+    } else {
+      pos <- NULL
     }
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {

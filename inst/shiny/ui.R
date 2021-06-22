@@ -151,26 +151,16 @@ ui <- dashboardPage(
               icon = icon('edit'),
 
               selectInput(
-                inputId = 'consensus', width = "50%",
-                label = 'Consensus Depth:',
-                choices = c(0,1,2,3,4,5,10,20,30),
-                selected = 3
-              ),
-              selectInput(
                 inputId = 'samples', width = "100%",
                 label = 'Samples:',
                 choices = '',
+                size = 12,
+                selectize=FALSE,
                 multiple = TRUE
               ),
               selectInput(
                 inputId = 'assays', width = "100%",
                 label = 'Assays:',
-                choices = '',
-                multiple = TRUE
-              ),
-              selectInput(
-                inputId = 'facets', width = "100%",
-                label = 'Facets:',
                 choices = '',
                 multiple = TRUE
               )
@@ -193,7 +183,7 @@ ui <- dashboardPage(
               # Panel 1: Basic plot types
               tabPanel(
                 title = "Plot types",
-                icon = icon("upload"),
+                icon = icon("chart-line"),
                 fluidRow(
                   column(12,
                        style = "margin-top: 10px;margin-left: 5px;margin-right: 5px;",
@@ -224,11 +214,11 @@ ui <- dashboardPage(
                          value = FALSE,
                          status = "primary"
                        ),
-                       materialSwitch(
-                         inputId = "use_facets",
-                         label = "Use facets: ",
-                         value = FALSE,
-                         status = "primary"
+                       selectInput(
+                         inputId = 'consensus', width = "50%",
+                         label = 'Consensus Depth:',
+                         choices = c(0,1,2,3,4,5,10,20,30),
+                         selected = 3
                        )
                     )
                   )
@@ -236,6 +226,7 @@ ui <- dashboardPage(
               tabPanel(
                 #---------- Box for parameter selection ------------
                   title = "Filters",
+                  icon = icon("sort"),
                   fluidRow(
                     column(6,
                            sliderInput(
