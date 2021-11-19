@@ -50,13 +50,3 @@ accessible from the UMIexperiment object using merged.data. This is meant to pro
 information across multiple replicates. If you want to merge multiple sequencing runs of the
 sample into a single sample using the collapseReplicates function instead.
 }
-\examples{
-\dontrun{
-library(umiAnalyzer)
-metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-data <- simsen
-
-simsen <- importDesign(simsen, file = metaData)
-simsen <- mergeTechnicalReplicates(simsen, group.by = 'replicate')
-}
-}

@@ -77,11 +77,11 @@ generateQCplots <- function(
       dplyr::filter(.data$`Sample Name` %in% samples)
   }
 
-  cdepths <- dplyr::rename(cdepths, UMIcount = Coverage, assay = Name)
+  cdepths <- dplyr::rename(cdepths, UMIcount = .data$Coverage, assay = .data$Name)
 
   cdepths <- cdepths %>%
-    dplyr::group_by(`Sample Name`, assay) %>%
-    dplyr::summarise(UMIcount = mean(UMIcount))
+    dplyr::group_by(.data$`Sample Name`, .data$assay) %>%
+    dplyr::summarise(UMIcount = mean(.data$UMIcount))
 
   cdepths
 
@@ -90,7 +90,7 @@ generateQCplots <- function(
   cdepths$assay %<>% as.factor
   cdepths$`Sample Name` %<>% as.factor
 
-  print(as.data.frame(cdepths))
+  #print(as.data.frame(cdepths))
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -221,8 +221,10 @@ plotUmiCounts <- function(
 
   # Read summary data from object
   data <- object@summary.data %>%
-    dplyr::filter(!is.na(.data$assay),
-                  .data$depth > 0)
+    dplyr::filter(
+      !is.na(.data$assay),
+      .data$depth > 0
+    )
 
   # Select amplicons
   if (!is.null(amplicons)) {
@@ -245,10 +247,18 @@ plotUmiCounts <- function(
   # If colour option is not default use the viridis package for colour palettes.
   # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
   if(option != 'default') {
-    plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
+    plot <- ggplot(
+      data = data, aes(
+        x=.data$depth,
+        y=.data$UMIcount, 
+        fill=sample)
+      ) +
       use_theme +
       viridis::scale_fill_viridis(
-        discrete = TRUE,option = option,direction = direction) +
+        discrete = TRUE,
+        option = option,
+        direction = direction
+        ) +
         geom_col(alpha=0.6) +
         facet_grid(assay ~ sample) +
         ylab('UMI count') +
@@ -299,6 +309,8 @@ plotUmiCounts <- function(
 #' @param fdr False-discovery-rate cut-off for variants.
 #' @param use.caller Should data from variant caller be used? Default is FALSE
 #' @param use.plotly Should plotly be used instead of the regular ggplot device? Default is TRUE
+#' @param font.size Font size
+#' @param angle Font angle
 #'
 #' @export
 #'
@@ -368,14 +380,26 @@ generateAmpliconPlots <- function(
   }
 
   # Use depth cut-off to call variants
-  cons.table.default <- getFilteredData(object = object,name = filter.name)
-  cons.table.default$Variants <- ifelse(cons.table.default$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+  cons.table.default <- getFilteredData(
+    object = object,
+    name = filter.name
+  )
+  
+  cons.table.default$Variants <- ifelse(
+    test = cons.table.default$`Max Non-ref Allele Count` >= cut.off, 
+    yes = "Variant",
+    no = "Background"
+  )
 
   if(use.caller){
     # Check if variant caller has been run on object
     if(!identical(dim(object@variants), dim(tibble()))) {
       cons.table <- object@variants
-      cons.table$Variants <- ifelse(cons.table$p.adjust <= fdr, "Variant", "Background")
+      cons.table$Variants <- ifelse(
+        test = cons.table$p.adjust <= fdr, 
+        yes = "Variant", 
+        no = "Background"
+      )
     } else {
       warning("Variant caller has not been run, using default cut-off instead!")
       cons.table <- cons.table.default
@@ -383,6 +407,8 @@ generateAmpliconPlots <- function(
   } else {
     cons.table <- cons.table.default
   }
+  
+  print(cons.table)
 
   # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
@@ -401,8 +427,8 @@ generateAmpliconPlots <- function(
   # Filter position based on minimum VAF and counts, default is to use all positions.
   cons.table <- cons.table %>%
     dplyr::filter(
-      `Max Non-ref Allele Frequency` >= min.vaf/100,
-      `Max Non-ref Allele Count` >= min.count
+      .data$`Max Non-ref Allele Frequency` >= min.vaf/100,
+      .data$`Max Non-ref Allele Count` >= min.count
     )
 
   # Get raw error data (cons0)
@@ -436,18 +462,25 @@ generateAmpliconPlots <- function(
   # If classic plot is chosen make a raw vs consN plot
   classic_plot <- ggplot(classic_data, aes_(
       x = ~Position,
-      y = ~(100 * `Max Non-ref Allele Frequency`),
+      y = ~(100 * .data$`Max Non-ref Allele Frequency`),
       fill = ~(`Consensus group size`))
     ) +
     use_theme +
     geom_bar(stat = 'identity', width=.5, position = 'dodge') +
     theme(
-      axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+      axis.text.x = element_text(
+        size = font.size,
+        angle = angle,
+        hjust = 1
+      ),
       axis.title.x = element_blank()
       ) +
     ylab('Variant Allele Frequency (%)') +
     xlab('Assay') +
-    scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
+    scale_y_continuous(
+      limits = c(y_min,y_max),
+      oob = scales::rescale_none
+    ) +
     facet_grid(`Sample Name` ~ Name, scales = 'free_x', space = 'free_x')
 
   # If the plot is too big, limit number of positions plotted;
@@ -460,7 +493,7 @@ generateAmpliconPlots <- function(
     amplicon_plot <- ggplot(
       cons.table, aes_(
         x = ~ Name,
-        y = ~ (100 * `Max Non-ref Allele Frequency`))
+        y = ~ (100 * .data$`Max Non-ref Allele Frequency`))
       ) +
       geom_point(
         mapping = aes(
@@ -469,7 +502,11 @@ generateAmpliconPlots <- function(
       ) +
       use_theme +
       theme(
-        axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+        axis.text.x = element_text(
+          size = font.size,
+          angle = angle,
+          hjust = 1
+        ),
         axis.title.x = element_blank()
         ) +
       ylab("Variant Allele Frequency (%)") +
@@ -503,21 +540,31 @@ generateAmpliconPlots <- function(
     } else {
 
       cons.table <- cons.table %>%
-        dplyr::mutate(`Max Non-ref Allele Frequency` = 100*`Max Non-ref Allele Frequency`)
+        dplyr::mutate(
+          `Max Non-ref Allele Frequency` = 100*.data$`Max Non-ref Allele Frequency`
+          )
 
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
         y = ~`Max Non-ref Allele Frequency`,
-        fill = ~Variants)) +
+        fill = ~Variants)
+        ) +
         use_theme +
         geom_bar(stat = "identity") +
         theme(
-          axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+          axis.text.x = element_text(
+            size = font.size,
+            angle = angle,
+            hjust = 1
+          ),
           axis.title.x = element_blank()
           ) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
-        scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
+        scale_y_continuous(
+          limits=c(y_min,y_max),
+          oob = scales::rescale_none
+        ) +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
         geom_hline(
           yintercept = 0,
@@ -620,7 +667,6 @@ generateAmpliconPlots <- function(
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
-#' @param do.plot Logical. Should plots be shown?
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
@@ -754,6 +800,7 @@ amplicon_heatmap <- function(
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
 #' @param theme ggplot theme to use. Default is classic.
+#' @param plot.ref = TRUE
 #'
 #' @export
 #'
@@ -772,7 +819,7 @@ vizMergedData <- function(
 
   # Plotting maximum alternate alle count on merged data
   data <- object@merged.data %>%
-    dplyr::rename(replicate = group.by)
+    dplyr::rename(replicate = .data$group.by)
   data$Position %<>% as.factor
 
   if (!is.null(amplicons)) {
@@ -1126,6 +1173,7 @@ viewNormPlot <- function(
 #' @param option Colour palette to use
 #' @param direction If using viridis colors, choose orientation of palette
 #' @param theme ggplot theme to use, default is classic.
+#' @param plot.ref = TRUE
 #'
 #' @import tibble
 #' @import dplyr
@@ -1244,9 +1292,27 @@ vizStackedCounts <- function(
 
 
 #' Plot time series data
+#' 
+#' Function for plotting time series or other meta data. Uses facet wrap to
+#' display user-provided categorical variables.
+#' 
 #' @param object A consensus data table
+#' @param filter.name "default"
+#' @param cut.off 5
+#' @param min.count 0
+#' @param min.vaf 0
+#' @param amplicons NULL
+#' @param samples NULL
+#' @param x_variable NULL
+#' @param y_variable "Max Non-ref Allele Frequency"
+#' @param columns "Sample Name"
+#' @param rows "Name"
+#' @param color_by "Name"
+#' @param fdr 0.05
 #' @param do.plot Logical. Should plot be shown?
-
+#' @param use.caller TRUE
+#' @param bed_positions NULL
+#'
 #' @import tibble
 #' @import dplyr
 #' @import ggplot2
@@ -1311,8 +1377,8 @@ timeSeriesGrid <- function(
   # Filter position based on minimum VAF and counts, default is to use all positions.
   cons.table <- cons.table %>%
     dplyr::filter(
-      `Max Non-ref Allele Frequency` >= min.vaf/100,
-      `Max Non-ref Allele Count` >= min.count
+      .data$`Max Non-ref Allele Frequency` >= min.vaf/100,
+      .data$`Max Non-ref Allele Count` >= min.count
     )
 
   if(!is.null(bed_positions)){
@@ -1322,7 +1388,7 @@ timeSeriesGrid <- function(
   }
 
   cons.table <- cons.table %>%
-    dplyr::mutate("variant" = paste(Name,' ', Contig, ':', Position))
+    dplyr::mutate("variant" = paste(.data$Name,' ', .data$Contig, ':', .data$Position))
 
   # Time course plots
   plot <- ggplot2::ggplot(
@@ -1330,7 +1396,7 @@ timeSeriesGrid <- function(
     mapping = ggplot2::aes(
       x= !!as.symbol(x_variable),
       y= !!as.symbol(y_variable),
-      col = variant
+      col = .data$variant
     )) +
     ggplot2::geom_point(
       data = cons.table,

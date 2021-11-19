@@ -99,12 +99,23 @@ data set can be retrieved using getFilteredData and assigned to a new variable o
 with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
-simsen <- generateQCplots(simsen, group.by = 'assay')
+simsen <- generateQCplots(
+  object = simsen,
+  group.by = 'assay',
+  option = 'viridis'
+)
 ```
 
 
 ```{r example1continued_2, eval=TRUE}
-simsen <- filterUmiObject(simsen)
+simsen <- filterUmiObject(
+  object = simsen
+)
+
+simsen <- callVariants(
+  object = simsen, 
+  computePrior = FALSE
+)
 
 myfilter <- getFilteredData(simsen)
 myfilter
@@ -114,7 +125,7 @@ Error correction depends on UMI depth, i.e. how many reads per barcode are
 required to form a barcode family. We can plot the number of available reads
 for different consensus depths.
 
-```{r example1continued_3, eval=TRUE}
+```{r example1continued_3, eval=FALSE}
 simsen <- plotUmiCounts(object = simsen)
 ```
 
@@ -127,7 +138,7 @@ plot only the selection.
 
 ### All data
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 simsen <- generateAmpliconPlots(
   object = simsen,
   do.plot = TRUE,
@@ -139,11 +150,11 @@ simsen <- generateAmpliconPlots(
 
 ### Selection
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  amplicons = c("new"),
-  samples = "VAF-1-5ng-1-10x"
+  amplicons = c('new'),
+  samples = 'VAF-1-5ng-1-10x'
 )
 ```
 
@@ -157,15 +168,15 @@ Merging data requires the user to supply a file with meta data using the
 importDesign function. This will create a metadata attribute called "design",
 which can be retrieved using getMetaData.
 
-```{r metaDataImport, eval=TRUE}
+```{r metaDataImport, eval=FALSE}
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
-simsen <- importDesign(
+simsen <- umiAnalyzer::importDesign(
   object = simsen,
   file = metaData
 )
 
-design <- getMetaData(
+design <- umiAnalyzer::getMetaData(
   object = simsen, 
   attributeName = "design"
 )
@@ -191,7 +202,7 @@ at least 2 out of 3 replicates will be considered. The default value for
 group.by is NULL and each sample will be analysed and plotted independently.
 
 ```{r time_course, eval=FALSE}
-simsen <- analyzeTimeSeries(
+simsen <- umiAnalyzer::analyzeTimeSeries(
   object = simsen,
   time.var = 'time',
   group.by = 'replicate'
@@ -206,7 +217,7 @@ to a greater depth. A drawback is that it is not possible to scale a count of
 zero variant reads one can set all 0 to a small value, such as 0.5, first and then
 scale the data.
 
-```{r replicates, eval=TRUE}
+```{r replicates, eval=FALSE}
 simsen <- mergeTechnicalReplicates(
   object = simsen,
   group.by = 'replicate',
@@ -218,7 +229,7 @@ simsen <- mergeTechnicalReplicates(
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=TRUE}
+```{r vizMerge, eval=FALSE}
 vizMergedData(
   simsen,
   amplicons = c('new')

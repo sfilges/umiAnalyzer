@@ -5,10 +5,7 @@
 \alias{simsen}
 \title{UMIexperiment data generated with SiMSen-Seq}
 \format{
-Anobject of class \code{"UMIexperiment"}
-}
-\usage{
-data(simsen)
+An object of class \code{"UMIexperiment"}
 }
 \description{
 UMIexperiment data generated with SiMSen-Seq

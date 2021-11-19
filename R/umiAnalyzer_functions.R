@@ -172,15 +172,6 @@ createUmiSample <- function(
 #' @importFrom dplyr bind_rows
 #' @importFrom shiny incProgress
 #'
-#' @examples
-#' \dontrun{
-#' library(umiAnalyzer)
-#'
-#' main = system.file("extdata", package = "umiAnalyzer")
-#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-#'
-#' exp1 <- createUMIexperiment(experimentName = "exp1", mainDir = main, sampleNames = samples)
-#' }
 #'
 createUmiExperiment <- function(
   mainDir,
@@ -524,13 +515,6 @@ findConsensusReads <- function(
 #'
 #' @return A UMI sample or UMI experiment object.
 #'
-#' @examples
-#' \dontrun{
-#' library(umiAnalyzer)
-#'
-#' data <- simsen
-#' data <- filterUmiObject(data)
-#' }
 #'
 filterUmiObject <- function(
   object,
@@ -685,7 +669,6 @@ betaNLL <- function(params, data) {
 #'
 #' @importFrom dplyr mutate progress_estimated
 #' @importFrom tibble as_tibble
-#' @importFrom VGAM rbetabinom.ab
 #' @importFrom stats nlm var p.adjust
 #' @importFrom utils install.packages
 #' @importFrom graphics plot
@@ -693,13 +676,6 @@ betaNLL <- function(params, data) {
 #' @return Object containing raw and FDR-adjusted P-Values
 #' @seealso \code{\link{filterVariants}} on how to filter variants.
 #'
-#' @examples
-#' \dontrun{
-#' library(umiAnalyzer)
-#'
-#' data <- simsen
-#' data <- callVariants(data)
-#' }
 #'
 callVariants <- function(
   object,
@@ -715,13 +691,13 @@ callVariants <- function(
   } else if(!is.numeric(minDepth) || minDepth < 3){
     if(minDepth < 0){
       stop("minDepth must be a positive integer.")
-    } else {
+    } else if (minDepth < 3){
       warning("Mindepth is smaller than 3, this may affect error correction.")
     }
   } else if(!is.numeric(minCoverage) || minCoverage < 100){
     if(minCoverage < 0){
       stop("minCoverage must be a positive integer.")
-    } else {
+    } else if(minCoverage < 100){
       warning("minCoverage is smaller than 100, this may affect error correction.")
     }
   }
@@ -751,7 +727,7 @@ callVariants <- function(
   # If computePrior == TRUE fit a new beta binomial background distribution,
   # otherwise use pre-computed values (default)
   if(computePrior){
-    fit <- nlm(betaNLL, params0, a0 / b0)
+    fit <- stats::nlm(betaNLL, params0, a0 / b0)
     a <- fit$estimate[1]
     b <- fit$estimate[2]
     pval <- NULL
@@ -763,7 +739,8 @@ callVariants <- function(
   }
 
   for (i in 1:length(a1)) { # for each named amplicon position:
-    r1 <- VGAM::rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
+    #r1 <- VGAM::rbetabinom.ab(10000, b1[i], shape1 = a, shape2 = b) # Calculate probability of success
+    r1 <- beta_binom(10000, b1[i], shape1 = a, shape2 = b)
     pval[i] <- sum(r1 > a1[i]) / 10000 # Estimate p value of variant
   }
 
@@ -959,15 +936,7 @@ importDesign <- function(
 #' @importFrom rlang .data
 #' @importFrom stats sd
 #'
-#' @examples
-#' \dontrun{
-#' library(umiAnalyzer)
-#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-#' data <- simsen
 #'
-#' simsen <- importDesign(simsen, file = metaData)
-#' simsen <- mergeTechnicalReplicates(simsen, group.by = 'replicate')
-#' }
 #' @return A umiExperiment object
 mergeTechnicalReplicates <- function(
   object,

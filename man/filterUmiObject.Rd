@@ -32,12 +32,3 @@ A UMI sample or UMI experiment object.
 \description{
 Method for filtering UMIexperiment and sample objects
 }
-\examples{
-\dontrun{
-library(umiAnalyzer)
-
-data <- simsen
-data <- filterUmiObject(data)
-}
-
-}

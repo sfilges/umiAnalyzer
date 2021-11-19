@@ -37,8 +37,6 @@ amplicon_heatmap(
 \item{n_col}{Number of colours to use}
 
 \item{colours}{Colour scheme to use}
-
-\item{do.plot}{Logical. Should plots be shown?}
 }
 \description{
 Generates a heatmap of mutations with sample clustering using pheatmap.

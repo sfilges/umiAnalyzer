@@ -23,6 +23,8 @@ vizMergedData(
 \item{do.plot}{Logical. Should plots be shown.}
 
 \item{theme}{ggplot theme to use. Default is classic.}
+
+\item{plot.ref}{= TRUE}
 }
 \description{
 Generate Merged data plots

@@ -9,7 +9,7 @@ runUmiVisualiser(docker = FALSE, path = NULL)
 \arguments{
 \item{docker}{Boolean. Are you running in a docker container?}
 
-\item{path}{Path to directory containing umierrorocorrect output.}
+\item{path}{Path to directory containing umierrorcorrect output.}
 }
 \description{
 Function to run the umiVisualiser shiny app

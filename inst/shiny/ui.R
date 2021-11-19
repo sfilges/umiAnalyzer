@@ -266,6 +266,13 @@ ui <- dashboardPage(
                              min = 0, max = 0.2,
                              value = 0.05, step = 0.01,
                              sep = ","
+                           ),
+                           sliderInput(
+                             inputId = "minCoverage",
+                             label =  "Minimum coverage:",
+                             min = 10, max = 1000,
+                             value = 100, step = 10,
+                             sep = ","
                            )
                     )
                   )

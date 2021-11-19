@@ -17,18 +17,49 @@ timeSeriesGrid(
   columns = "Sample Name",
   rows = "Name",
   color_by = "Name",
+  fdr = 0.05,
   do.plot = TRUE,
-  use.caller = TRUE
+  use.caller = TRUE,
+  bed_positions = NULL
 )
 }
 \arguments{
 \item{object}{A consensus data table}
 
+\item{filter.name}{"default"}
+
+\item{cut.off}{5}
+
+\item{min.count}{0}
+
+\item{min.vaf}{0}
+
+\item{amplicons}{NULL}
+
+\item{samples}{NULL}
+
+\item{x_variable}{NULL}
+
+\item{y_variable}{"Max Non-ref Allele Frequency"}
+
+\item{columns}{"Sample Name"}
+
+\item{rows}{"Name"}
+
+\item{color_by}{"Name"}
+
+\item{fdr}{0.05}
+
 \item{do.plot}{Logical. Should plot be shown?}
+
+\item{use.caller}{TRUE}
+
+\item{bed_positions}{NULL}
 }
 \value{
 A ggplot object.
 }
 \description{
-Plot time series data
+Function for plotting time series or other meta data. Uses facet wrap to
+display user-provided categorical variables.
 }

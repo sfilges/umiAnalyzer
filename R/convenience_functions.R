@@ -1,3 +1,118 @@
+#' Beta binomial model
+#' 
+#' VGAM package function VGAM::rbetabinom.ab
+#' 
+#' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
+#' 
+#' @export
+#' 
+#' @importFrom stats rbinom rbeta
+#' 
+#' @param n n
+#' @param size size
+#' @param shape1 alpha
+#' @param shape2 beta
+#' @param limit.prob 0.5
+#' @param .dontuse.prob NULL
+#' 
+#' 
+beta_binom <- function(
+  n,
+  size,
+  shape1,
+  shape2,
+  limit.prob = 0.5,
+  .dontuse.prob = NULL
+){
+  use.n <- if((length.n <- length(n)) > 1){
+    length.n
+  } else if(!is_Numeric(n, integer.valued = TRUE, length.arg = 1, positive = TRUE)) {
+    stop("bad input for argument 'n'")
+  } else {
+    n
+  }
+  
+  if (length(size) != use.n) {
+    size <- rep_len(size, use.n)
+  } 
+    
+  if (length(shape1) != use.n){
+    shape1 <- rep_len(shape1, use.n)
+  }
+    
+  if (length(shape2) != use.n){
+    shape2 <- rep_len(shape2, use.n)
+  }
+  
+  if (length(limit.prob) != use.n) {
+    limit.prob <- rep_len(limit.prob, use.n)
+  }
+    
+  ans <- rep_len(NA_real_, use.n)
+  ind3 <- !is.na(shape1) & !is.na(shape2) & ((is.infinite(shape1) & 
+                                                is.infinite(shape2)))
+  if (sum.ind3 <- sum(ind3)) {
+        ans[ind3] <- stats::rbinom(
+          n = sum.ind3,
+          size = size[ind3], 
+          prob = limit.prob[ind3]
+        )
+  }
+
+  if (ssum.ind3 <- sum(!ind3)) {
+        ans[!ind3] <- stats::rbinom(
+          n = ssum.ind3,
+          size = size[!ind3],
+          prob = stats::rbeta(
+            n = ssum.ind3, 
+            shape1 = shape1[!ind3],
+            shape2 = shape2[!ind3]
+          )
+        )
+  }
+
+  ans[is.na(shape1) | shape1 < 0] <- NaN
+  ans[is.na(shape2) | shape2 < 0] <- NaN
+  
+  ans
+}
+
+#' Beta binomial model
+#' 
+#' VGAM package function VGAM:::is.Numeric
+#' 
+#' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
+#' 
+#' @export
+#' 
+#' @importFrom stats rbinom rbeta
+#' 
+#' @param x x
+#' @param length.arg Inf
+#' @param integer.valued FALSE
+#' @param positive FALSE
+#' 
+#' 
+is_Numeric <- function(
+  x,
+  length.arg = Inf,
+  integer.valued = FALSE,
+  positive = FALSE
+  ){
+    if (all(is.numeric(x)) && 
+        all(is.finite(x)) && 
+        (if (is.finite(length.arg)) length(x) == length.arg else TRUE) && 
+        (if (integer.valued) all(x == round(x)) else TRUE) && 
+        (if (positive) all(x > 0) else TRUE)){
+      TRUE
+    } else {
+      FALSE
+    } 
+
+}
+  
+
+
 #' Download meta data template
 #'
 #' Function for downloading a template file containing metadata.
@@ -468,6 +583,3 @@ importBedFile <- function(path){
 
   return(l)
 }
-
-
-

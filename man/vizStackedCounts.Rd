@@ -23,6 +23,8 @@ vizStackedCounts(
 \item{direction}{If using viridis colors, choose orientation of palette}
 
 \item{theme}{ggplot theme to use, default is classic.}
+
+\item{plot.ref}{= TRUE}
 }
 \value{
 A ggplot object.

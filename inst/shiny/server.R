@@ -21,7 +21,7 @@ server <- function(input, output, session, plotFun) {
   output$downloadData.csv <- downloadHandler(
 
     filename = function() {
-      paste("consensus_data_", Sys.time(), ".csv", sep = "")
+      paste('consensus_data_', Sys.Date(), '.csv', sep = '')
     },
     content = function(file) {
 
@@ -94,7 +94,7 @@ server <- function(input, output, session, plotFun) {
   # Output pdf report upon button click
   output$download_plot <- downloadHandler(
     filename <- function() {
-      paste('amplicon-plot-', Sys.time(),'.pdf',sep='') },
+      paste('amplicon-plot-', Sys.Date(),'.pdf',sep='') },
     content <- function(file) {
 
 
@@ -137,7 +137,7 @@ server <- function(input, output, session, plotFun) {
   # Output pdf report upon button click
   output$download_heatmap.pdf <- downloadHandler(
     filename <- function() {
-      paste('heatmap-', Sys.time(),'.pdf',sep='') },
+      paste('heatmap-', Sys.Date(),'.pdf',sep='') },
 
     content <- function(file) {
 
@@ -159,7 +159,7 @@ server <- function(input, output, session, plotFun) {
 
   output$download_qc_plot <- downloadHandler(
     filename <- function() {
-      paste('qc-plot-', Sys.time(),'.pdf',sep='') },
+      paste('qc-plot-', Sys.Date(),'.pdf',sep='') },
     content <- function(file) {
       pdf(file, width = 7, height = 3)
       object <- umiAnalyzer::generateQCplots(
@@ -464,6 +464,7 @@ server <- function(input, output, session, plotFun) {
 
   # filteredData returns an updated version of the experimen() object containing
   # a single filter called "user_filter" which is used downstream
+  #--------------- Filter data ---------------
   filteredData <- reactive({
 
     if (is.null(experiment())){
@@ -475,14 +476,22 @@ server <- function(input, output, session, plotFun) {
       data <- umiAnalyzer::filterUmiObject(
         object = experiment(),
         minDepth = input$consensus,
-        minCoverage = 100,
+        minCoverage = input$minCoverage,
         minFreq = input$minFreq/100,
         minCount = input$minCount
       )
+      
+      shiny::incProgress(
+        amount = 0.25, 
+        detail = paste("Calling Variants")
+      )
 
-      shiny::incProgress(0.25, detail = paste("Calling Variants"))
-
-      data <- umiAnalyzer::callVariants(object = data)
+      data <- umiAnalyzer::callVariants(
+        object = data, 
+        minDepth = input$consensus, 
+        minCoverage = input$minCoverage,
+        computePrior = FALSE
+        )
 
       #Note "file" is the name of the metadata from the inputUI
 
@@ -658,7 +667,7 @@ server <- function(input, output, session, plotFun) {
   # delay amplicon plot until reactive stop changing
   amplicon_settings_d <- amplicon_settings %>% shiny::debounce(500)
   sample_settings_d <- sample_settings %>% shiny::debounce(500)
-
+  
   #------------------- Amplicon plot ---------------------
   # plot amplicon plot reactive value
   output$amplicon_plot <- plotly::renderPlotly({
@@ -693,7 +702,8 @@ server <- function(input, output, session, plotFun) {
         fdr = input$fdr_cutoff,
         use.caller = input$use_caller,
         font.size = input$font_size_amplicons,
-        angle = input$font_angle_amplicons
+        angle = input$font_angle_amplicons, 
+        use.plotly = TRUE
       )
 
       shiny::incProgress(1, detail = paste("Rendering complete"))

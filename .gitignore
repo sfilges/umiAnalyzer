@@ -10,3 +10,5 @@ data
 inst/.DS_Store
 cran-comments.md
 *.Rproj
+/doc/
+/Meta/
