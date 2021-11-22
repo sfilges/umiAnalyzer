@@ -48,7 +48,7 @@ The shiny app requires the shiny, shinyFiles, shinyWidgets, tidyverse and DT
 packages. These can be installed by running the following:
 
 ```{r installDeps, eval=FALSE}
-pkgs <- c('tidyverse', 'shiny', 'shinyFiles', 'shinyWidgets', 'DT')
+pkgs <- c('tidyverse', 'shinydashboard', 'shinyFiles', 'shinyWidgets', 'DT')
 
 install.packages(pkgs)
 ```
@@ -113,22 +113,31 @@ with the optional parameter save = TRUE, which is set to FALSE by
 simsen <- generateQCplots(
   object = simsen,
   group.by = 'assay',
-  option = 'viridis'
+  option = 'default'
 )
-```
 
-
-```{r example1continued_2, eval=TRUE}
 simsen <- filterUmiObject(
   object = simsen
 )
+```
 
+Optionally, the beta-binomial variant caller can be run on the data using callVariants.
+
+```{r example1continued_2, eval=TRUE}
+# This is optional
 simsen <- callVariants(
   object = simsen, 
   computePrior = FALSE
 )
+```
 
-myfilter <- getFilteredData(simsen)
+Retrieve filters using getFilteredData:
+
+```{r getFilter, eval=TRUE}
+myfilter <- getFilteredData(
+  object = simsen
+)
+
 myfilter
 ```
 
@@ -137,7 +146,9 @@ required to form a barcode family. We can plot the number of available reads
 for different consensus depths.
 
 ```{r example1continued_3, eval=FALSE}
-simsen <- plotUmiCounts(object = simsen)
+simsen <- plotUmiCounts(
+  object = simsen
+)
 ```
 
 Next we generate plots for the amplicons and samples in the umiExperiment object.

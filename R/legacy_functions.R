@@ -1,19 +1,31 @@
 #--------------------------// Functionality for analyzing Debarcer output //------------------------
 
 #' Define sample class
-DebarcerSample <- setClass("DebarcerSample",
-                           slots = list(name = "character",
-                                        cons.data = "tbl_df")
+#' 
+#' @noRd
+#' 
+DebarcerSample <- setClass(
+  "DebarcerSample",
+  slots = list(
+    name = "character",
+    cons.data = "tbl_df"
+  )
 )
 
 #' Define experiment class
+#' 
 #' @import tibble
+#' 
+#' @noRd
+#' 
 DebarcerExperiment <- setClass(
   "DebarcerExperiment",
 
   # Define the slots
-  slots = list(name = "character",
-               cons.data = "tbl_df"),
+  slots = list(
+    name = "character",
+    cons.data = "tbl_df"
+  ),
 
   # Set the default values for the slots. (optional)
   prototype = list(name = NULL,

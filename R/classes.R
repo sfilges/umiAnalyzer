@@ -6,8 +6,11 @@ setOldClass(c("tbl_df", "tbl", "data.frame"))
 #'
 #' @slot name Sample name
 #' @slot cons.data Raw consensus data
-#' @slot summary.data Summary data from umierrorcorrect
+#' @slot summary.data Summary data from UMIErrroCorrect
 #' @slot reads Consensus reads imported from a bam file.
+#' 
+#' @export
+#' 
 UMIsample <- setClass(
   "UMIsample",
 
@@ -38,6 +41,9 @@ UMIsample <- setClass(
 #' @slot plots A list of generated plots.
 #' @slot variants Consensus table generated with the umiAnalyzer variant caller.
 #' @slot merged.data Data generated using the mergeTechnicalReplicates function.
+#' 
+#' @export
+#' 
 UMIexperiment <- setClass(
   Class = "UMIexperiment",
 

@@ -83,7 +83,7 @@ beta_binom <- function(
 #' 
 #' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
 #' 
-#' @export
+#' @noRd
 #' 
 #' @importFrom stats rbinom rbeta
 #' 
@@ -92,6 +92,7 @@ beta_binom <- function(
 #' @param integer.valued FALSE
 #' @param positive FALSE
 #' 
+#' @return Boolean
 #' 
 is_Numeric <- function(
   x,
@@ -142,6 +143,8 @@ download_template <- function(object){
 #' @param theme User supplied theme selection
 #'
 #' @import ggplot2
+#' 
+#' @noRd
 #'
 #' @return A ggplot theme.
 #'

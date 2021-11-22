@@ -974,10 +974,16 @@ plotFamilyHistogram <- function(
 
 
 #' Plot coverage before and after normalization
+#' 
 #' @importFrom gridExtra grid.arrange
 #' @importFrom magrittr "%>%" "%<>%"
+#' 
 #' @param cons.data Consensus data table
+#' 
+#' @noRd
+#' 
 #' @return A list of ggplot objects.
+#' 
 vizNormalization <- function(cons.data){
 
   cons.data$Name %<>% as.factor
@@ -1182,6 +1188,8 @@ viewNormPlot <- function(
 #' @importFrom tidyr gather
 #' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @noRd
 #'
 #' @return A ggplot object.
 #'

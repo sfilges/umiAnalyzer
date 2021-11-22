@@ -4,3 +4,4 @@
 ^doc$
 cran-comments.md
 ^dev$
+^revdep$

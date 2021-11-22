@@ -23,19 +23,22 @@ createUmiExperiment(
 
 \item{as.shiny}{Set to TRUE if run within a shiny::withProgress environment}
 }
-\description{
-Method for creating a UMI experiment object
-}
-\examples{
+\value{
+An object of class UMIexperiment 
 
 \donttest{
 library(umiAnalyzer)
 
-main = system.file("extdata", package = "umiAnalyzer")
+main = system.file('extdata', package = 'umiAnalyzer')
 
 samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 
-exp1 <- createUmiExperiment(experimentName = "exp1",mainDir = main,sampleNames = samples)
+exp1 <- createUmiExperiment(experimentName = 'exp1',mainDir = main,sampleNames = samples)
 }
+}
+\description{
+Method for creating a UMI experiment object
+}
+\examples{
 
 }

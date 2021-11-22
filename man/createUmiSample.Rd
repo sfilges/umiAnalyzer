@@ -13,6 +13,9 @@ createUmiSample(sampleName, sampleDir, importBam = FALSE)
 
 \item{importBam}{Logical. Should bam files be imported at object initilization? Default is False.}
 }
+\value{
+An object of class UMIsample
+}
 \description{
 Method for creating a UMI sample from umierrorcorrect output.
 }

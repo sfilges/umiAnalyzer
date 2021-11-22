@@ -178,7 +178,7 @@ createUmiSample <- function(
 #' 
 #' @return An object of class UMIexperiment 
 #' 
-#' \donttest{
+#' \dontrun{
 #' library(umiAnalyzer)
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
@@ -297,6 +297,10 @@ createUmiExperiment <- function(
 #' @importFrom Rsamtools scanBam
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
+#' 
+#' @noRd
+#' 
+#' @return A tibble containing reads extracted from BAM file
 #'
 readBamFile <- function(
   sampleDir,
@@ -660,6 +664,8 @@ getFilteredData <- function(
 #' @param data consensus.data table of a UMisample or UMIexperiment object.
 #'
 #' @importFrom stats dbeta
+#' 
+#' @noRd
 #'
 #' @return Negative log-likelihood for beta distribution.
 #'
