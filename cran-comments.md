@@ -1,10 +1,10 @@
-## Test environments
-* local OS X install (Catalina 10.15.7), R 4.0.3
-* ubuntu 18.04, R 3.6.0
-* Windows 10 Pro (Version 1903), R 3.5.1
+## Tested environments
+* Local macOS installation (Monterey 12.0.1), R 4.1.1
+* Ubuntu Linux 20.04.1 LTS, R-devel, GCC
+* Windows Server 2022, UCRT R-devel, 64 bit
 
 ## R CMD check results
-There were no ERRORs, NOTEs or WARNINGs.
+There were no ERRORs, WARNINGs or NOTEs.
 
 ## Downstream dependencies
 I have also run R CMD check on downstream dependencies.

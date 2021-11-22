@@ -37,12 +37,23 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-umiAnalyzer provides tools for analyzing umierrorcorrect output.
+umiAnalyzer provides tools for analyzing umierrorcorrect output. UMIErrorCorrect
+is a Python package for processing targeted high-throughput sequencing data containing
+unique molecular identifiers (UMIs). UMIErrorCorrect is available at:
+<https://github.com/stahlberggroup/umierrorcorrect>.
 
 ## Using the umiVisualiser shiny app
 
-The shiny app requires the shiny, shinyFiles, shinyWidgets, tidyverse and DT packages and can
-be run using the following command:
+The shiny app requires the shiny, shinyFiles, shinyWidgets, tidyverse and DT 
+packages. These can be installed by running the following:
+
+```{r installDeps, eval=FALSE}
+pkgs <- c('tidyverse', 'shiny', 'shinyFiles', 'shinyWidgets', 'DT')
+
+install.packages(pkgs)
+```
+
+and can be run using the following command:
 
 ```{r runApp, eval=FALSE}
 library(umiAnalyzer)
@@ -53,9 +64,9 @@ runUmiVisualiser()
 
 ## How to make your own umiExperiment object {.tabset}
 
-Define a variable containing the path to the directory with all the umierrorcorrect 
+Define a variable containing the path to the directory with all the UMIErrorCorrect 
 output folders belonging to your experiment. umiAnalyzer comes with raw test data 
-generated with umierrorcorrect that you can import if you don't have any of your own.
+generated with UMIErrorCorrect that you can import if you don't have any of your own.
 
 Call the createUmiExperiment to create your umiExperiment object.
 
@@ -85,7 +96,7 @@ without having to run parseBamFiles again. Note that for large experiments,
 especially if consDepth is set lower than 10, the size of the experiment object
 may become too large.
 
-```{r bam-files, eval=TRUE}
+```{r bam-files, eval=FALSE}
 reads <- parseBamFiles(main, consDepth = 10)
 
 plotFamilyHistogram(reads)

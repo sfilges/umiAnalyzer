@@ -1,18 +1,18 @@
-#' Function to run the umiVisualiser shiny app
+#' Function to run the umiVisualizer shiny app
 #' @export
 #' 
 #' @importFrom shiny runApp
 #' @importFrom utils globalVariables
 #' 
 #' @param docker Boolean. Are you running in a docker container?
-#' @param path Path to directory containing umierrorcorrect output.
+#' @param path Path to directory containing UMIErrorCorrect output.
 runUmiVisualiser <- function(docker=FALSE, path=NULL) {
   appDir <- system.file("shiny", package = "umiAnalyzer")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `umiAnalyzer`.", call. = FALSE)
   }
   
-  utils::globalVariables(names("path_to_umierrorcorrect_data"))
+  #utils::globalVariables(names("path_to_umierrorcorrect_data"), add = FALSE)
 
   if(docker == FALSE){
     # Set path as global variable

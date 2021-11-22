@@ -65,14 +65,6 @@ ui <- dashboardPage(
             collapsible = FALSE,
             height = 460,
             width = 4,
-            # Tab box with two panels
-            tabBox(
-              width = 12,
-              type = "tabs",
-              # Panel 1: Data upload widgets
-              tabPanel(
-                title = "Upload data",
-                icon = icon("upload"),
                 # Encase i/o buttons in a fluid row environment
                 fluidRow(
                   style = "margin-bottom: 10px;margin-left: 5px;margin-right: 5px;",
@@ -130,8 +122,6 @@ ui <- dashboardPage(
                     icon = icon("gear"),
                     width = "100%"
                   )
-                )
-              )
             )
           ),
 
@@ -431,7 +421,7 @@ ui <- dashboardPage(
                       selectInput(
                         inputId = 'colors_qc',
                         label = 'Choose colour palette:',
-                        choices = c('default','viridis','magma','plasma','inferno','cividis')
+                        choices = c('viridis','default','magma','plasma','inferno','cividis')
                       ),
                       selectInput(
                         inputId = 'direction_qc',

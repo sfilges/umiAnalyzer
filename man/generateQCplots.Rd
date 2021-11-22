@@ -12,7 +12,7 @@ generateQCplots(
   assays = NULL,
   samples = NULL,
   theme = "classic",
-  option = "default",
+  option = "viridis",
   direction = "default",
   toggle_mean = TRUE,
   center = "mean",

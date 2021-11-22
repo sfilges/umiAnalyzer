@@ -26,3 +26,16 @@ createUmiExperiment(
 \description{
 Method for creating a UMI experiment object
 }
+\examples{
+
+\donttest{
+library(umiAnalyzer)
+
+main = system.file("extdata", package = "umiAnalyzer")
+
+samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+
+exp1 <- createUmiExperiment(experimentName = "exp1",mainDir = main,sampleNames = samples)
+}
+
+}

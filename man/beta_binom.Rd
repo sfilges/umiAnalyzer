@@ -19,6 +19,9 @@ beta_binom(n, size, shape1, shape2, limit.prob = 0.5, .dontuse.prob = NULL)
 
 \item{.dontuse.prob}{NULL}
 }
+\value{
+Numeric
+}
 \description{
 VGAM package function VGAM::rbetabinom.ab
 }

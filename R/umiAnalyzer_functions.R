@@ -54,6 +54,8 @@ addUmiSample <- function(
 #' @importFrom methods new
 #' @importFrom utils read.csv
 #' @importFrom dplyr rename
+#' 
+#' @return An object of class UMIsample
 #'
 createUmiSample <- function(
   sampleName,
@@ -172,13 +174,27 @@ createUmiSample <- function(
 #' @importFrom dplyr bind_rows
 #' @importFrom shiny incProgress
 #'
+#' @examples
+#' 
+#' @return An object of class UMIexperiment 
+#' 
+#' \donttest{
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' 
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' exp1 <- createUmiExperiment(experimentName = 'exp1',mainDir = main,sampleNames = samples)
+#' }
 #'
 createUmiExperiment <- function(
   mainDir,
   experimentName = NULL,
   sampleNames = NULL,
   importBam = FALSE,
-  as.shiny = FALSE){
+  as.shiny = FALSE
+  ){
 
   if (!dir.exists(mainDir)) {
     warning("Must provide a valid directory.")
@@ -277,6 +293,7 @@ createUmiExperiment <- function(
 #'
 #' @import tibble
 #' @import magrittr
+#' 
 #' @importFrom Rsamtools scanBam
 #' @importFrom tidyr separate unite
 #' @importFrom dplyr filter
@@ -392,9 +409,11 @@ saveConsData <- function(
 
 #' Function to parse bam files
 #' @export
+#' 
 #' @import tibble
 #' @importFrom dplyr bind_rows progress_estimated
 #' @importFrom graphics plot
+#' 
 #' @param mainDir Directory containing umierrorcorrect output folders.
 #' @param sampleNames A list of sample names.
 #' @param consDepth Only retain consensus reads of at least cons.depth. Default is 0.
@@ -482,7 +501,8 @@ findConsensusReads <- function(
   object,
   consDepth = 0,
   groupBy = c("none", "sample", "position", "both"),
-  pattern = NULL) {
+  pattern = NULL
+  ){
 
   if(missing(x = object)){
     stop("No object supplied")
@@ -847,7 +867,9 @@ filterVariants <- function(
 
 #' Import experimental design meta data such as replicates, treatments, categorical variables.
 #' @export
+#' 
 #' @importFrom utils read.table
+#' 
 #' @param object UMI.experiment to which to add metadata
 #' @param file File containing meta data
 #' @param delim Column separator. Default is NULL (automatically determine delimiter)
@@ -935,7 +957,6 @@ importDesign <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom rlang .data
 #' @importFrom stats sd
-#'
 #'
 #' @return A umiExperiment object
 mergeTechnicalReplicates <- function(

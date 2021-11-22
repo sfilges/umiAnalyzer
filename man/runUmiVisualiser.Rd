@@ -2,15 +2,15 @@
 % Please edit documentation in R/runUmiVisualiser.R
 \name{runUmiVisualiser}
 \alias{runUmiVisualiser}
-\title{Function to run the umiVisualiser shiny app}
+\title{Function to run the umiVisualizer shiny app}
 \usage{
 runUmiVisualiser(docker = FALSE, path = NULL)
 }
 \arguments{
 \item{docker}{Boolean. Are you running in a docker container?}
 
-\item{path}{Path to directory containing umierrorcorrect output.}
+\item{path}{Path to directory containing UMIErrorCorrect output.}
 }
 \description{
-Function to run the umiVisualiser shiny app
+Function to run the umiVisualizer shiny app
 }
