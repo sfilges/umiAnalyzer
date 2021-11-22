@@ -1,0 +1,121 @@
+---
+title: "umiAnalyzer report"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true # table of content true
+    toc_depth: 2  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
+    theme: sandstone
+    highlight: tango
+    code_folding: hide
+params:
+  data: 'NULL'
+  assays: 'NULL'
+  samples: 'NULL'
+  minDepth: 'NULL'
+  theme: 'NULL'
+  option: 'NULL'
+  direction: 'NULL'
+  y_min: 'NULL'
+  y_max: 'NULL'
+  plot.text: 'NULL'
+  plot.ref: 'NULL'
+  classic.plot: 'NULL'
+---
+
+# Import data
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(umiAnalyzer, quietly = TRUE)
+library(DT, quietly = TRUE)
+
+samples <- params$samples
+assays <- params$assays
+data <- params$data
+theme<- params$theme
+option<- params$colors
+direction<- params$direction
+y_min<- params$y_min
+y_max<- params$y_max
+plot.text<- params$plot_mutation
+plot.ref<- params$plot_reference
+classic.plot<- params$classic
+```
+
+UMI-based sequencing data processed with umi-error-correct was analysed in the 
+umiVisualiser shiny app. Data for the following samples and assays will be shown:
+
+```{r, message=FALSE, warning=FALSE}
+samples
+assays
+```
+
+# Data visualizations {.tabset}
+
+## Amplicons
+
+```{r, message=FALSE, warning=FALSE}
+
+simsen <- umiAnalyzer::generateAmpliconPlots(
+  object = data,
+  do.plot = TRUE,
+  amplicons = assays,
+  samples = samples,
+  cut.off = 5,
+  theme = theme,
+  option = option,
+  direction = direction,
+  y_min = y_min,
+  y_max = y_max,
+  plot.text = plot_mutation,
+  plot.ref = plot_reference,
+  classic.plot = classic
+)
+
+```
+
+## UMI counts
+
+```{r, message=FALSE, warning=FALSE}
+simsen <- umiAnalyzer::plotUmiCounts(
+  object = data
+)
+```
+
+## Heatmap
+
+```{r, message=FALSE, warning=FALSE}
+simsen <- umiAnalyzer::amplicon_heatmap(
+  object = data, 
+  amplicons = assays, 
+  samples = samples,
+  filter.name = 'user_filter'
+)
+```
+
+
+# Data table
+
+```{r, message=FALSE, warning=FALSE}
+filter <- umiAnalyzer::getFilteredData(
+  object = data,
+  name = 'user_filter'
+)
+
+filter %>%
+  dplyr::filter(Name %in% assays) %>%
+  dplyr::filter(`Sample Name` %in% samples)
+
+DT::datatable(filter)
+```
+
+# System information
+```{r}
+sessionInfo()
+```
+
+
+
+
+
