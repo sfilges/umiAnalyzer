@@ -10,7 +10,7 @@ graphical output. The package includes a shiny app with a graphical
 user interface for data exploration and generating plots and report
 documents.
 
-This readme serves as a basic introduction, for more detailed information see 
+This README serves as a basic introduction, for more detailed information see 
 the R vignette:
 
 ```r
@@ -32,13 +32,13 @@ development version from GitHub.
 
 ```r
 # from CRAN (not supported yet)
-#install.packages("umiAnalyzer")
+#install.packages('umiAnalyzer')
 
 # Current stable version from github using the devtools package:
-devtools::install_github("sfilges/umiAnalyzer")
+devtools::install_github('sfilges/umiAnalyzer')
 
 # Latest development version from github:
-devtools::install_github("sfilges/umiAnalyzer", ref = "devel")
+devtools::install_github('sfilges/umiAnalyzer', ref = 'devel')
 ```
 
 Running the visualization app
@@ -63,7 +63,7 @@ but you can also specify a directory containing UMIErrorCorrect output directly
 when launching the app using the path argument.
 
 ```r
-umiAnalyzer::runUmiVisualiser(path = "path_to_data")
+umiAnalyzer::runUmiVisualiser(path = 'path_to_data')
 ```
 
 # Using the R package in your own scripts
@@ -71,21 +71,22 @@ umiAnalyzer::runUmiVisualiser(path = "path_to_data")
 How to make build your own UMIexperiment object
 ---------------------
 
-Define a variable containing the path to the directory with all the UMIErrorCorrect output folders 
-belonging to your experiment. umiAnalyzer comes with raw test data generated with UMIErrorCorrect that 
-you can import if you don't have any of your own.
+Define a variable containing the path to the directory with all the UMIErrorCorrect 
+output folders belonging to your experiment. umiAnalyzer comes with raw test data 
+generated with UMIErrorCorrect that you can import if you don't have any of your own.
 
 Call the createUmiExperiment to create your UMIexperiment object.
 
-The UMIexperiment object always maintains your raw data, however you can create as many filters as you
-like, which will be saved as separate objects to access. You can filter the consensus table of
-UMIexperiment object with filterUMIobject. The only mandatory arguments are the object to be filtered
-and a user defined name. You can use that name to retrieve a filtered table using getFilter. 
+The UMIexperiment object always maintains your raw data, however you can create 
+as many filters as you like, which will be saved as separate objects to access. 
+You can filter the consensus table of UMIexperiment object with filterUMIobject. 
+The only mandatory arguments are the object to be filtered and a user defined name. 
+You can use that name to retrieve a filtered table using getFilter. 
 
 ```r
 library(umiAnalyzer)
 
-main <- system.file("extdata", package = "umiAnalyzer")
+main <- system.file('extdata', package = 'umiAnalyzer')
 
 simsen <- createUmiExperiment(main)
 
@@ -105,13 +106,15 @@ simsen <- generateAmpliconPlots(simsen)
 
 ## Importing experimental designs and statistics
 ### Experimental design
+
 umiAnalyzer supports adding meta data to a  UMIexperiment object, such as experimental 
-design matrices or clinical parameters. This is done using the importDesign function and requires a 
-simple formatted table supplied by the user as a tab separated file. It is important that the order 
-of the samples in the meta data file is the same as when building the UMIexperiment object.
+design matrices or clinical parameters. This is done using the importDesign function 
+and requires a simple formatted table supplied by the user as a tab separated file. 
+It is important that the order of the samples in the meta data file is the same 
+as when building the UMIexperiment object.
 
 ```r
-metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+metaData <- system.file('extdata', 'metadata.txt', package = 'umiAnalyzer')
 
 simsen <- importDesign(
   object = simsen,
@@ -120,7 +123,7 @@ simsen <- importDesign(
 
 design <- getMetaData(
   object = simsen, 
-  attributeName = "design"
+  attributeName = 'design'
 )
 
 design
@@ -128,9 +131,11 @@ design
 
 ## Merging data
 ### Merge technical replicates for statistics
-The mergeTechnicalReplicates function will result in a merged data set accessible from the UMIexperiment object using 
-object<at>merged.data. This is meant to provide statistical information across multiple replicates. If you want to merge 
-multiple sequencing runs of the sample into a single sample using the collapseReplicates function instead.
+The mergeTechnicalReplicates function will result in a merged data set accessible 
+from the UMIexperiment object using object<at>merged.data. This is meant to 
+provide statistical information across multiple replicates. If you want to merge 
+multiple sequencing runs of the sample into a single sample using the 
+collapseReplicates function instead.
 
 ```r
 simsen <- mergeTechnicalReplicates(
@@ -143,8 +148,8 @@ viewNormPlot(simsen)
 
 ### Working with meta data
 
-It is also possible to add meta data to an object and to retrieve metadata if needed. The design 
-matrix loaded with importDesign can be retrieved as follows:
+It is also possible to add meta data to an object and to retrieve metadata if 
+needed. The design matrix loaded with importDesign can be retrieved as follows:
 
 ```r
 design <- getMetaData(
@@ -155,10 +160,11 @@ design <- getMetaData(
 design
 ```
 
-Similarly, any kind of meta data can be added and retrieved from an object using addMetaData:
+Similarly, any kind of meta data can be added and retrieved from an object 
+using addMetaData:
 
 ```r
-comment <- "fix this"
+comment <- 'fix this'
 data <- addMetaData(
   object = data,
   attributeName = 'my-comment',
@@ -175,8 +181,10 @@ myattribute
 
 ### Generating VCF output (beta)
 
-Generates a VCF file in the current working directory, another output directory can be specified using the outDir parameter.
-The printAll parameter specifies whether all variants should be printed or only those with at least 5 reads as a support (default = FALSE).
+Generates a VCF file in the current working directory, another output directory 
+can be specified using the outDir parameter. The printAll parameter specifies 
+whether all variants should be printed or only those with at least 5 reads as 
+a support (default = FALSE).
 
 ```r
 generateVCF(object = exp1, outFile = 'myVCF')
