@@ -15,6 +15,9 @@ addUmiSample(object, sampleName, sampleDir, clearData = FALSE)
 
 \item{clearData}{Should other data in UMIexperiment be cleared}
 }
+\value{
+A UMIexperiment object
+}
 \description{
 Add UMI sample to an existing experiment object
 }

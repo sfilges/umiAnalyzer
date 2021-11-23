@@ -15,6 +15,9 @@ generateVCF(object, outDir = getwd(), outFile, printAll = FALSE)
 
 \item{printAll}{Logical. Should all or only trusted variant be printed?}
 }
+\value{
+A VCF file
+}
 \description{
 Generate VCF file from UMI sample or UMI experiment object
 }

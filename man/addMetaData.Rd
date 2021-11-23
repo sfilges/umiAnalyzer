@@ -13,6 +13,9 @@ addMetaData(object, attributeName, attributeValue)
 
 \item{attributeValue}{Meta data to be saved.}
 }
+\value{
+A UMIexperiment object
+}
 \description{
 Add metaData
 }

@@ -2,15 +2,18 @@
 % Please edit documentation in R/plotting_functions.R
 \name{viewNormPlot}
 \alias{viewNormPlot}
-\title{View count normalisation}
+\title{View count normalization}
 \usage{
 viewNormPlot(object, do.plot = TRUE)
 }
 \arguments{
-\item{object}{A umiExperiment object containing norm plots}
+\item{object}{A UMIexperiment object containing norm plots}
 
 \item{do.plot}{should plot be shown? If false returns a grid.arrange object}
 }
+\value{
+A ggplot object
+}
 \description{
-View count normalisation
+View count normalization
 }

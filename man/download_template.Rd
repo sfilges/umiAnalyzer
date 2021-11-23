@@ -7,7 +7,7 @@
 download_template(object)
 }
 \arguments{
-\item{object}{A UmiExperiment object}
+\item{object}{A UMIexperiment object}
 }
 \value{
 A tibble containing a metadata template

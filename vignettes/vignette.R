@@ -38,24 +38,31 @@ simsen <- mergeAssays(
 simsen <- generateQCplots(
   object = simsen,
   group.by = 'assay',
-  option = 'viridis'
+  option = 'default'
 )
 
-## ----example1continued_2, eval=TRUE-------------------------------------------
 simsen <- filterUmiObject(
   object = simsen
 )
 
+## ----example1continued_2, eval=TRUE-------------------------------------------
+# This is optional
 simsen <- callVariants(
   object = simsen, 
   computePrior = FALSE
 )
 
-myfilter <- getFilteredData(simsen)
+## ----getFilter, eval=TRUE-----------------------------------------------------
+myfilter <- getFilteredData(
+  object = simsen
+)
+
 myfilter
 
 ## ----example1continued_3, eval=FALSE------------------------------------------
-#  simsen <- plotUmiCounts(object = simsen)
+#  simsen <- plotUmiCounts(
+#    object = simsen
+#  )
 
 ## ---- eval=FALSE--------------------------------------------------------------
 #  simsen <- generateAmpliconPlots(

@@ -11,6 +11,9 @@ getMetaData(object, attributeName)
 
 \item{attributeName}{Name of the meta data attribute.}
 }
+\value{
+Metadata
+}
 \description{
 Retrieve meta data by name.
 }

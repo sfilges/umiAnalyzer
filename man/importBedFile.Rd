@@ -9,6 +9,9 @@ importBedFile(path)
 \arguments{
 \item{path}{path to bed file}
 }
+\value{
+A table containing genome positions
+}
 \description{
 Import bed file
 }

@@ -6,7 +6,10 @@
 #' 
 #' @param docker Boolean. Are you running in a docker container?
 #' @param path Path to directory containing UMIErrorCorrect output.
-runUmiVisualiser <- function(docker=FALSE, path=NULL) {
+#' 
+#' @return Opens the umiVisualizer app
+#' 
+runUmiVisualizer <- function(docker=FALSE, path=NULL) {
   appDir <- system.file("shiny", package = "umiAnalyzer")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `umiAnalyzer`.", call. = FALSE)

@@ -7,9 +7,9 @@
 callVariants(object, minDepth = 3, minCoverage = 100, computePrior = FALSE)
 }
 \arguments{
-\item{object}{A UMIerrorcorrect object.}
+\item{object}{A UMIErrorCorrect object.}
 
-\item{minDepth}{Minimum consensus depth required fedault is 3}
+\item{minDepth}{Minimum consensus depth required default is 3}
 
 \item{minCoverage}{Minimum Coverage to use, default is 100 reads.}
 

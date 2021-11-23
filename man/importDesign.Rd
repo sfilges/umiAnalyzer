@@ -13,6 +13,9 @@ importDesign(object, file, delim = NULL)
 
 \item{delim}{Column separator. Default is NULL (automatically determine delimiter)}
 }
+\value{
+A UMIexperiment object
+}
 \description{
 Import experimental design meta data such as replicates, treatments, categorical variables.
 }

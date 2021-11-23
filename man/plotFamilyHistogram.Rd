@@ -23,11 +23,14 @@ plotFamilyHistogram(
 
 \item{samples}{List of samples to be shown.}
 
-\item{option}{Colour scheme to use}
+\item{option}{Color scheme to use}
 
-\item{direction}{If using viridis colours sets the orientation of colour scale.}
+\item{direction}{If using viridis colors sets the orientation of color scale.}
 
 \item{theme}{ggplot theme to use. Defaults to classic.}
+}
+\value{
+A ggplot object
 }
 \description{
 Generate histograms for the frequency of barcode family depths.

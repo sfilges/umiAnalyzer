@@ -1,4 +1,4 @@
-#----------------------------// UmiVisualiser //--------------------------------
+#----------------------------// UmiVisualizer //--------------------------------
 #
 # A Shiny app for visualising data generated with the umierrorcorrect pipeline:
 # https://github.com/tobbeost/umierrorcorrect
@@ -27,7 +27,7 @@ options(
 # Define user interface
 ui <- dashboardPage(
   dashboardHeader(
-    title = 'umiVisualiser'
+    title = 'umiVisualizer'
   ),
   #--------- Define menu items on the sidebar -----------------
   dashboardSidebar(

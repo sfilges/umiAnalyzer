@@ -18,7 +18,7 @@ analyzeTimeSeries(
 
 \item{filter.name}{Name of the filter to use.}
 
-\item{time.var}{String. Name of thethe time variable. Default is "time"}
+\item{time.var}{String. Name of the time variable. Default is "time"}
 
 \item{use.variants}{Logical. Should pre computed variants be used? Default is FALSE.}
 

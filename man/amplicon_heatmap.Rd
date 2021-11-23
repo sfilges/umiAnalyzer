@@ -34,9 +34,12 @@ amplicon_heatmap(
 
 \item{font.size}{Font size to use for sample labels}
 
-\item{n_col}{Number of colours to use}
+\item{n_col}{Number of colors to use}
 
-\item{colours}{Colour scheme to use}
+\item{colours}{Color scheme to use}
+}
+\value{
+A graphics object
 }
 \description{
 Generates a heatmap of mutations with sample clustering using pheatmap.

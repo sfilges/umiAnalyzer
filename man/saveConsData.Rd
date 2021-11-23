@@ -3,7 +3,7 @@
 \name{saveConsData}
 \alias{saveConsData}
 \title{Save consensus data
-If save is set to TRUE data will be written to a csv file otherwise consensu data will
+If save is set to TRUE data will be written to a csv file otherwise consensus data will
 be returned as a tibble.}
 \usage{
 saveConsData(
@@ -15,7 +15,7 @@ saveConsData(
 )
 }
 \arguments{
-\item{object}{umiExperimet object}
+\item{object}{UMIexperiment object}
 
 \item{save}{Logical. Should data be saved to file? Default is FALSE.}
 
@@ -25,8 +25,11 @@ saveConsData(
 
 \item{delim}{Single character string, either ';' or ',' or tab}
 }
+\value{
+A data table
+}
 \description{
 Save consensus data
-If save is set to TRUE data will be written to a csv file otherwise consensu data will
+If save is set to TRUE data will be written to a csv file otherwise consensus data will
 be returned as a tibble.
 }

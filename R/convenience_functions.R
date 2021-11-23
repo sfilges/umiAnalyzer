@@ -118,7 +118,7 @@ is_Numeric <- function(
 #'
 #' Function for downloading a template file containing metadata.
 #'
-#' @param object A UmiExperiment object
+#' @param object A UMIexperiment object
 #'
 #' @importFrom tibble enframe
 #' @importFrom dplyr rename
@@ -238,7 +238,7 @@ select_theme <- function(theme){
   return(use_theme)
 }
 
-#' Filter samples and amplicons from a consensus tabel
+#' Filter samples and amplicons from a consensus table
 #'
 #' @importFrom dplyr filter
 #' @param consensus.data A consensus fdata table.
@@ -327,7 +327,7 @@ mergeAssays <- function(object, name, assay.list){
 #'
 #' @param object UMIexperiment object containing meta data
 #' @param filter.name Name of the filter to use.
-#' @param time.var String. Name of thethe time variable. Default is "time"
+#' @param time.var String. Name of the time variable. Default is "time"
 #' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
 #' @param group.by String. Variable for grouping data, e.g. replicates. Default is NULL.
 #' @param do.plot Should plot be shown?
@@ -445,6 +445,8 @@ analyzeTimeSeries <- function(
 #' @param attributeValue Meta data to be saved.
 #'
 #' @export
+#' 
+#' @return A UMIexperiment object
 #'
 addMetaData <- function(object,attributeName,attributeValue){
   attr(x = object, attributeName) <- attributeValue
@@ -453,8 +455,11 @@ addMetaData <- function(object,attributeName,attributeValue){
 
 #' Retrieve meta data by name.
 #' @export
+#' 
 #' @param object R object from which to get meta data.
 #' @param attributeName Name of the meta data attribute.
+#' 
+#' @return Metadata
 #'
 getMetaData <- function(object,attributeName){
   if(attributeName %in% names(attributes(object))){
@@ -475,6 +480,8 @@ getMetaData <- function(object,attributeName){
 #' @param printAll Logical. Should all or only trusted variant be printed?
 #'
 #' @export
+#' 
+#' @return A VCF file
 #'
 generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   cons.table <- object@cons.table
@@ -555,6 +562,8 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
 #' @importFrom dplyr rename
 #'
 #' @export
+#' 
+#' @return A table containing genome positions
 #'
 importBedFile <- function(path){
 
