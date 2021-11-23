@@ -25,7 +25,7 @@ filterVariants(
 }
 \value{
 A UMIexperiment object with filtered variants. Can be used to
-  generate vcf files.
+  generate VCF files.
 }
 \description{
 You can filter variants called with the the "callVariants" function based

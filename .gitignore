@@ -6,9 +6,14 @@ data
 .Rhistory
 .Rdata
 .Ruserdata
+.gitignore
+.Rbuildignore
+^.*\.Rproj$
+^\.Rproj\.user$
 *.DS_Store
 inst/.DS_Store
-cran-comments.md
+*cran-comments.md
 *.Rproj
 /doc/
 /Meta/
+revdep/

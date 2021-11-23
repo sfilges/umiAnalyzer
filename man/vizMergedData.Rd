@@ -26,6 +26,9 @@ vizMergedData(
 
 \item{plot.ref}{= TRUE}
 }
+\value{
+A UMIexperiment object
+}
 \description{
 Generate Merged data plots
 }

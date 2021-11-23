@@ -20,11 +20,11 @@ stacked_amplicon_plot(
 
 \item{plot.ref}{If true, shows reference base on x-axis}
 
-\item{abs.count}{Plot absolute countsinstead of frequencies.}
+\item{abs.count}{Plot absolute counts instead of frequencies.}
 
-\item{option}{Colour scheme}
+\item{option}{Color scheme}
 
-\item{direction}{Direction of the colour scale}
+\item{direction}{Direction of the color scale}
 }
 \value{
 A ggplot object.

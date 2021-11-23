@@ -2,7 +2,7 @@
 % Please edit documentation in R/legacy_functions.R
 \name{createUMIsample_Debarcer}
 \alias{createUMIsample_Debarcer}
-\title{Method for creating a UMI sample}
+\title{Method for creating a UMIsample object}
 \usage{
 createUMIsample_Debarcer(sample.name, sample.dir, cons = "10")
 }
@@ -13,6 +13,9 @@ createUMIsample_Debarcer(sample.name, sample.dir, cons = "10")
 
 \item{cons}{Consensus depth. Needs to be string; default is 10.}
 }
+\value{
+A UMIsample object
+}
 \description{
-Method for creating a UMI sample
+Method for creating a UMIsample object
 }

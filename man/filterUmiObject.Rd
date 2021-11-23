@@ -20,7 +20,7 @@ filterUmiObject(
 
 \item{minDepth}{Consensus depth to analyze. Default is 3.}
 
-\item{minCoverage}{Mininum coverage required for amplicons. Default is 1.}
+\item{minCoverage}{Minimum coverage required for amplicons. Default is 1.}
 
 \item{minFreq}{Minimum variant allele frequency to keep. Default is 0.}
 

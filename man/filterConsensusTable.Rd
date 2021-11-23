@@ -2,7 +2,7 @@
 % Please edit documentation in R/convenience_functions.R
 \name{filterConsensusTable}
 \alias{filterConsensusTable}
-\title{Filter samples and amplicons from a consensus tabel}
+\title{Filter samples and amplicons from a consensus table}
 \usage{
 filterConsensusTable(
   consensus.data,
@@ -24,5 +24,5 @@ filterConsensusTable(
 A consensus table.
 }
 \description{
-Filter samples and amplicons from a consensus tabel
+Filter samples and amplicons from a consensus table
 }

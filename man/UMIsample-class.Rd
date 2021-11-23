@@ -15,7 +15,7 @@ UMIsample class
 
 \item{\code{cons.data}}{Raw consensus data}
 
-\item{\code{summary.data}}{Summary data from umierrorcorrect}
+\item{\code{summary.data}}{Summary data from UMIErrorCorrect}
 
 \item{\code{reads}}{Consensus reads imported from a bam file.}
 }}

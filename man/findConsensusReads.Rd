@@ -3,7 +3,7 @@
 \name{findConsensusReads}
 \alias{findConsensusReads}
 \title{Find consensus reads
-A function to analyse consensus read tables generated with parseBamFiles or
+A function to analyze consensus read tables generated with parseBamFiles or
 a UMIexperiment object containing reads.}
 \usage{
 findConsensusReads(
@@ -22,8 +22,11 @@ findConsensusReads(
 
 \item{pattern}{Regular expression}
 }
+\value{
+A data table
+}
 \description{
 Find consensus reads
-A function to analyse consensus read tables generated with parseBamFiles or
+A function to analyze consensus read tables generated with parseBamFiles or
 a UMIexperiment object containing reads.
 }

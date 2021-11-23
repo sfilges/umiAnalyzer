@@ -25,12 +25,15 @@ plotUmiCounts(
 
 \item{theme}{Plotting theme, default is classic}
 
-\item{option}{Colour palette. Default uses ggplot standard, otherwise viridis options.}
+\item{option}{Color palette. Default uses ggplot standard, otherwise viridis options.}
 
-\item{direction}{If using viridis colours should the scale be inverted or default?}
+\item{direction}{If using viridis colors should the scale be inverted or default?}
+}
+\value{
+A UMIexperiment object
 }
 \description{
-Visualise the number detected UMI for each consensus depth cut-off. This may
+Visualize the number detected UMI for each consensus depth cut-off. This may
 may helpful in choosing the right consensus depth for your analysis, by
 checking the number of reads still available for each assay and sample
 for your chosen cut-off.

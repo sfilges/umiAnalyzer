@@ -9,7 +9,9 @@ devtools::run_examples()
 # autotest::autotest_package(test = TRUE)
 
 # Check package as CRAN
-rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"))
+rcmdcheck::rcmdcheck(
+  args = c("--no-manual", "--as-cran")
+)
 
 # Check content
 # remotes::install_github("ThinkR-open/checkhelper")
@@ -25,38 +27,15 @@ urlchecker::url_check()
 urlchecker::url_update()
 
 # check on other distributions
-# _rhub
-devtools::check_rhub()
-rhub::check_on_windows(check_args = "--force-multiarch")
-rhub::check_on_solaris()
+platforms <- c('debian-gcc-devel', 'ubuntu-gcc-devel', 'windows-x86_64-devel-ucrt', 'macos-m1-bigsur-release')
+
+devtools::check_rhub(
+  platforms = platforms, 
+  email = 'stefan.filges@gu.se'
+)
+
 # _win devel
 devtools::check_win_devel()
-
-# Check reverse dependencies
-# remotes::install_github("r-lib/revdepcheck")
-usethis::use_git_ignore("revdep/")
-usethis::use_build_ignore("revdep/")
-
-devtools::revdep()
-library(revdepcheck)
-# In another session
-id <- rstudioapi::terminalExecute("Rscript -e 'revdepcheck::revdep_check(num_workers = 4)'")
-rstudioapi::terminalKill(id)
-# See outputs
-revdep_details(revdep = "pkg")
-revdep_summary()                 # table of results by package
-revdep_report() # in revdep/
-# Clean up when on CRAN
-revdep_reset()
-
-# Update NEWS
-# Bump version manually and add list of changes
-
-# Add comments for CRAN
-usethis::use_cran_comments(open = rlang::is_interactive())
-
-# Upgrade version number
-usethis::use_version(which = c("patch", "minor", "major", "dev")[1])
 
 # Verify you're ready for release, and release
 devtools::release()

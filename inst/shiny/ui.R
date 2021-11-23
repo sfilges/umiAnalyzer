@@ -1,21 +1,27 @@
-#----------------------------// UmiVisualiser //--------------------------------
+#----------------------------// UmiVisualizer //--------------------------------
 #
-# A Shiny app for visualising data generated with the umierrorcorrect pipeline:
+# A Shiny app for visualizing data generated with the UMIErrorCorrect pipeline:
 # https://github.com/tobbeost/umierrorcorrect
 #
 # This app uses and comes supplied with the umiAnalyzer package:
-# https://github.com/ozimand1as/umiAnalyzer
+# https://github.com/sfilges/umiAnalyzer
 #
 
 # Quietly import required packages
-suppressMessages(library(tidyverse, quietly = TRUE))
+suppressMessages(library(umiAnalyzer, quietly = TRUE))
+
+suppressMessages(library(dplyr, quietly = TRUE))
+suppressMessages(library(tidyr, quietly = TRUE))
+suppressMessages(library(readr, quietly = TRUE))
+suppressMessages(library(tibble, quietly = TRUE))
+suppressMessages(library(plotly, quietly = TRUE))
+
 suppressMessages(library(shiny, quietly = TRUE))
 suppressMessages(library(shinyFiles, quietly = TRUE))
 suppressMessages(library(shinyWidgets, quietly = TRUE))
 suppressMessages(library(DT, quietly = TRUE))
 suppressMessages(library(shinydashboard, quietly = TRUE))
-suppressMessages(library(plotly, quietly = TRUE))
-suppressMessages(library(umiAnalyzer, quietly = TRUE))
+
 
 #----UI----
 # Maximum 5GB data upload
@@ -27,7 +33,7 @@ options(
 # Define user interface
 ui <- dashboardPage(
   dashboardHeader(
-    title = 'umiVisualiser'
+    title = 'umiVisualizer'
   ),
   #--------- Define menu items on the sidebar -----------------
   dashboardSidebar(

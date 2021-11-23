@@ -807,8 +807,8 @@ server <- function(input, output, session, plotFun) {
       samples = input$samples,
       abs.count = input$abs_counts,
       font.size = input$font_size,
-      left.side = input$cluster_by,
-      colours = input$heatmap_colors
+      #colours = input$heatmap_colors,
+      left.side = input$cluster_by
     )
   })
 

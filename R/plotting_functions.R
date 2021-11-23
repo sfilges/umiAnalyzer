@@ -1,6 +1,6 @@
 #' Generate QC plots
 #'
-#' Visualise the UMI count for each selected assay and sample for a given
+#' Visualize the UMI count for each selected assay and sample for a given
 #' consensus depth. This is useful to detect differences in coverage,
 #' especially for multiplexed assays.
 #'
@@ -11,8 +11,8 @@
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #' @param theme ggplot theme to use.
-#' @param option Colour palette to use, etiher ggplot default or viridis colours.
-#' @param direction If viridis colours are used, choose orientation of colour scale.
+#' @param option Color palette to use, either ggplot default or viridis colors.
+#' @param direction If viridis colors are used, choose orientation of color scale.
 #' @param toggle_mean Show mean or median
 #' @param center Choose mean or median
 #' @param line_col Choose color for mean/median line
@@ -27,6 +27,8 @@
 #' @importFrom stats median
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom plotly ggplotly
+#' 
+#' @return A UMIexperiment object
 #'
 generateQCplots <- function(
   object,
@@ -188,7 +190,7 @@ generateQCplots <- function(
 
 #' Plot UMI counts
 #'
-#' Visualise the number detected UMI for each consensus depth cut-off. This may
+#' Visualize the number detected UMI for each consensus depth cut-off. This may
 #' may helpful in choosing the right consensus depth for your analysis, by
 #' checking the number of reads still available for each assay and sample
 #' for your chosen cut-off.
@@ -198,8 +200,8 @@ generateQCplots <- function(
 #' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #' @param theme Plotting theme, default is classic
-#' @param option Colour palette. Default uses ggplot standard, otherwise viridis options.
-#' @param direction If using viridis colours should the scale be inverted or default?
+#' @param option Color palette. Default uses ggplot standard, otherwise viridis options.
+#' @param direction If using viridis colors should the scale be inverted or default?
 #'
 #' @export
 #'
@@ -208,6 +210,8 @@ generateQCplots <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom stats median
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @return A UMIexperiment object
 #'
 plotUmiCounts <- function(
   object,
@@ -244,7 +248,7 @@ plotUmiCounts <- function(
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
-  # If colour option is not default use the viridis package for colour palettes.
+  # If color option is not default use the viridis package for color palettes.
   # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
   if(option != 'default') {
     plot <- ggplot(
@@ -298,10 +302,10 @@ plotUmiCounts <- function(
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
 #' @param theme Plotting theme to use, default is classic.
-#' @param option Colour palette to use.
+#' @param option Color palette to use.
 #' @param y_min Minimum y-axis value, default is 0
-#' @param y_max MAximum y-axis value, default is NULL (autoscale)
-#' @param direction Orientation of the colour palette.
+#' @param y_max Maximum y-axis value, default is NULL (autoscale)
+#' @param direction Orientation of the color palette.
 #' @param plot.text Should non-references bases be indicated above the bar?
 #' @param plot.ref If true show reference base instead of position on x-axis.
 #' @param stack.plot Show all variant alleles in a stacked bar plot.
@@ -330,7 +334,7 @@ plotUmiCounts <- function(
 #'
 #' data <- generateAmpliconPlots(simsen, "myfilter")
 #' }
-#' @return A umiExperiment object containing a ggplot object with the
+#' @return A UMIexperiment object containing a ggplot object with the
 #' amplicon plot.
 generateAmpliconPlots <- function(
   object,
@@ -612,8 +616,8 @@ generateAmpliconPlots <- function(
 
   if(option != 'default'){
 
-    # If not using default colour scheme use either
-    # (1) Colours from viridis package
+    # If not using default color scheme use either
+    # (1) Colors from viridis package
     if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
       amplicon_plot <- amplicon_plot + viridis::scale_fill_viridis(
         discrete = TRUE,
@@ -621,7 +625,7 @@ generateAmpliconPlots <- function(
         direction = orientation
       )
     } else {
-    # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+    # (2) Colors from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
       amplicon_plot <- amplicon_plot +
         ggplot2::scale_fill_brewer(
           palette = option
@@ -673,8 +677,6 @@ generateAmpliconPlots <- function(
 #' @param left.side Show assays or sample on the left side of the heatmap. Default is assays
 #' @param abs.count Logical. Should absolute counts be used instead of frequencies?
 #' @param font.size Font size to use for sample labels
-#' @param n_col Number of colours to use
-#' @param colours Colour scheme to use
 #'
 #' @export
 #'
@@ -682,9 +684,9 @@ generateAmpliconPlots <- function(
 #' @importFrom pheatmap pheatmap
 #' @importFrom tidyr spread
 #' @importFrom dplyr select
-#' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices dev.off
 #'
+#' @return A graphics object
 #'
 amplicon_heatmap <- function(
   object,
@@ -694,9 +696,9 @@ amplicon_heatmap <- function(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
-  font.size = 10,
-  n_col = 5,
-  colours = 'Blues'
+  font.size = 10
+  #n_col = 5,
+  #colours = 'Blues'
 ){
 
   # Check if variant caller has been run on object
@@ -758,7 +760,8 @@ amplicon_heatmap <- function(
       mat = 100*cons_mat,
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = FALSE,
       cluster_cols = do.cluster,
       clustering_method = 'ward.D2',
@@ -773,7 +776,8 @@ amplicon_heatmap <- function(
       mat = t(100*cons_mat),
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = do.cluster,
       cluster_cols = FALSE,
       clustering_method = 'ward.D2',
@@ -807,6 +811,8 @@ amplicon_heatmap <- function(
 #' @import ggplot2
 #' @importFrom dplyr filter group_by
 #' @importFrom magrittr "%>%" "%<>%"
+#' 
+#' @return A UMIexperiment object
 #'
 vizMergedData <- function(
   object,
@@ -885,8 +891,8 @@ vizMergedData <- function(
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
 #' @param samples List of samples to be shown.
-#' @param option Colour scheme to use
-#' @param direction If using viridis colours sets the orientation of colour scale.
+#' @param option Color scheme to use
+#' @param direction If using viridis colors sets the orientation of color scale.
 #' @param theme ggplot theme to use. Defaults to classic.
 #'
 #' @export
@@ -894,6 +900,8 @@ vizMergedData <- function(
 #' @import ggplot2
 #' @importFrom tibble is_tibble
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @return A ggplot object
 #'
 plotFamilyHistogram <- function(
   object,
@@ -974,10 +982,16 @@ plotFamilyHistogram <- function(
 
 
 #' Plot coverage before and after normalization
+#' 
 #' @importFrom gridExtra grid.arrange
 #' @importFrom magrittr "%>%" "%<>%"
+#' 
 #' @param cons.data Consensus data table
+#' 
+#' @noRd
+#' 
 #' @return A list of ggplot objects.
+#' 
 vizNormalization <- function(cons.data){
 
   cons.data$Name %<>% as.factor
@@ -1014,9 +1028,9 @@ vizNormalization <- function(cons.data){
 #' @param cons.data Consensus data table
 #' @param theme Plotting theme
 #' @param plot.ref If true, shows reference base on x-axis
-#' @param abs.count Plot absolute countsinstead of frequencies.
-#' @param option Colour scheme
-#' @param direction Direction of the colour scale
+#' @param abs.count Plot absolute counts instead of frequencies.
+#' @param option Color scheme
+#' @param direction Direction of the color scale
 #'
 #' @export
 #'
@@ -1120,8 +1134,8 @@ stacked_amplicon_plot <- function(
   }
 
   if(option != 'default'){
-    # If not using default colour scheme use either
-    # (1) Colours from viridis package
+    # If not using default color scheme use either
+    # (1) Colors from viridis package
     if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
       stacked <- stacked + viridis::scale_fill_viridis(
         discrete = TRUE,
@@ -1129,7 +1143,7 @@ stacked_amplicon_plot <- function(
         direction = direction
       )
     } else {
-      # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+      # (2) Colors from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
       stacked <- stacked +
         ggplot2::scale_fill_brewer(
           palette = option
@@ -1141,13 +1155,15 @@ stacked_amplicon_plot <- function(
 
 }
 
-#' View count normalisation
+#' View count normalization
 #'
-#' @param object A umiExperiment object containing norm plots
+#' @param object A UMIexperiment object containing norm plots
 #' @param do.plot should plot be shown? If false returns a grid.arrange object
 #'
 #' @export
 #' @importFrom gridExtra grid.arrange
+#' 
+#' @return A ggplot object
 #'
 viewNormPlot <- function(
   object,
@@ -1170,7 +1186,7 @@ viewNormPlot <- function(
 #' Plot counts by nucleotide change
 #' @param cons.data A consensus data table
 #' @param do.plot Logical. Should plot be shown?
-#' @param option Colour palette to use
+#' @param option Color palette to use
 #' @param direction If using viridis colors, choose orientation of palette
 #' @param theme ggplot theme to use, default is classic.
 #' @param plot.ref = TRUE
@@ -1180,8 +1196,9 @@ viewNormPlot <- function(
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
-#' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @noRd
 #'
 #' @return A ggplot object.
 #'
@@ -1241,7 +1258,14 @@ vizStackedCounts <- function(
   use_theme <- select_theme(theme = theme)
 
   # Stacked count plot.
-  stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
+  stacked <- ggplot(
+    data = out.file, 
+    mapping = aes_(
+      fill=~variant,
+      y=~count, 
+      x=~Position
+      )
+    ) +
     geom_bar( stat="identity") +
     use_theme +
     facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
@@ -1318,7 +1342,6 @@ vizStackedCounts <- function(
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
-#' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
 #'
 #' @return A ggplot object.
