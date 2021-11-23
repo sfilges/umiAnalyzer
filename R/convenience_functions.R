@@ -336,7 +336,6 @@ mergeAssays <- function(object, name, assay.list){
 #'
 #' @importFrom magrittr "%>%" "%<>%"
 #' @import dplyr
-#' @importFrom rlang .data
 #' @importFrom stats sd
 #'
 #' @return A UMIexperiment object

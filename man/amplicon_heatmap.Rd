@@ -12,9 +12,7 @@ amplicon_heatmap(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
-  font.size = 10,
-  n_col = 5,
-  colours = "Blues"
+  font.size = 10
 )
 }
 \arguments{
@@ -33,10 +31,6 @@ amplicon_heatmap(
 \item{abs.count}{Logical. Should absolute counts be used instead of frequencies?}
 
 \item{font.size}{Font size to use for sample labels}
-
-\item{n_col}{Number of colors to use}
-
-\item{colours}{Color scheme to use}
 }
 \value{
 A graphics object

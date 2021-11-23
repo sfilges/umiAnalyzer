@@ -27,9 +27,7 @@ urlchecker::url_check()
 urlchecker::url_update()
 
 # check on other distributions
-# _rhub
-
-platforms <- c('debian-gcc-devel', 'ubuntu-gcc-devel', 'windows-x86_64-devel-ucrt', 'macos-m1-bigsur-release')
+platforms <- c('debian-gcc-devel', 'windows-x86_64-devel-ucrt', 'macos-m1-bigsur-release')
 
 devtools::check_rhub(
   platforms = platforms, 

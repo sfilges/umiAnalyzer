@@ -677,8 +677,6 @@ generateAmpliconPlots <- function(
 #' @param left.side Show assays or sample on the left side of the heatmap. Default is assays
 #' @param abs.count Logical. Should absolute counts be used instead of frequencies?
 #' @param font.size Font size to use for sample labels
-#' @param n_col Number of colors to use
-#' @param colours Color scheme to use
 #'
 #' @export
 #'
@@ -686,7 +684,6 @@ generateAmpliconPlots <- function(
 #' @importFrom pheatmap pheatmap
 #' @importFrom tidyr spread
 #' @importFrom dplyr select
-#' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices dev.off
 #'
 #' @return A graphics object
@@ -699,9 +696,9 @@ amplicon_heatmap <- function(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
-  font.size = 10,
-  n_col = 5,
-  colours = 'Blues'
+  font.size = 10
+  #n_col = 5,
+  #colours = 'Blues'
 ){
 
   # Check if variant caller has been run on object
@@ -763,7 +760,8 @@ amplicon_heatmap <- function(
       mat = 100*cons_mat,
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = FALSE,
       cluster_cols = do.cluster,
       clustering_method = 'ward.D2',
@@ -778,7 +776,8 @@ amplicon_heatmap <- function(
       mat = t(100*cons_mat),
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = do.cluster,
       cluster_cols = FALSE,
       clustering_method = 'ward.D2',
@@ -1197,7 +1196,6 @@ viewNormPlot <- function(
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
-#' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
 #' 
 #' @noRd
@@ -1344,7 +1342,6 @@ vizStackedCounts <- function(
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
-#' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
 #'
 #' @return A ggplot object.

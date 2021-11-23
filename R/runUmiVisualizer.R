@@ -1,6 +1,11 @@
 #' Function to run the umiVisualizer shiny app
 #' @export
 #' 
+#' @import shinyFiles
+#' @import shinyWidgets
+#' @import shinydashboard
+#' @import DT
+#' 
 #' @importFrom shiny runApp
 #' @importFrom utils globalVariables
 #' 

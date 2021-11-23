@@ -8,13 +8,15 @@
 #
 
 # Quietly import required packages
-suppressMessages(library(tidyverse, quietly = TRUE))
+#suppressMessages(library(tidyverse, quietly = TRUE))
+suppressMessages(library(dplyr, quietly = TRUE))
+suppressMessages(library(tidyr, quietly = TRUE))
+suppressMessages(library(plotly, quietly = TRUE))
 suppressMessages(library(shiny, quietly = TRUE))
 suppressMessages(library(shinyFiles, quietly = TRUE))
 suppressMessages(library(shinyWidgets, quietly = TRUE))
 suppressMessages(library(DT, quietly = TRUE))
 suppressMessages(library(shinydashboard, quietly = TRUE))
-suppressMessages(library(plotly, quietly = TRUE))
 suppressMessages(library(umiAnalyzer, quietly = TRUE))
 
 #----UI----

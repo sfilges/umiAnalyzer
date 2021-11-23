@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 ## ----runApp, eval=FALSE-------------------------------------------------------
 #  library(umiAnalyzer)
 #  
-#  runUmiVisualiser()
+#  runUmiVisualizer()
 
 ## ----example1, eval=TRUE------------------------------------------------------
 library(umiAnalyzer)
@@ -29,10 +29,10 @@ simsen <- mergeAssays(
   assay.list = c("PIK3CA_123", "PIK3CA_234")
 )
 
-## ----bam-files, eval=FALSE----------------------------------------------------
-#  reads <- parseBamFiles(main, consDepth = 10)
-#  
-#  plotFamilyHistogram(reads)
+## ----bam-files, eval=TRUE-----------------------------------------------------
+reads <- parseBamFiles(main, consDepth = 10)
+
+plotFamilyHistogram(reads)
 
 ## ----example1continued, eval=TRUE---------------------------------------------
 simsen <- generateQCplots(
@@ -59,26 +59,26 @@ myfilter <- getFilteredData(
 
 myfilter
 
-## ----example1continued_3, eval=FALSE------------------------------------------
-#  simsen <- plotUmiCounts(
-#    object = simsen
-#  )
+## ----example1continued_3, eval=TRUE-------------------------------------------
+simsen <- plotUmiCounts(
+  object = simsen
+)
 
-## ---- eval=FALSE--------------------------------------------------------------
-#  simsen <- generateAmpliconPlots(
-#    object = simsen,
-#    do.plot = TRUE,
-#    amplicons = 'KIT_125',
-#    plot.ref = TRUE,
-#    plot.text = FALSE
-#  )
+## ---- eval=TRUE---------------------------------------------------------------
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  do.plot = TRUE,
+  amplicons = 'KIT_125',
+  plot.ref = TRUE,
+  plot.text = FALSE
+)
 
-## ---- eval=FALSE--------------------------------------------------------------
-#  simsen <- generateAmpliconPlots(
-#    object = simsen,
-#    amplicons = c('new'),
-#    samples = 'VAF-1-5ng-1-10x'
-#  )
+## ---- eval=TRUE---------------------------------------------------------------
+simsen <- generateAmpliconPlots(
+  object = simsen,
+  amplicons = c('new'),
+  samples = 'VAF-1-5ng-1-10x'
+)
 
 ## ----metaDataImport, eval=FALSE-----------------------------------------------
 #  metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
