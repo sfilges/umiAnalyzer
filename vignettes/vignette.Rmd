@@ -44,21 +44,10 @@ unique molecular identifiers (UMIs). UMIErrorCorrect is available at:
 
 ## Using the umiVisualizer shiny app
 
-The shiny app requires the packages shinydashboard, shinyFiles, shinyWidgets, 
-tidyverse and DT. These can be installed by running the following:
-
-```{r installDeps, eval=FALSE}
-pkgs <- c('tidyverse', 'shinydashboard', 'shinyFiles', 'shinyWidgets', 'DT')
-
-install.packages(pkgs)
-```
-
-and can be run using the following command:
+The shiny app can be run using the following command:
 
 ```{r runApp, eval=FALSE}
-library(umiAnalyzer)
-
-runUmiVisualizer()
+umiAnalyzer::runUmiVisualizer()
 ```
 
 
