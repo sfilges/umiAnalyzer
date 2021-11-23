@@ -12,9 +12,7 @@ amplicon_heatmap(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
-  font.size = 10,
-  n_col = 5,
-  colours = "Blues"
+  font.size = 10
 )
 }
 \arguments{
@@ -33,12 +31,9 @@ amplicon_heatmap(
 \item{abs.count}{Logical. Should absolute counts be used instead of frequencies?}
 
 \item{font.size}{Font size to use for sample labels}
-
-\item{n_col}{Number of colours to use}
-
-\item{colours}{Colour scheme to use}
-
-\item{do.plot}{Logical. Should plots be shown?}
+}
+\value{
+A graphics object
 }
 \description{
 Generates a heatmap of mutations with sample clustering using pheatmap.

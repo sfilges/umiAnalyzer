@@ -37,31 +37,31 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-umiAnalyzer provides tools for analyzing umierrorcorrect output.
+umiAnalyzer provides tools for analyzing UMIErrorCorrect output. UMIErrorCorrect
+is a Python package for processing targeted high-throughput sequencing data containing
+unique molecular identifiers (UMIs). UMIErrorCorrect is available at:
+<https://github.com/stahlberggroup/umierrorcorrect>.
 
-## Using the umiVisualiser shiny app
+## Using the umiVisualizer shiny app
 
-The shiny app requires the shiny, shinyFiles, shinyWidgets, tidyverse and DT packages and can
-be run using the following command:
+The shiny app can be run using the following command:
 
 ```{r runApp, eval=FALSE}
-library(umiAnalyzer)
-
-runUmiVisualiser()
+umiAnalyzer::runUmiVisualizer()
 ```
 
 
-## How to make your own umiExperiment object {.tabset}
+## How to make your own UMIexperiment object {.tabset}
 
-Define a variable containing the path to the directory with all the umierrorcorrect 
+Define a variable containing the path to the directory with all the UMIErrorCorrect 
 output folders belonging to your experiment. umiAnalyzer comes with raw test data 
-generated with umierrorcorrect that you can import if you don't have any of your own.
+generated with UMIErrorCorrect that you can import if you don't have any of your own.
 
-Call the createUmiExperiment to create your umiExperiment object.
+Call the createUmiExperiment to create your UMIexperiment object.
 
-The umiExperiment object always maintains your raw data, however you can create as many filters as you
+The UMIexperiment object always maintains your raw data, however you can create as many filters as you
 like, which will be saved as separate objects to access. You can filter the consensus table of
-umiExperiment object with filterUmiObject. The only mandatory arguments are the object to be filtered
+UMIexperiment object with filterUmiObject. The only mandatory arguments are the object to be filtered
 and a user defined name. You can use that name to retrieve a filtered table using getFilteredData. 
 
 ```{r example1, eval=TRUE}
@@ -91,7 +91,7 @@ reads <- parseBamFiles(main, consDepth = 10)
 plotFamilyHistogram(reads)
 ```
 
-Next we generate Quality Control plots and filter the umiExperiment object to
+Next we generate Quality Control plots and filter the UMIexperiment object to
 select for consensus 3 reads. Most downstream functions use filtered data, each each filtered 
 data set receives a name, making it possible to apply multiple filters on the same object as the
 original data is maintained and can always be retrieved with saveConsData (see below). Each filtered
@@ -99,14 +99,34 @@ data set can be retrieved using getFilteredData and assigned to a new variable o
 with the optional parameter save = TRUE, which is set to FALSE by 
 
 ```{r example1continued, eval=TRUE}
-simsen <- generateQCplots(simsen, group.by = 'assay')
+simsen <- generateQCplots(
+  object = simsen,
+  group.by = 'assay',
+  option = 'default'
+)
+
+simsen <- filterUmiObject(
+  object = simsen
+)
 ```
 
+Optionally, the beta-binomial variant caller can be run on the data using callVariants.
 
 ```{r example1continued_2, eval=TRUE}
-simsen <- filterUmiObject(simsen)
+# This is optional
+simsen <- callVariants(
+  object = simsen, 
+  computePrior = FALSE
+)
+```
 
-myfilter <- getFilteredData(simsen)
+Retrieve filters using getFilteredData:
+
+```{r getFilter, eval=TRUE}
+myfilter <- getFilteredData(
+  object = simsen
+)
+
 myfilter
 ```
 
@@ -115,14 +135,16 @@ required to form a barcode family. We can plot the number of available reads
 for different consensus depths.
 
 ```{r example1continued_3, eval=TRUE}
-simsen <- plotUmiCounts(object = simsen)
+simsen <- plotUmiCounts(
+  object = simsen
+)
 ```
 
-Next we generate plots for the amplicons and samples in the umiExperiment object.
+Next we generate plots for the amplicons and samples in the UMIexperiment object.
 
 If generateAmpliconPlots is called and the number of amplicons and samples is too
 large to plot all of them individually in a single plot the data is shown in
-summarised form. The user can specify amplicons and or samples optionally to
+summarized form. The user can specify amplicons and or samples optionally to
 plot only the selection.
 
 ### All data
@@ -142,14 +164,14 @@ simsen <- generateAmpliconPlots(
 ```{r, eval=TRUE}
 simsen <- generateAmpliconPlots(
   object = simsen,
-  amplicons = c("new"),
-  samples = "VAF-1-5ng-1-10x"
+  amplicons = c('new'),
+  samples = 'VAF-1-5ng-1-10x'
 )
 ```
 
 ## Merging technical replicates
 
-In the above analyses potential replicates are treated as indiviual samples, but
+In the above analyses potential replicates are treated as individual samples, but
 it is possible to merge replicate information for statistical analyses and
 more convenient plotting.
 
@@ -157,15 +179,15 @@ Merging data requires the user to supply a file with meta data using the
 importDesign function. This will create a metadata attribute called "design",
 which can be retrieved using getMetaData.
 
-```{r metaDataImport, eval=TRUE}
+```{r metaDataImport, eval=FALSE}
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
-simsen <- importDesign(
+simsen <- umiAnalyzer::importDesign(
   object = simsen,
   file = metaData
 )
 
-design <- getMetaData(
+design <- umiAnalyzer::getMetaData(
   object = simsen, 
   attributeName = "design"
 )
@@ -188,17 +210,17 @@ We can also make use of replicate data to remove background noise. If you specif
 a group.by variable from the meta data only variants that occur at least twice
 per group will be used. If we specify 'replicate' that means only variants in
 at least 2 out of 3 replicates will be considered. The default value for
-group.by is NULL and each sample will be analysed and plotted independently.
+group.by is NULL and each sample will be analyzed and plotted independently.
 
 ```{r time_course, eval=FALSE}
-simsen <- analyzeTimeSeries(
+simsen <- umiAnalyzer::analyzeTimeSeries(
   object = simsen,
   time.var = 'time',
   group.by = 'replicate'
 )
 ```
 
-We can now use the mergeTechnicalReplicates function to create a summarised
+We can now use the mergeTechnicalReplicates function to create a summarized
 data table. Merging replicates also performs coverage normalization. This can 
 remove bias incurred when comparing samples sequenced at different read depths,
 because background noise is expected to be higher in a sample that was sequenced
@@ -206,7 +228,7 @@ to a greater depth. A drawback is that it is not possible to scale a count of
 zero variant reads one can set all 0 to a small value, such as 0.5, first and then
 scale the data.
 
-```{r replicates, eval=TRUE}
+```{r replicates, eval=FALSE}
 simsen <- mergeTechnicalReplicates(
   object = simsen,
   group.by = 'replicate',
@@ -218,7 +240,7 @@ simsen <- mergeTechnicalReplicates(
 We can also have a look at the merged amplicon plots which now show the average
 maximum alternate allele count and standard deviation.
 
-```{r vizMerge, eval=TRUE}
+```{r vizMerge, eval=FALSE}
 vizMergedData(
   simsen,
   amplicons = c('new')
@@ -227,7 +249,7 @@ vizMergedData(
 
 # Calling variants
 
-umiAnalyzer comes with a build-in umiExperiment object to explore, which was generated using the code 
+umiAnalyzer comes with a build-in UMIexperiment object to explore, which was generated using the code 
 above, so it can be used without creating the it first if so desired.
 
 In order to call variants using the umiAnalyzer variant caller simply load the package and test data
@@ -247,7 +269,7 @@ simsen <- generateAmpliconPlots(
 
 # Other functions (experimental)
 
-## Writing a Variant Call file (vcf)
+## Writing a Variant Call File (VCF)
 
 ```{r vcf, eval=FALSE}
 generateVCF(object = simsen, outFile = 'simsen.vcf', printAll = FALSE, save = FALSE)

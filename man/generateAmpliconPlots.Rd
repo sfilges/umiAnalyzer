@@ -9,6 +9,8 @@ generateAmpliconPlots(
   filter.name = "default",
   do.plot = TRUE,
   cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
@@ -37,6 +39,10 @@ generateAmpliconPlots(
 
 \item{cut.off}{How many variant reads are necessary to consider a variant above background? Default is 5 reads.}
 
+\item{min.count}{Minimum variants counts to plot, default is 0.}
+
+\item{min.vaf}{Minimum variants allele frequency to plot, default is 0.}
+
 \item{amplicons}{(Optional) character vector of amplicons to be plotted.}
 
 \item{samples}{(Optional) character vector of samples to be plotted.}
@@ -45,13 +51,13 @@ generateAmpliconPlots(
 
 \item{y_min}{Minimum y-axis value, default is 0}
 
-\item{y_max}{MAximum y-axis value, default is NULL (autoscale)}
+\item{y_max}{Maximum y-axis value, default is NULL (autoscale)}
 
 \item{theme}{Plotting theme to use, default is classic.}
 
-\item{option}{Colour palette to use.}
+\item{option}{Color palette to use.}
 
-\item{direction}{Orientation of the colour palette.}
+\item{direction}{Orientation of the color palette.}
 
 \item{plot.text}{Should non-references bases be indicated above the bar?}
 
@@ -63,12 +69,16 @@ generateAmpliconPlots(
 
 \item{fdr}{False-discovery-rate cut-off for variants.}
 
+\item{font.size}{Font size}
+
+\item{angle}{Font angle}
+
 \item{use.caller}{Should data from variant caller be used? Default is FALSE}
 
 \item{use.plotly}{Should plotly be used instead of the regular ggplot device? Default is TRUE}
 }
 \value{
-A umiExperiment object containing a ggplot object with the
+A UMIexperiment object containing a ggplot object with the
 amplicon plot.
 }
 \description{

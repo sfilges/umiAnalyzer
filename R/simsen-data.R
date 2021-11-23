@@ -1,11 +1,12 @@
 #' UMIexperiment data generated with SiMSen-Seq
 #'
 #' @docType data
+#' 
+#' @name simsen
 #'
-#' @usage data(simsen)
-#'
-#' @format Anobject of class \code{"UMIexperiment"}
+#' @format An object of class \code{"UMIexperiment"}
 #'
 #' @keywords datasets
+#' 
 #'
-"simsen"
+NULL

@@ -1,6 +1,6 @@
 #' Generate QC plots
 #'
-#' Visualise the UMI count for each selected assay and sample for a given
+#' Visualize the UMI count for each selected assay and sample for a given
 #' consensus depth. This is useful to detect differences in coverage,
 #' especially for multiplexed assays.
 #'
@@ -11,8 +11,8 @@
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #' @param theme ggplot theme to use.
-#' @param option Colour palette to use, etiher ggplot default or viridis colours.
-#' @param direction If viridis colours are used, choose orientation of colour scale.
+#' @param option Color palette to use, either ggplot default or viridis colors.
+#' @param direction If viridis colors are used, choose orientation of color scale.
 #' @param toggle_mean Show mean or median
 #' @param center Choose mean or median
 #' @param line_col Choose color for mean/median line
@@ -27,6 +27,8 @@
 #' @importFrom stats median
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom plotly ggplotly
+#' 
+#' @return A UMIexperiment object
 #'
 generateQCplots <- function(
   object,
@@ -36,7 +38,7 @@ generateQCplots <- function(
   assays = NULL,
   samples = NULL,
   theme = 'classic',
-  option = 'default',
+  option = 'viridis',
   direction = 'default',
   toggle_mean = TRUE,
   center = 'mean',
@@ -77,11 +79,11 @@ generateQCplots <- function(
       dplyr::filter(.data$`Sample Name` %in% samples)
   }
 
-  cdepths <- dplyr::rename(cdepths, UMIcount = Coverage, assay = Name)
+  cdepths <- dplyr::rename(cdepths, UMIcount = .data$Coverage, assay = .data$Name)
 
   cdepths <- cdepths %>%
-    dplyr::group_by(`Sample Name`, assay) %>%
-    dplyr::summarise(UMIcount = mean(UMIcount))
+    dplyr::group_by(.data$`Sample Name`, .data$assay) %>%
+    dplyr::summarise(UMIcount = mean(.data$UMIcount))
 
   cdepths
 
@@ -90,7 +92,7 @@ generateQCplots <- function(
   cdepths$assay %<>% as.factor
   cdepths$`Sample Name` %<>% as.factor
 
-  print(as.data.frame(cdepths))
+  #print(as.data.frame(cdepths))
 
   # From the ggplot2 vignette:
   # https://github.com/tidyverse/ggplot2/releases
@@ -188,7 +190,7 @@ generateQCplots <- function(
 
 #' Plot UMI counts
 #'
-#' Visualise the number detected UMI for each consensus depth cut-off. This may
+#' Visualize the number detected UMI for each consensus depth cut-off. This may
 #' may helpful in choosing the right consensus depth for your analysis, by
 #' checking the number of reads still available for each assay and sample
 #' for your chosen cut-off.
@@ -198,8 +200,8 @@ generateQCplots <- function(
 #' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #' @param theme Plotting theme, default is classic
-#' @param option Colour palette. Default uses ggplot standard, otherwise viridis options.
-#' @param direction If using viridis colours should the scale be inverted or default?
+#' @param option Color palette. Default uses ggplot standard, otherwise viridis options.
+#' @param direction If using viridis colors should the scale be inverted or default?
 #'
 #' @export
 #'
@@ -208,6 +210,8 @@ generateQCplots <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom stats median
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @return A UMIexperiment object
 #'
 plotUmiCounts <- function(
   object,
@@ -221,8 +225,10 @@ plotUmiCounts <- function(
 
   # Read summary data from object
   data <- object@summary.data %>%
-    dplyr::filter(!is.na(.data$assay),
-                  .data$depth > 0)
+    dplyr::filter(
+      !is.na(.data$assay),
+      .data$depth > 0
+    )
 
   # Select amplicons
   if (!is.null(amplicons)) {
@@ -242,13 +248,21 @@ plotUmiCounts <- function(
   # Use selected plotting theme
   use_theme <- select_theme(theme = theme)
 
-  # If colour option is not default use the viridis package for colour palettes.
+  # If color option is not default use the viridis package for color palettes.
   # https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
   if(option != 'default') {
-    plot <- ggplot(data, aes(x=.data$depth, y=.data$UMIcount, fill=sample)) +
+    plot <- ggplot(
+      data = data, aes(
+        x=.data$depth,
+        y=.data$UMIcount, 
+        fill=sample)
+      ) +
       use_theme +
       viridis::scale_fill_viridis(
-        discrete = TRUE,option = option,direction = direction) +
+        discrete = TRUE,
+        option = option,
+        direction = direction
+        ) +
         geom_col(alpha=0.6) +
         facet_grid(assay ~ sample) +
         ylab('UMI count') +
@@ -282,14 +296,16 @@ plotUmiCounts <- function(
 #' @param filter.name Name of the filter to be plotted.
 #' @param do.plot Logical. Should plots be shown?
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
+#' @param min.count Minimum variants counts to plot, default is 0.
+#' @param min.vaf Minimum variants allele frequency to plot, default is 0.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param abs.count Should absolute counts be plotted instead of frequencies? Default is FALSE.
 #' @param theme Plotting theme to use, default is classic.
-#' @param option Colour palette to use.
+#' @param option Color palette to use.
 #' @param y_min Minimum y-axis value, default is 0
-#' @param y_max MAximum y-axis value, default is NULL (autoscale)
-#' @param direction Orientation of the colour palette.
+#' @param y_max Maximum y-axis value, default is NULL (autoscale)
+#' @param direction Orientation of the color palette.
 #' @param plot.text Should non-references bases be indicated above the bar?
 #' @param plot.ref If true show reference base instead of position on x-axis.
 #' @param stack.plot Show all variant alleles in a stacked bar plot.
@@ -297,6 +313,8 @@ plotUmiCounts <- function(
 #' @param fdr False-discovery-rate cut-off for variants.
 #' @param use.caller Should data from variant caller be used? Default is FALSE
 #' @param use.plotly Should plotly be used instead of the regular ggplot device? Default is TRUE
+#' @param font.size Font size
+#' @param angle Font angle
 #'
 #' @export
 #'
@@ -316,13 +334,15 @@ plotUmiCounts <- function(
 #'
 #' data <- generateAmpliconPlots(simsen, "myfilter")
 #' }
-#' @return A umiExperiment object containing a ggplot object with the
+#' @return A UMIexperiment object containing a ggplot object with the
 #' amplicon plot.
 generateAmpliconPlots <- function(
   object,
   filter.name = 'default',
   do.plot = TRUE,
   cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
@@ -364,14 +384,26 @@ generateAmpliconPlots <- function(
   }
 
   # Use depth cut-off to call variants
-  cons.table.default <- getFilteredData(object = object,name = filter.name)
-  cons.table.default$Variants <- ifelse(cons.table.default$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+  cons.table.default <- getFilteredData(
+    object = object,
+    name = filter.name
+  )
+  
+  cons.table.default$Variants <- ifelse(
+    test = cons.table.default$`Max Non-ref Allele Count` >= cut.off, 
+    yes = "Variant",
+    no = "Background"
+  )
 
   if(use.caller){
     # Check if variant caller has been run on object
     if(!identical(dim(object@variants), dim(tibble()))) {
       cons.table <- object@variants
-      cons.table$Variants <- ifelse(cons.table$p.adjust <= fdr, "Variant", "Background")
+      cons.table$Variants <- ifelse(
+        test = cons.table$p.adjust <= fdr, 
+        yes = "Variant", 
+        no = "Background"
+      )
     } else {
       warning("Variant caller has not been run, using default cut-off instead!")
       cons.table <- cons.table.default
@@ -379,6 +411,8 @@ generateAmpliconPlots <- function(
   } else {
     cons.table <- cons.table.default
   }
+  
+  print(cons.table)
 
   # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
@@ -387,11 +421,19 @@ generateAmpliconPlots <- function(
   cons.table$sample %<>% as.factor
   cons.table$`Consensus group size` %<>% as.factor
 
+  # Filter amplicons and samples based on user selection
   cons.table <- filterConsensusTable(
     cons.table,
     amplicons = amplicons,
     samples = samples
   )
+
+  # Filter position based on minimum VAF and counts, default is to use all positions.
+  cons.table <- cons.table %>%
+    dplyr::filter(
+      .data$`Max Non-ref Allele Frequency` >= min.vaf/100,
+      .data$`Max Non-ref Allele Count` >= min.count
+    )
 
   # Get raw error data (cons0)
   raw_error <- object@raw.error
@@ -424,19 +466,26 @@ generateAmpliconPlots <- function(
   # If classic plot is chosen make a raw vs consN plot
   classic_plot <- ggplot(classic_data, aes_(
       x = ~Position,
-      y = ~ (100 * `Max Non-ref Allele Frequency`),
+      y = ~(100 * .data$`Max Non-ref Allele Frequency`),
       fill = ~(`Consensus group size`))
     ) +
     use_theme +
-    geom_bar(stat="identity", width=.5, position = "dodge") +
+    geom_bar(stat = 'identity', width=.5, position = 'dodge') +
     theme(
-      axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+      axis.text.x = element_text(
+        size = font.size,
+        angle = angle,
+        hjust = 1
+      ),
       axis.title.x = element_blank()
       ) +
-    ylab("Variant Allele Frequency (%)") +
-    xlab("Assay") +
-    scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
-    facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x")
+    ylab('Variant Allele Frequency (%)') +
+    xlab('Assay') +
+    scale_y_continuous(
+      limits = c(y_min,y_max),
+      oob = scales::rescale_none
+    ) +
+    facet_grid(`Sample Name` ~ Name, scales = 'free_x', space = 'free_x')
 
   # If the plot is too big, limit number of positions plotted;
   # also output tabular output as an html table
@@ -448,7 +497,7 @@ generateAmpliconPlots <- function(
     amplicon_plot <- ggplot(
       cons.table, aes_(
         x = ~ Name,
-        y = ~ (100 * `Max Non-ref Allele Frequency`))
+        y = ~ (100 * .data$`Max Non-ref Allele Frequency`))
       ) +
       geom_point(
         mapping = aes(
@@ -457,7 +506,11 @@ generateAmpliconPlots <- function(
       ) +
       use_theme +
       theme(
-        axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+        axis.text.x = element_text(
+          size = font.size,
+          angle = angle,
+          hjust = 1
+        ),
         axis.title.x = element_blank()
         ) +
       ylab("Variant Allele Frequency (%)") +
@@ -491,21 +544,31 @@ generateAmpliconPlots <- function(
     } else {
 
       cons.table <- cons.table %>%
-        dplyr::mutate(`Max Non-ref Allele Frequency` = 100*`Max Non-ref Allele Frequency`)
+        dplyr::mutate(
+          `Max Non-ref Allele Frequency` = 100*.data$`Max Non-ref Allele Frequency`
+          )
 
       amplicon_plot <- ggplot(cons.table, aes_(
         x = ~Position,
         y = ~`Max Non-ref Allele Frequency`,
-        fill = ~Variants)) +
+        fill = ~Variants)
+        ) +
         use_theme +
         geom_bar(stat = "identity") +
         theme(
-          axis.text.x = element_text(size = font.size, angle = angle, hjust = 1),
+          axis.text.x = element_text(
+            size = font.size,
+            angle = angle,
+            hjust = 1
+          ),
           axis.title.x = element_blank()
           ) +
         ylab("Variant Allele Frequency (%)") +
         xlab("Assay") +
-        scale_y_continuous(limits=c(y_min,y_max), oob = scales::rescale_none) +
+        scale_y_continuous(
+          limits=c(y_min,y_max),
+          oob = scales::rescale_none
+        ) +
         facet_grid(`Sample Name` ~ Name, scales = "free_x", space = "free_x") +
         geom_hline(
           yintercept = 0,
@@ -553,8 +616,8 @@ generateAmpliconPlots <- function(
 
   if(option != 'default'){
 
-    # If not using default colour scheme use either
-    # (1) Colours from viridis package
+    # If not using default color scheme use either
+    # (1) Colors from viridis package
     if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
       amplicon_plot <- amplicon_plot + viridis::scale_fill_viridis(
         discrete = TRUE,
@@ -562,7 +625,7 @@ generateAmpliconPlots <- function(
         direction = orientation
       )
     } else {
-    # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+    # (2) Colors from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
       amplicon_plot <- amplicon_plot +
         ggplot2::scale_fill_brewer(
           palette = option
@@ -608,15 +671,12 @@ generateAmpliconPlots <- function(
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
-#' @param do.plot Logical. Should plots be shown?
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to be plotted.
 #' @param samples (Optional) character vector of samples to be plotted.
 #' @param left.side Show assays or sample on the left side of the heatmap. Default is assays
 #' @param abs.count Logical. Should absolute counts be used instead of frequencies?
 #' @param font.size Font size to use for sample labels
-#' @param n_col Number of colours to use
-#' @param colours Colour scheme to use
 #'
 #' @export
 #'
@@ -624,9 +684,9 @@ generateAmpliconPlots <- function(
 #' @importFrom pheatmap pheatmap
 #' @importFrom tidyr spread
 #' @importFrom dplyr select
-#' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices dev.off
 #'
+#' @return A graphics object
 #'
 amplicon_heatmap <- function(
   object,
@@ -636,9 +696,9 @@ amplicon_heatmap <- function(
   amplicons = NULL,
   samples = NULL,
   abs.count = FALSE,
-  font.size = 10,
-  n_col = 5,
-  colours = 'Blues'
+  font.size = 10
+  #n_col = 5,
+  #colours = 'Blues'
 ){
 
   # Check if variant caller has been run on object
@@ -700,7 +760,8 @@ amplicon_heatmap <- function(
       mat = 100*cons_mat,
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = FALSE,
       cluster_cols = do.cluster,
       clustering_method = 'ward.D2',
@@ -715,7 +776,8 @@ amplicon_heatmap <- function(
       mat = t(100*cons_mat),
       angle_col = 45,
       scale = 'none',
-      color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      #color = RColorBrewer::brewer.pal(n = n_col, name = colours),
+      color = c("#EFF3FF", "#BDD7E7", "#6BAED6", "#3182BD", "#08519C"),
       cluster_rows = do.cluster,
       cluster_cols = FALSE,
       clustering_method = 'ward.D2',
@@ -742,12 +804,15 @@ amplicon_heatmap <- function(
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param amplicons (Optional) character vector of amplicons to plot.
 #' @param theme ggplot theme to use. Default is classic.
+#' @param plot.ref = TRUE
 #'
 #' @export
 #'
 #' @import ggplot2
 #' @importFrom dplyr filter group_by
 #' @importFrom magrittr "%>%" "%<>%"
+#' 
+#' @return A UMIexperiment object
 #'
 vizMergedData <- function(
   object,
@@ -760,7 +825,7 @@ vizMergedData <- function(
 
   # Plotting maximum alternate alle count on merged data
   data <- object@merged.data %>%
-    dplyr::rename(replicate = group.by)
+    dplyr::rename(replicate = .data$group.by)
   data$Position %<>% as.factor
 
   if (!is.null(amplicons)) {
@@ -826,8 +891,8 @@ vizMergedData <- function(
 #' @param xMin Minimum consensus family size to plot, default is 0.
 #' @param xMax Maximum consensus family size to plot. Default is 100.
 #' @param samples List of samples to be shown.
-#' @param option Colour scheme to use
-#' @param direction If using viridis colours sets the orientation of colour scale.
+#' @param option Color scheme to use
+#' @param direction If using viridis colors sets the orientation of color scale.
 #' @param theme ggplot theme to use. Defaults to classic.
 #'
 #' @export
@@ -835,6 +900,8 @@ vizMergedData <- function(
 #' @import ggplot2
 #' @importFrom tibble is_tibble
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @return A ggplot object
 #'
 plotFamilyHistogram <- function(
   object,
@@ -915,10 +982,16 @@ plotFamilyHistogram <- function(
 
 
 #' Plot coverage before and after normalization
+#' 
 #' @importFrom gridExtra grid.arrange
 #' @importFrom magrittr "%>%" "%<>%"
+#' 
 #' @param cons.data Consensus data table
+#' 
+#' @noRd
+#' 
 #' @return A list of ggplot objects.
+#' 
 vizNormalization <- function(cons.data){
 
   cons.data$Name %<>% as.factor
@@ -955,9 +1028,9 @@ vizNormalization <- function(cons.data){
 #' @param cons.data Consensus data table
 #' @param theme Plotting theme
 #' @param plot.ref If true, shows reference base on x-axis
-#' @param abs.count Plot absolute countsinstead of frequencies.
-#' @param option Colour scheme
-#' @param direction Direction of the colour scale
+#' @param abs.count Plot absolute counts instead of frequencies.
+#' @param option Color scheme
+#' @param direction Direction of the color scale
 #'
 #' @export
 #'
@@ -1061,8 +1134,8 @@ stacked_amplicon_plot <- function(
   }
 
   if(option != 'default'){
-    # If not using default colour scheme use either
-    # (1) Colours from viridis package
+    # If not using default color scheme use either
+    # (1) Colors from viridis package
     if( option %in% c('viridis','magma','plasma','inferno','cividis') ){
       stacked <- stacked + viridis::scale_fill_viridis(
         discrete = TRUE,
@@ -1070,7 +1143,7 @@ stacked_amplicon_plot <- function(
         direction = direction
       )
     } else {
-      # (2) Colours from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+      # (2) Colors from ggplot: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
       stacked <- stacked +
         ggplot2::scale_fill_brewer(
           palette = option
@@ -1082,13 +1155,15 @@ stacked_amplicon_plot <- function(
 
 }
 
-#' View count normalisation
+#' View count normalization
 #'
-#' @param object A umiExperiment object containing norm plots
+#' @param object A UMIexperiment object containing norm plots
 #' @param do.plot should plot be shown? If false returns a grid.arrange object
 #'
 #' @export
 #' @importFrom gridExtra grid.arrange
+#' 
+#' @return A ggplot object
 #'
 viewNormPlot <- function(
   object,
@@ -1111,17 +1186,19 @@ viewNormPlot <- function(
 #' Plot counts by nucleotide change
 #' @param cons.data A consensus data table
 #' @param do.plot Logical. Should plot be shown?
-#' @param option Colour palette to use
+#' @param option Color palette to use
 #' @param direction If using viridis colors, choose orientation of palette
 #' @param theme ggplot theme to use, default is classic.
+#' @param plot.ref = TRUE
 #'
 #' @import tibble
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom tidyr gather
-#' @importFrom rlang .data
 #' @importFrom viridis scale_fill_viridis
+#' 
+#' @noRd
 #'
 #' @return A ggplot object.
 #'
@@ -1181,7 +1258,14 @@ vizStackedCounts <- function(
   use_theme <- select_theme(theme = theme)
 
   # Stacked count plot.
-  stacked <- ggplot(out.file, aes_(fill=~variant, y=~count, x=~Position)) +
+  stacked <- ggplot(
+    data = out.file, 
+    mapping = aes_(
+      fill=~variant,
+      y=~count, 
+      x=~Position
+      )
+    ) +
     geom_bar( stat="identity") +
     use_theme +
     facet_grid(. ~ Name, scales = "free_x", space = "free_x") +
@@ -1229,3 +1313,126 @@ vizStackedCounts <- function(
   }
 }
 
+
+
+#' Plot time series data
+#' 
+#' Function for plotting time series or other meta data. Uses facet wrap to
+#' display user-provided categorical variables.
+#' 
+#' @param object A consensus data table
+#' @param filter.name "default"
+#' @param cut.off 5
+#' @param min.count 0
+#' @param min.vaf 0
+#' @param amplicons NULL
+#' @param samples NULL
+#' @param x_variable NULL
+#' @param y_variable "Max Non-ref Allele Frequency"
+#' @param columns "Sample Name"
+#' @param rows "Name"
+#' @param color_by "Name"
+#' @param fdr 0.05
+#' @param do.plot Logical. Should plot be shown?
+#' @param use.caller TRUE
+#' @param bed_positions NULL
+#'
+#' @import tibble
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom tidyr gather
+#' @importFrom viridis scale_fill_viridis
+#'
+#' @return A ggplot object.
+#'
+#' @export
+#'
+timeSeriesGrid <- function(
+  object,
+  filter.name = 'default',
+  cut.off = 5,
+  min.count = 0,
+  min.vaf = 0,
+  amplicons = NULL,
+  samples = NULL,
+  x_variable = NULL,
+  y_variable = "Max Non-ref Allele Frequency",
+  columns = "Sample Name",
+  rows = "Name",
+  color_by = "Name",
+  fdr = 0.05,
+  do.plot = TRUE,
+  use.caller = TRUE,
+  bed_positions = NULL
+){
+
+  # Use depth cut-off to call variants
+  cons.table.default <- getFilteredData(object = object,name = filter.name)
+  cons.table.default$Variants <- ifelse(cons.table.default$`Max Non-ref Allele Count` >= cut.off, "Variant", "Background")
+
+  if(use.caller){
+    # Check if variant caller has been run on object
+    if(!identical(dim(object@variants), dim(tibble()))) {
+      cons.table <- object@variants
+      cons.table$Variants <- ifelse(cons.table$p.adjust <= fdr, "Variant", "Background")
+    } else {
+      warning("Variant caller has not been run, using default cut-off instead!")
+      cons.table <- cons.table.default
+    }
+  } else {
+    cons.table <- cons.table.default
+  }
+
+  design <- object@meta.data
+  design <- as_tibble(design)
+  colnames(design)[1] <- 'Sample Name'
+
+  cons.table <- full_join(design,cons.table, by = 'Sample Name')
+
+  # Filter amplicons and samples based on user selection
+  cons.table <- filterConsensusTable(
+    cons.table,
+    amplicons = amplicons,
+    samples = samples
+  )
+
+  # Filter position based on minimum VAF and counts, default is to use all positions.
+  cons.table <- cons.table %>%
+    dplyr::filter(
+      .data$`Max Non-ref Allele Frequency` >= min.vaf/100,
+      .data$`Max Non-ref Allele Count` >= min.count
+    )
+
+  if(!is.null(bed_positions)){
+    # Select positions from bed file
+    cons.table <- cons.table %>%
+      dplyr::filter(.data$Position %in% bed_positions)
+  }
+
+  cons.table <- cons.table %>%
+    dplyr::mutate("variant" = paste(.data$Name,' ', .data$Contig, ':', .data$Position))
+
+  # Time course plots
+  plot <- ggplot2::ggplot(
+    data = cons.table,
+    mapping = ggplot2::aes(
+      x= !!as.symbol(x_variable),
+      y= !!as.symbol(y_variable),
+      col = .data$variant
+    )) +
+    ggplot2::geom_point(
+      data = cons.table,
+      size=3
+    ) +
+    ggplot2::geom_line() +
+    ggplot2::scale_y_continuous(limits=c(0,NA)) +
+    ggplot2::facet_wrap(
+      vars(!!as.symbol(columns)),
+      scales = 'free_y'
+    ) +
+    ggplot2::scale_color_brewer(palette = "Set1") +
+    ggplot2::theme_bw()
+
+  return(plot)
+}

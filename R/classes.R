@@ -6,8 +6,11 @@ setOldClass(c("tbl_df", "tbl", "data.frame"))
 #'
 #' @slot name Sample name
 #' @slot cons.data Raw consensus data
-#' @slot summary.data Summary data from umierrorcorrect
+#' @slot summary.data Summary data from UMIErrorCorrect
 #' @slot reads Consensus reads imported from a bam file.
+#' 
+#' @export
+#' 
 UMIsample <- setClass(
   "UMIsample",
 
@@ -30,7 +33,7 @@ UMIsample <- setClass(
 #'
 #' @slot name Optional project name for record keeping.
 #' @slot cons.data The raw consensus data supplied by the user.
-#' @slot summary.data Summary data from umierrorcorrect.
+#' @slot summary.data Summary data from UMIErrorCorrect
 #' @slot raw.error Cons0 error profile
 #' @slot reads Consensus reads imported using the parseBamFiles function.
 #' @slot meta.data Sample data optionally supplied by the user.
@@ -38,6 +41,10 @@ UMIsample <- setClass(
 #' @slot plots A list of generated plots.
 #' @slot variants Consensus table generated with the umiAnalyzer variant caller.
 #' @slot merged.data Data generated using the mergeTechnicalReplicates function.
+#' 
+#' @export
+#' 
+#' 
 UMIexperiment <- setClass(
   Class = "UMIexperiment",
 
@@ -60,12 +67,12 @@ UMIexperiment <- setClass(
     name = NULL,
     cons.data = NULL,
     summary.data = NULL,
-    raw.error = tibble(),
-    reads = tibble(),
+    raw.error = tibble::tibble(),
+    reads = tibble::tibble(),
     meta.data = data.frame(),
     filters = list(),
     plots = list(),
-    variants = tibble(),
-    merged.data = tibble()
+    variants = tibble::tibble(),
+    merged.data = tibble::tibble()
   )
 )

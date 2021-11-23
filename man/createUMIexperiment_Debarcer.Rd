@@ -13,6 +13,9 @@ createUMIexperiment_Debarcer(experiment.name, main.dir, dir.names)
 
 \item{dir.names}{List of sample names}
 }
+\value{
+A UMIexperiment object
+}
 \description{
 Method for creating a UMI experiment object
 }

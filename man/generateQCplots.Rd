@@ -12,7 +12,7 @@ generateQCplots(
   assays = NULL,
   samples = NULL,
   theme = "classic",
-  option = "default",
+  option = "viridis",
   direction = "default",
   toggle_mean = TRUE,
   center = "mean",
@@ -36,9 +36,9 @@ generateQCplots(
 
 \item{theme}{ggplot theme to use.}
 
-\item{option}{Colour palette to use, etiher ggplot default or viridis colours.}
+\item{option}{Color palette to use, either ggplot default or viridis colors.}
 
-\item{direction}{If viridis colours are used, choose orientation of colour scale.}
+\item{direction}{If viridis colors are used, choose orientation of color scale.}
 
 \item{toggle_mean}{Show mean or median}
 
@@ -50,8 +50,11 @@ generateQCplots(
 
 \item{plotly}{Should plotly be used for rendering?}
 }
+\value{
+A UMIexperiment object
+}
 \description{
-Visualise the UMI count for each selected assay and sample for a given
+Visualize the UMI count for each selected assay and sample for a given
 consensus depth. This is useful to detect differences in coverage,
 especially for multiplexed assays.
 }

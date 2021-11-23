@@ -31,32 +31,22 @@ mergeTechnicalReplicates(
 
 \item{samples}{List of samples to use}
 
-\item{normalise.by.sample}{If TRUE, normalises reads depth by both samples and assays. Otherwise only assays are used.}
+\item{normalise.by.sample}{If TRUE, normalizes reads depth by both samples and assays. Otherwise only assays are used.}
 
 \item{remove.singletons}{Remove variants only found in one replicate.}
 
 \item{zero.counts}{Number between 0 and 1. What values should negative counts get?}
 
-\item{option}{Colour sclae for plotting.}
+\item{option}{Color scale for plotting.}
 
-\item{direction}{Direction of colour scale if using viridis package.}
+\item{direction}{Direction of color scale if using viridis package.}
 }
 \value{
-A umiExperiment object
+A UMIexperiment object
 }
 \description{
 A function to merge replicates in UMIexperiment object. This will result in a merged data set
 accessible from the UMIexperiment object using merged.data. This is meant to provide statistical
 information across multiple replicates. If you want to merge multiple sequencing runs of the
 sample into a single sample using the collapseReplicates function instead.
-}
-\examples{
-\dontrun{
-library(umiAnalyzer)
-metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
-data <- simsen
-
-simsen <- importDesign(simsen, file = metaData)
-simsen <- mergeTechnicalReplicates(simsen, group.by = 'replicate')
-}
 }

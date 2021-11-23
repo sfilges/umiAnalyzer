@@ -17,7 +17,7 @@ slots storing raw data, graphs and processed data.
 
 \item{\code{cons.data}}{The raw consensus data supplied by the user.}
 
-\item{\code{summary.data}}{Summary data from umierrorcorrect.}
+\item{\code{summary.data}}{Summary data from UMIErrorCorrect}
 
 \item{\code{raw.error}}{Cons0 error profile}
 
