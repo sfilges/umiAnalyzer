@@ -6,4 +6,7 @@ cran-comments.md
 ^dev$
 ^revdep$
 LICENSE
+<<<<<<< Updated upstream
 ^CRAN-RELEASE$
+=======
+>>>>>>> Stashed changes

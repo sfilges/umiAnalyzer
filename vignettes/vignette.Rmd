@@ -88,16 +88,27 @@ may become too large.
 ```{r bam-files, eval=TRUE}
 reads <- parseBamFiles(main, consDepth = 10)
 
-plotFamilyHistogram(reads)
+BarcodeFamilyHistogram(reads)
 ```
 
 Next we generate Quality Control plots and filter the UMIexperiment object to
+<<<<<<< Updated upstream
 select for consensus 3 reads. Most downstream functions use filtered data, each each filtered 
+=======
+select for consensus 3 reads. 
+
+```{r example1continued, eval=TRUE}
+QCplot(simsen)
+```
+
+Most downstream functions use filtered data, each each filtered 
+>>>>>>> Stashed changes
 data set receives a name, making it possible to apply multiple filters on the same object as the
 original data is maintained and can always be retrieved with saveConsData (see below). Each filtered
 data set can be retrieved using getFilteredData and assigned to a new variable or be saved as a csv file
 with the optional parameter save = TRUE, which is set to FALSE by 
 
+<<<<<<< Updated upstream
 ```{r example1continued, eval=TRUE}
 simsen <- generateQCplots(
   object = simsen,
@@ -108,12 +119,17 @@ simsen <- generateQCplots(
 simsen <- filterUmiObject(
   object = simsen
 )
+=======
+```{r filerobject, eval=TRUE}
+simsen <- filterUmiObject(simsen)
+>>>>>>> Stashed changes
 ```
 
 Optionally, the beta-binomial variant caller can be run on the data using callVariants.
 
 ```{r example1continued_2, eval=TRUE}
 # This is optional
+<<<<<<< Updated upstream
 simsen <- callVariants(
   object = simsen, 
   computePrior = FALSE
@@ -127,6 +143,15 @@ myfilter <- getFilteredData(
   object = simsen
 )
 
+=======
+simsen <- callVariants(simsen)
+```
+
+Retrieve filters using getFilteredData:
+
+```{r getFilter, eval=TRUE}
+myfilter <- getFilteredData(simsen)
+>>>>>>> Stashed changes
 myfilter
 ```
 
@@ -135,9 +160,13 @@ required to form a barcode family. We can plot the number of available reads
 for different consensus depths.
 
 ```{r example1continued_3, eval=TRUE}
+<<<<<<< Updated upstream
 simsen <- plotUmiCounts(
   object = simsen
 )
+=======
+UmiCountsPlot(simsen)
+>>>>>>> Stashed changes
 ```
 
 Next we generate plots for the amplicons and samples in the UMIexperiment object.
@@ -149,22 +178,20 @@ plot only the selection.
 
 ### All data
 
-```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  do.plot = TRUE,
-  amplicons = 'KIT_125',
-  plot.ref = TRUE,
-  plot.text = FALSE
-)
+```{r, eval=FALSE}
+AmpliconPlot(simsen)
 ```
 
 ### Selection
 
-```{r, eval=TRUE}
-simsen <- generateAmpliconPlots(
+```{r, eval=FALSE}
+AmpliconPlot(
   object = simsen,
+<<<<<<< Updated upstream
   amplicons = c('new'),
+=======
+  amplicons = 'KIT_125',
+>>>>>>> Stashed changes
   samples = 'VAF-1-5ng-1-10x'
 )
 ```

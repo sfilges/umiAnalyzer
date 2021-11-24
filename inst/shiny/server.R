@@ -98,9 +98,8 @@ server <- function(input, output, session, plotFun) {
     content <- function(file) {
 
 
-      object <- umiAnalyzer::generateAmpliconPlots(
+      plot <- umiAnalyzer::AmpliconPlot(
           object = filteredData(),
-          do.plot = FALSE,
           amplicons = input$assays,
           samples = input$samples,
           abs.count = input$abs_counts,
@@ -119,8 +118,11 @@ server <- function(input, output, session, plotFun) {
           use.caller = input$use_caller
         )
 
+<<<<<<< Updated upstream
       plot <- object@plots$amplicon_plot
 
+=======
+>>>>>>> Stashed changes
       ggplot2::ggsave(
         filename = file,
         plot = plot,
@@ -142,7 +144,7 @@ server <- function(input, output, session, plotFun) {
     content <- function(file) {
 
       pdf(file,width = 9, height = 6)
-        umiAnalyzer::amplicon_heatmap(
+        umiAnalyzer::AmpliconHeatmap(
           object = filteredData(),
           amplicons = input$assays,
           samples = input$samples,
@@ -162,9 +164,8 @@ server <- function(input, output, session, plotFun) {
       paste('qc-plot-', Sys.Date(),'.pdf',sep='') },
     content <- function(file) {
       pdf(file, width = 7, height = 3)
-      object <- umiAnalyzer::generateQCplots(
+      object <- umiAnalyzer::QCplot(
         object = experiment(),
-        do.plot = TRUE,
         group.by = 'sample',
         plotDepth = input$consensus,
         assays = input$assays,
@@ -189,9 +190,8 @@ server <- function(input, output, session, plotFun) {
       }
 
       pdf(file, width = 9, height = 6)
-        umiAnalyzer::plotUmiCounts(
+        umiAnalyzer::UmiCountsPlot(
           object = experiment(),
-          do.plot = TRUE,
           amplicons = input$assays,
           samples = input$samples
         )
@@ -496,6 +496,7 @@ server <- function(input, output, session, plotFun) {
         )
 
       #Note "file" is the name of the metadata from the inputUI
+<<<<<<< Updated upstream
 
       metaData <- input$file$datapath
 
@@ -551,6 +552,63 @@ server <- function(input, output, session, plotFun) {
 
           DT::datatable(design, editable = FALSE)
 
+=======
+
+      metaData <- input$file$datapath
+
+      print(is.null(metaData))
+
+      if (!is.null(metaData)) {
+
+        data <- umiAnalyzer::importDesign(
+          object = data,
+          file = metaData,
+          delim = NULL # automatically select delimiter
+        )
+
+        design <- data@meta.data
+
+        design <- as_tibble(design)
+        colnames(design)[1] <- 'Sample Name'
+
+        choices <- colnames(design)
+        print(choices)
+
+        # Updates values based on content from metadata file
+
+        updateSelectInput(
+          session = session,
+          inputId = 'columns',
+          choices = choices,
+          selected = head(choices,1)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'rows',
+          choices = choices,
+          selected = head(choices,2)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'time_var',
+          choices = choices,
+          selected = head(choices,2)
+        )
+
+        updateSelectInput(
+          session = session,
+          inputId = 'color_var',
+          choices = choices,
+          selected = head(choices,2)
+        )
+
+        output$metaDataTable <- DT::renderDataTable({
+
+          DT::datatable(design, editable = FALSE)
+
+>>>>>>> Stashed changes
         }, options = list(
           orderClasses = TRUE,
           pageLenght = 50,
@@ -683,9 +741,8 @@ server <- function(input, output, session, plotFun) {
 
     withProgress(message = 'Rendering amplicon plot', value = 0.25, {
 
-      object <- umiAnalyzer::generateAmpliconPlots(
+      plot <- umiAnalyzer::AmpliconPlot(
         object = filteredData(),
-        do.plot = TRUE,
         amplicons = amplicon_settings_d(),
         samples = sample_settings_d(),
         abs.count = input$abs_counts,
@@ -712,7 +769,7 @@ server <- function(input, output, session, plotFun) {
 
     })
 
-    object@plots$amplicon_plot
+    plot
   })
 
 
@@ -726,9 +783,8 @@ server <- function(input, output, session, plotFun) {
     }
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
-      object <- umiAnalyzer::generateQCplots(
+      qc_depth_plot <- umiAnalyzer::QCplot(
         object = experiment(),
-        do.plot = FALSE,
         group.by = 'sample',
         plotDepth = input$consensus,
         assays = input$assays,
@@ -745,7 +801,7 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })
 
-    object@plots$qc_depth_plot
+    qc_depth_plot
   })
 
 
@@ -770,7 +826,11 @@ server <- function(input, output, session, plotFun) {
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
 
+<<<<<<< Updated upstream
       object <- umiAnalyzer::timeSeriesGrid(
+=======
+      plot <- umiAnalyzer::timeSeriesGrid(
+>>>>>>> Stashed changes
         object = filteredData(),
         filter.name = 'default',
         cut.off = input$manual_cutoff,
@@ -783,7 +843,10 @@ server <- function(input, output, session, plotFun) {
         columns = input$columns,
         rows = input$rows,
         color_by = "Name",
+<<<<<<< Updated upstream
         do.plot = TRUE,
+=======
+>>>>>>> Stashed changes
         use.caller = TRUE,
         bed_positions = pos
       )
@@ -791,7 +854,11 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering time series plot"))
     })
 
+<<<<<<< Updated upstream
     object
+=======
+    plot
+>>>>>>> Stashed changes
   })
 
 
@@ -803,7 +870,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::amplicon_heatmap(
+    umiAnalyzer::AmpliconHeatmap(
       object = filteredData(),
       amplicons = input$assays,
       samples = input$samples,
@@ -858,9 +925,8 @@ server <- function(input, output, session, plotFun) {
       message = 'Rendering UMI plot',
       value = 0.25, {
 
-        umiAnalyzer::plotUmiCounts(
+        plot <- umiAnalyzer::UmiCountsPlot(
           object = experiment(),
-          do.plot = TRUE,
           amplicons = input$assays,
           samples = input$samples,
           theme = input$theme_umi,
@@ -874,7 +940,7 @@ server <- function(input, output, session, plotFun) {
           detail = paste("Rendering UMIs")
         )
       })
-
+    plot
   })
 
   #----- Import BAM files ------
@@ -926,7 +992,7 @@ server <- function(input, output, session, plotFun) {
           value = 0.25, {
 
             # Generate histogram plot using user defined parameters
-            umiAnalyzer::plotFamilyHistogram(
+            umiAnalyzer::BarcodeFamilyHistogram(
               object = reads,
               xMin = input$famSize[1],
               xMax = input$famSize[2],
