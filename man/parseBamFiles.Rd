@@ -22,10 +22,12 @@ A data table
 Function to parse bam files
 }
 \examples{
+\dontrun{
 library(umiAnalyzer)
 main <- system.file("extdata", package = "umiAnalyzer")
 simsen <- createUmiExperiment(main)
 
 reads <- parseBamFiles(main, consDepth = 10)
+}
 
 }
