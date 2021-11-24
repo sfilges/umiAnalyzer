@@ -118,11 +118,6 @@ server <- function(input, output, session, plotFun) {
           use.caller = input$use_caller
         )
 
-<<<<<<< Updated upstream
-      plot <- object@plots$amplicon_plot
-
-=======
->>>>>>> Stashed changes
       ggplot2::ggsave(
         filename = file,
         plot = plot,
@@ -496,7 +491,6 @@ server <- function(input, output, session, plotFun) {
         )
 
       #Note "file" is the name of the metadata from the inputUI
-<<<<<<< Updated upstream
 
       metaData <- input$file$datapath
 
@@ -552,63 +546,6 @@ server <- function(input, output, session, plotFun) {
 
           DT::datatable(design, editable = FALSE)
 
-=======
-
-      metaData <- input$file$datapath
-
-      print(is.null(metaData))
-
-      if (!is.null(metaData)) {
-
-        data <- umiAnalyzer::importDesign(
-          object = data,
-          file = metaData,
-          delim = NULL # automatically select delimiter
-        )
-
-        design <- data@meta.data
-
-        design <- as_tibble(design)
-        colnames(design)[1] <- 'Sample Name'
-
-        choices <- colnames(design)
-        print(choices)
-
-        # Updates values based on content from metadata file
-
-        updateSelectInput(
-          session = session,
-          inputId = 'columns',
-          choices = choices,
-          selected = head(choices,1)
-        )
-
-        updateSelectInput(
-          session = session,
-          inputId = 'rows',
-          choices = choices,
-          selected = head(choices,2)
-        )
-
-        updateSelectInput(
-          session = session,
-          inputId = 'time_var',
-          choices = choices,
-          selected = head(choices,2)
-        )
-
-        updateSelectInput(
-          session = session,
-          inputId = 'color_var',
-          choices = choices,
-          selected = head(choices,2)
-        )
-
-        output$metaDataTable <- DT::renderDataTable({
-
-          DT::datatable(design, editable = FALSE)
-
->>>>>>> Stashed changes
         }, options = list(
           orderClasses = TRUE,
           pageLenght = 50,
@@ -826,11 +763,7 @@ server <- function(input, output, session, plotFun) {
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
 
-<<<<<<< Updated upstream
-      object <- umiAnalyzer::timeSeriesGrid(
-=======
       plot <- umiAnalyzer::timeSeriesGrid(
->>>>>>> Stashed changes
         object = filteredData(),
         filter.name = 'default',
         cut.off = input$manual_cutoff,
@@ -843,10 +776,6 @@ server <- function(input, output, session, plotFun) {
         columns = input$columns,
         rows = input$rows,
         color_by = "Name",
-<<<<<<< Updated upstream
-        do.plot = TRUE,
-=======
->>>>>>> Stashed changes
         use.caller = TRUE,
         bed_positions = pos
       )
@@ -854,11 +783,7 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering time series plot"))
     })
 
-<<<<<<< Updated upstream
-    object
-=======
     plot
->>>>>>> Stashed changes
   })
 
 

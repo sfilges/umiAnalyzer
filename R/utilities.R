@@ -635,11 +635,7 @@ filterConsensusTable <- function(
 #' @return merged consensus data
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
 #' \donttest{
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #'
 #' main <- system.file("extdata", package = "umiAnalyzer")
@@ -683,10 +679,6 @@ mergeAssays <- function(object, name, assay.list){
 #' @return A UMIexperiment object
 #'
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #'
 #' main <- system.file("extdata", package = "umiAnalyzer")
@@ -696,10 +688,6 @@ mergeAssays <- function(object, name, assay.list){
 #' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 #'
 #' simsen <- addMetaData(simsen,'metaData',metaData)
-<<<<<<< Updated upstream
-#' }
-=======
->>>>>>> Stashed changes
 #'
 addMetaData <- function(object,attributeName,attributeValue){
   attr(x = object, attributeName) <- attributeValue
@@ -715,10 +703,6 @@ addMetaData <- function(object,attributeName,attributeValue){
 #' @return Metadata
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #'
 #' main <- system.file("extdata", package = "umiAnalyzer")
@@ -729,11 +713,6 @@ addMetaData <- function(object,attributeName,attributeValue){
 #'
 #' simsen <- importDesign(object = simsen,file = metaData)
 #' design <- getMetaData(object = simsen, attributeName = "design")
-<<<<<<< Updated upstream
-#' design
-#' }
-=======
->>>>>>> Stashed changes
 #'
 getMetaData <- function(object,attributeName){
   if(attributeName %in% names(attributes(object))){
@@ -851,15 +830,12 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
 #' @export
 #' 
 #' @return A table containing genome positions
-<<<<<<< Updated upstream
-=======
 #' 
 #' @examples 
 #' library(umiAnalzyer)
 #' 
 #' bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
 #' bed <- importBedFile(path = bed_dir)
->>>>>>> Stashed changes
 #'
 importBedFile <- function(path){
 

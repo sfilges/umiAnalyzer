@@ -18,10 +18,6 @@ timeSeriesGrid(
   rows = "Name",
   color_by = "Name",
   fdr = 0.05,
-<<<<<<< Updated upstream
-  do.plot = TRUE,
-=======
->>>>>>> Stashed changes
   use.caller = TRUE,
   bed_positions = NULL
 )
@@ -53,11 +49,6 @@ timeSeriesGrid(
 
 \item{fdr}{0.05}
 
-<<<<<<< Updated upstream
-\item{do.plot}{Logical. Should plot be shown?}
-
-=======
->>>>>>> Stashed changes
 \item{use.caller}{TRUE}
 
 \item{bed_positions}{NULL}
@@ -70,10 +61,6 @@ Function for plotting time series or other meta data. Uses facet wrap to
 display user-provided categorical variables.
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
->>>>>>> Stashed changes
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
@@ -86,11 +73,6 @@ simsen <- importDesign(object = simsen,file = metaData)
 bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
 bed <- importBedFile(path = bed_dir)
 
-<<<<<<< Updated upstream
-timeSeriesGrid(simsen, x_variable = "time", bed_positions = bed)
-}
-=======
 time_plot <- timeSeriesGrid(simsen, x_variable = "time", bed_positions = bed)
->>>>>>> Stashed changes
 
 }

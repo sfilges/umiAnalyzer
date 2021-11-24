@@ -31,11 +31,7 @@ A function to analyze consensus read tables generated with parseBamFiles or
 a UMIexperiment object containing reads.
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
 \donttest{
->>>>>>> Stashed changes
 library(umiAnalyzer)
 main <- system.file("extdata", package = "umiAnalyzer")
 simsen <- createUmiExperiment(main, importBam = TRUE)

@@ -7,10 +7,6 @@ export(QCplot)
 export(UmiCountsPlot)
 export(addMetaData)
 export(addUmiSample)
-<<<<<<< Updated upstream
-export(amplicon_heatmap)
-=======
->>>>>>> Stashed changes
 export(beta_binom)
 export(callVariants)
 export(createUMIexperiment_Debarcer)
@@ -28,11 +24,6 @@ export(importBedFile)
 export(importDesign)
 export(mergeAssays)
 export(parseBamFiles)
-<<<<<<< Updated upstream
-export(plotFamilyHistogram)
-export(plotUmiCounts)
-=======
->>>>>>> Stashed changes
 export(runUmiVisualizer)
 export(saveConsData)
 export(timeSeriesGrid)

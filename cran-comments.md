@@ -1,3 +1,17 @@
+## Third resubmission
+
+The following points were addressed:
+
+* Please always write package names, software names and API names in single 
+quotes in title and description. 
+
+Fixed.
+
+* dontrun{} should only be used if the example really cannot be executed.
+
+Removed dontrun{} where possible or changed to donttest{} for long examples.
+
+
 ## Second resubmission
 
 The following points were addressed:

@@ -21,11 +21,7 @@ Merge assays together by name. Requires a name of the new assay and
 a list of assays that will be merged.
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
 \donttest{
->>>>>>> Stashed changes
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")

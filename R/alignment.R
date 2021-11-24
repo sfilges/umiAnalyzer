@@ -96,11 +96,7 @@ readBamFile <- function(
 #' @return A data table
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
 #' \donttest{
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #' main <- system.file("extdata", package = "umiAnalyzer")
 #' simsen <- createUmiExperiment(main)
@@ -189,11 +185,7 @@ parseBamFiles <- function(
 #' @return A data table
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
 #' \donttest{
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #' main <- system.file("extdata", package = "umiAnalyzer")
 #' simsen <- createUmiExperiment(main, importBam = TRUE)

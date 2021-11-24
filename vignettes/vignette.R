@@ -6,20 +6,8 @@ knitr::opts_chunk$set(
   fig.height=6
 )
 
-<<<<<<< Updated upstream
-## ----installDeps, eval=FALSE--------------------------------------------------
-#  pkgs <- c('tidyverse', 'shinydashboard', 'shinyFiles', 'shinyWidgets', 'DT')
-#  
-#  install.packages(pkgs)
-
-## ----runApp, eval=FALSE-------------------------------------------------------
-#  library(umiAnalyzer)
-#  
-#  runUmiVisualizer()
-=======
 ## ----runApp, eval=FALSE-------------------------------------------------------
 #  umiAnalyzer::runUmiVisualizer()
->>>>>>> Stashed changes
 
 ## ----example1, eval=TRUE------------------------------------------------------
 library(umiAnalyzer)
@@ -37,55 +25,6 @@ simsen <- mergeAssays(
 ## ----bam-files, eval=TRUE-----------------------------------------------------
 reads <- parseBamFiles(main, consDepth = 10)
 
-<<<<<<< Updated upstream
-plotFamilyHistogram(reads)
-
-## ----example1continued, eval=TRUE---------------------------------------------
-simsen <- generateQCplots(
-  object = simsen,
-  group.by = 'assay',
-  option = 'default'
-)
-
-simsen <- filterUmiObject(
-  object = simsen
-)
-
-## ----example1continued_2, eval=TRUE-------------------------------------------
-# This is optional
-simsen <- callVariants(
-  object = simsen, 
-  computePrior = FALSE
-)
-
-## ----getFilter, eval=TRUE-----------------------------------------------------
-myfilter <- getFilteredData(
-  object = simsen
-)
-
-myfilter
-
-## ----example1continued_3, eval=TRUE-------------------------------------------
-simsen <- plotUmiCounts(
-  object = simsen
-)
-
-## ---- eval=TRUE---------------------------------------------------------------
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  do.plot = TRUE,
-  amplicons = 'KIT_125',
-  plot.ref = TRUE,
-  plot.text = FALSE
-)
-
-## ---- eval=TRUE---------------------------------------------------------------
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  amplicons = c('new'),
-  samples = 'VAF-1-5ng-1-10x'
-)
-=======
 BarcodeFamilyHistogram(reads)
 
 ## ----example1continued, eval=TRUE---------------------------------------------
@@ -114,25 +53,16 @@ UmiCountsPlot(simsen)
 #    amplicons = 'KIT_125',
 #    samples = 'VAF-1-5ng-1-10x'
 #  )
->>>>>>> Stashed changes
 
 ## ----metaDataImport, eval=FALSE-----------------------------------------------
 #  metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 #  
-<<<<<<< Updated upstream
-#  simsen <- umiAnalyzer::importDesign(
-=======
 #  simsen <- importDesign(
->>>>>>> Stashed changes
 #    object = simsen,
 #    file = metaData
 #  )
 #  
-<<<<<<< Updated upstream
-#  design <- umiAnalyzer::getMetaData(
-=======
 #  design <- getMetaData(
->>>>>>> Stashed changes
 #    object = simsen,
 #    attributeName = "design"
 #  )

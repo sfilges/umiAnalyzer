@@ -22,11 +22,7 @@ A data table
 Function to parse bam files
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
 \donttest{
->>>>>>> Stashed changes
 library(umiAnalyzer)
 main <- system.file("extdata", package = "umiAnalyzer")
 simsen <- createUmiExperiment(main)

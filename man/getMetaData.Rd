@@ -18,11 +18,7 @@ Metadata
 Retrieve meta data by name.
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
 \donttest{
->>>>>>> Stashed changes
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")

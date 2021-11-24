@@ -20,11 +20,7 @@ A UMIexperiment object
 Add metaData
 }
 \examples{
-<<<<<<< Updated upstream
-\dontrun{
-=======
 \donttest{
->>>>>>> Stashed changes
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")

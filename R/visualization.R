@@ -5,12 +5,7 @@
 #' especially for multiplexed assays.
 #'
 #' @param object Requires a UMI sample or UMI experiment object
-<<<<<<< Updated upstream
-#' @param do.plot Logical. Should plots be shown.
-#' @param group.by String. Which variable should be used as a factor on the x-axis. Default is assay.
-=======
 #' @param group.by String. Which variable should be used as a factor on the x-axis. Default is sample
->>>>>>> Stashed changes
 #' @param plotDepth Which consensus depth to plot
 #' @param assays (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
@@ -32,31 +27,13 @@
 #' @importFrom viridis scale_fill_viridis
 #' @importFrom plotly ggplotly
 #' 
-<<<<<<< Updated upstream
-#' @return A UMIexperiment object
-#' 
-#' @examples
-#' \dontrun{
-=======
 #' @return A ggplot object 
 #' 
 #' @examples
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
 #' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-<<<<<<< Updated upstream
-#' 
-#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
-#' simsen <- generateQCplots(simsen)
-#' }
-#'
-generateQCplots <- function(
-  object,
-  do.plot = TRUE,
-  group.by = c('assay', 'sample'),
-=======
 #' simsen <- createUmiExperiment(experimentName = 'example',mainDir = main,sampleNames = samples)
 #' 
 #' depth_plot <- QCplot(simsen)
@@ -64,7 +41,6 @@ generateQCplots <- function(
 QCplot <- function(
   object,
   group.by = 'sample',
->>>>>>> Stashed changes
   plotDepth = 3,
   assays = NULL,
   samples = NULL,
@@ -208,19 +184,7 @@ QCplot <- function(
   }
 
   # Plot consensus depth distribution
-<<<<<<< Updated upstream
-  if (do.plot) {
-    print(depth_plot)
-    object@plots$qc_depth_plot <- depth_plot
-  }
-  else {
-    object@plots$qc_depth_plot <- depth_plot
-  }
-
-  return(object)
-=======
   return(depth_plot)
->>>>>>> Stashed changes
 }
 
 #' Plot UMI counts
@@ -231,10 +195,6 @@ QCplot <- function(
 #' for your chosen cut-off.
 #'
 #' @param object Requires a UMI sample or UMI experiment object
-<<<<<<< Updated upstream
-#' @param do.plot Logical. Should plots be shown.
-=======
->>>>>>> Stashed changes
 #' @param amplicons (Optional) user-supplied list of assays to plot. Default is all.
 #' @param samples (Optional) user-supplied list of samples to plot. Default is all.
 #' @param theme Plotting theme, default is classic
@@ -252,25 +212,10 @@ QCplot <- function(
 #' @return A UMIexperiment object
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
 #' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-<<<<<<< Updated upstream
-#' 
-#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
-#' simsen <- filterUmiObject(simsen)
-#' simsen <- plotUmiCounts(simsen)
-#' }
-#'
-plotUmiCounts <- function(
-  object,
-  do.plot = TRUE,
-=======
 #' simsen <- createUmiExperiment(experimentName = 'example',mainDir = main,sampleNames = samples)
 #' simsen <- filterUmiObject(simsen)
 #' 
@@ -278,7 +223,6 @@ plotUmiCounts <- function(
 #'
 UmiCountsPlot <- function(
   object,
->>>>>>> Stashed changes
   amplicons = NULL,
   samples = NULL,
   theme = 'classic',
@@ -340,18 +284,7 @@ UmiCountsPlot <- function(
   }
 
   # Return object and plot
-<<<<<<< Updated upstream
-  if(do.plot){
-    print(plot)
-    object@plots$umi_counts <- plot
-    return(object)
-  } else {
-    object@plots$umi_counts <- plot
-    return(object)
-  }
-=======
   return(plot)
->>>>>>> Stashed changes
 }
 
 #' Generate Amplicon plots
@@ -361,10 +294,6 @@ UmiCountsPlot <- function(
 #'
 #' @param object Requires a UMI sample or UMI experiment object
 #' @param filter.name Name of the filter to be plotted.
-<<<<<<< Updated upstream
-#' @param do.plot Logical. Should plots be shown?
-=======
->>>>>>> Stashed changes
 #' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
 #' @param min.count Minimum variants counts to plot, default is 0.
 #' @param min.vaf Minimum variants allele frequency to plot, default is 0.
@@ -394,45 +323,15 @@ UmiCountsPlot <- function(
 #' @importFrom magrittr "%>%" "%<>%"
 #' @importFrom dplyr filter
 #' @importFrom viridis scale_fill_viridis
-<<<<<<< Updated upstream
-#'
-#' @examples
-#' \dontrun{
-#' library(umiAnalyzer)
-#'
-#' data <- simsen
-#' data <- filterUmiobject(data, "myfilter")
-#'
-#' data <- generateAmpliconPlots(simsen, "myfilter")
-#' }
-#' @return A UMIexperiment object containing a ggplot object with the
-#' amplicon plot.
-#' 
-#' @examples
-#' \dontrun{
-=======
 #' 
 #' @return A UMIexperiment object containing a ggplot object with the
 #' amplicon plot.
 #'
 #' @examples
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
 #' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-<<<<<<< Updated upstream
-#' 
-#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
-#' simsen <- filterUmiObject(simsen)
-#' simsen <- generateAmpliconPlots(simsen)
-#' }
-#' 
-generateAmpliconPlots <- function(
-  object,
-  filter.name = 'default',
-  do.plot = TRUE,
-=======
 #' simsen <- createUmiExperiment(experimentName = 'example',mainDir = main,sampleNames = samples)
 #' simsen <- filterUmiObject(simsen)
 #'
@@ -442,7 +341,6 @@ generateAmpliconPlots <- function(
 AmpliconPlot <- function(
   object,
   filter.name = 'default',
->>>>>>> Stashed changes
   cut.off = 5,
   min.count = 0,
   min.vaf = 0,
@@ -469,12 +367,6 @@ AmpliconPlot <- function(
     stop("Must provide a umiExperiment object and filter names")
   } else if(!class(object) == "UMIexperiment"){
     stop("Object is not of class UMIexperiment.")
-<<<<<<< Updated upstream
-  } else if(!is.logical(do.plot)){
-    warning("do.plot needs to be of type boolean. Using default.")
-    do.plot = TRUE
-=======
->>>>>>> Stashed changes
   } else if(!is.logical(abs.count)){
     warning("abs.count needs to be of type boolean. Using defaults.")
     abs.count = FALSE
@@ -517,11 +409,6 @@ AmpliconPlot <- function(
   } else {
     cons.table <- cons.table.default
   }
-<<<<<<< Updated upstream
-  
-  print(cons.table)
-=======
->>>>>>> Stashed changes
 
   # Make variables factors to ensure equidistance on the x-axis
   cons.table$`Sample Name` %<>% as.factor
@@ -754,31 +641,11 @@ AmpliconPlot <- function(
   }
 
   # Show plot and add ggplot object to the UMIexperiment object
-<<<<<<< Updated upstream
-  if (do.plot) {
-
-    if(use.plotly){
-      amplicon_plot <- plotly::ggplotly(amplicon_plot)
-    }
-
-    print(amplicon_plot)
-    object@plots$amplicon_plot <- amplicon_plot
-  } else {
-
-    if(use.plotly){
-      amplicon_plot <- plotly::ggplotly(amplicon_plot)
-    }
-
-    object@plots$amplicon_plot <- amplicon_plot
-  }
-  return(object)
-=======
   if(use.plotly){
     amplicon_plot <- plotly::ggplotly(amplicon_plot)
   }
 
   return(amplicon_plot)
->>>>>>> Stashed changes
 }
 
 
@@ -811,15 +678,6 @@ AmpliconPlot <- function(
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
 #' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
-<<<<<<< Updated upstream
-#' 
-#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
-#' simsen <- filterUmiObject(simsen)
-#' simsen <- amplicon_heatmap(simsen)
-#' }
-#'
-amplicon_heatmap <- function(
-=======
 #' simsen <- createUmiExperiment(experimentName = 'example',mainDir = main,sampleNames = samples)
 #' simsen <- filterUmiObject(simsen)
 #' 
@@ -827,7 +685,6 @@ amplicon_heatmap <- function(
 #' }
 #'
 AmpliconHeatmap <- function(
->>>>>>> Stashed changes
   object,
   filter.name = 'default',
   cut.off = 5,
@@ -931,11 +788,7 @@ AmpliconHeatmap <- function(
   }
 
   grDevices::dev.off()
-<<<<<<< Updated upstream
-  print(heatmap_DNA_clean)
-=======
   return(heatmap_DNA_clean)
->>>>>>> Stashed changes
 }
 
 #' Consensus depth histograms
@@ -959,23 +812,12 @@ AmpliconHeatmap <- function(
 #' @return A ggplot object
 #'
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-#' library(umiAnalyzer)
-#' main <- system.file("extdata", package = "umiAnalyzer")
-#' simsen <- createUmiExperiment(main, importBam = TRUE)
-#' plotFamilyHistogram(reads)
-#' }
-#'
-plotFamilyHistogram <- function(
-=======
 #' library(umiAnalyzer)
 #' main = system.file('extdata', package = 'umiAnalyzer')
 #' simsen <- createUmiExperiment(main, importBam = TRUE)
 #' barcode_dist <- BarcodeFamilyHistogram(simsen)
 #'
 BarcodeFamilyHistogram <- function(
->>>>>>> Stashed changes
   object,
   xMin = 0,
   xMax = 100,
@@ -1049,11 +891,7 @@ BarcodeFamilyHistogram <- function(
       xlab("Barcode familiy size")
   }
 
-<<<<<<< Updated upstream
-  plot(cons_depth_plot)
-=======
   return(cons_depth_plot)
->>>>>>> Stashed changes
 }
 
 #' Plot all variant allele bases
@@ -1341,10 +1179,6 @@ vizStackedCounts <- function(
 #' @param rows "Name"
 #' @param color_by "Name"
 #' @param fdr 0.05
-<<<<<<< Updated upstream
-#' @param do.plot Logical. Should plot be shown?
-=======
->>>>>>> Stashed changes
 #' @param use.caller TRUE
 #' @param bed_positions NULL
 #'
@@ -1360,10 +1194,6 @@ vizStackedCounts <- function(
 #' @export
 #' 
 #' @examples
-<<<<<<< Updated upstream
-#' \dontrun{
-=======
->>>>>>> Stashed changes
 #' library(umiAnalyzer)
 #'
 #' main <- system.file("extdata", package = "umiAnalyzer")
@@ -1376,12 +1206,7 @@ vizStackedCounts <- function(
 #' bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
 #' bed <- importBedFile(path = bed_dir)
 #' 
-<<<<<<< Updated upstream
-#' timeSeriesGrid(simsen, x_variable = "time", bed_positions = bed)
-#' }
-=======
 #' time_plot <- timeSeriesGrid(simsen, x_variable = "time", bed_positions = bed)
->>>>>>> Stashed changes
 #'
 timeSeriesGrid <- function(
   object,
@@ -1397,10 +1222,6 @@ timeSeriesGrid <- function(
   rows = "Name",
   color_by = "Name",
   fdr = 0.05,
-<<<<<<< Updated upstream
-  do.plot = TRUE,
-=======
->>>>>>> Stashed changes
   use.caller = TRUE,
   bed_positions = NULL
 ){
