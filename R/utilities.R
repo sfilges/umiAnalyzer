@@ -313,7 +313,10 @@ importDesign <- function(
 
 #' Beta binomial model
 #' 
-#' VGAM package function VGAM::rbetabinom.ab
+#' Code was obtained from VGAM package function VGAM::rbetabinom.ab. The VGAM
+#' package is available under the GPL-3 license and maintained by
+#' Thomas Yee <t.yee at auckland.ac.nz>. Source code of the function is identical
+#' to rbetabinom.ab, but the function name was changed to beta_binom.
 #' 
 #' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
 #' 
@@ -395,9 +398,12 @@ beta_binom <- function(
   ans
 }
 
-#' Beta binomial model
+#' Is numeric
 #' 
-#' VGAM package function VGAM:::is.Numeric
+#' VGAM package function VGAM:::is.Numeric. The VGAM
+#' package is available under the GPL-3 license and maintained by
+#' Thomas Yee <t.yee at auckland.ac.nz>. Source code of the function is identical
+#' to is.Numeric., but the function name was changed to is_Numeric.
 #' 
 #' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
 #' 

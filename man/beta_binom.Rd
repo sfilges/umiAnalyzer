@@ -23,7 +23,10 @@ beta_binom(n, size, shape1, shape2, limit.prob = 0.5, .dontuse.prob = NULL)
 Numeric
 }
 \description{
-VGAM package function VGAM::rbetabinom.ab
+Code was obtained from VGAM package function VGAM::rbetabinom.ab. The VGAM
+package is available under the GPL-3 license and maintained by
+Thomas Yee <t.yee at auckland.ac.nz>. Source code of the function is identical
+to rbetabinom.ab, but the function name was changed to beta_binom.
 }
 \examples{
 beta_binom(10,5, 0.5, 1)
