@@ -5,6 +5,9 @@
 \alias{UMIexperiment-class}
 \alias{UMIexperiment}
 \title{UMIexperiment class}
+\value{
+An object of class UMIexperiment
+}
 \description{
 The UMIexperiment is the core data object, storing all data and relevant
 analysis data associated with your experiment. Each object has number of

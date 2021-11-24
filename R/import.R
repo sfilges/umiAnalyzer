@@ -1,46 +1,3 @@
-#' Add UMI sample to an existing experiment object
-#'
-#'
-#' @param object UMIexperiment object
-#' @param sampleName Name of new sample
-#' @param sampleDir Directory to new sample
-#' @param clearData Should other data in UMIexperiment be cleared
-#'
-#' @importFrom dplyr bind_rows
-#'
-#' @export
-#' 
-#' @return A UMIexperiment object
-#'
-addUmiSample <- function(
-  object,
-  sampleName,
-  sampleDir,
-  clearData = FALSE) {
-  
-  if(missing(x = object)) {
-    stop("No UMIexperiment object supplied.")
-  } else if(!class(object) == "UMIexperiment"){
-    stop("Object is not of class UMIexperiment.")
-  } else if (!dir.exists(sampleDir)){
-    stop("No valid path provided.")
-  } else if(!is.logical(clearData)) {
-    warning("clearData needs to be of type boolean. Using defaults instead.")
-    clearData = FALSE
-  }
-  
-  newSample <- createUmiSample(
-    sampleName = sampleName,
-    sampleDir = sampleDir,
-    importBam = FALSE
-  )
-  
-  newConsData <- newSample@cons.data
-  newConsData$sample <- sampleName
-  
-  object@cons.data <- dplyr::bind_rows(object@cons.data, newConsData)
-}
-
 #' createUmiSample
 #'
 #' Method for creating a UMI sample from UMIErrorCorrect output.
@@ -58,6 +15,13 @@ addUmiSample <- function(
 #' @importFrom dplyr rename
 #' 
 #' @return An object of class UMIsample
+#' 
+#' @examples 
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' s1 <- createUmiSample('s1',sampleDir = paste(main,"/",samples[1],sep=""))
 #'
 createUmiSample <- function(
   sampleName,
@@ -179,7 +143,6 @@ createUmiSample <- function(
 #' @return An object of class UMIexperiment 
 #'
 #' @examples
-#' \dontrun{
 #' library(umiAnalyzer)
 #' 
 #' main = system.file('extdata', package = 'umiAnalyzer')
@@ -187,7 +150,6 @@ createUmiSample <- function(
 #' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
 #' 
 #' exp1 <- createUmiExperiment(experimentName = 'exp1',mainDir = main,sampleNames = samples)
-#' }
 #'
 createUmiExperiment <- function(
   mainDir,
@@ -291,4 +253,46 @@ createUmiExperiment <- function(
     
     return(UMIexperiment) 
   }
+}
+
+#' Add UMI sample to an existing experiment object
+#'
+#' @param object UMIexperiment object
+#' @param sampleName Name of new sample
+#' @param sampleDir Directory to new sample
+#' @param clearData Should other data in UMIexperiment be cleared
+#'
+#' @importFrom dplyr bind_rows
+#'
+#' @export
+#' 
+#' @return A UMIexperiment object
+#'
+addUmiSample <- function(
+  object,
+  sampleName,
+  sampleDir,
+  clearData = FALSE) {
+  
+  if(missing(x = object)) {
+    stop("No UMIexperiment object supplied.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if (!dir.exists(sampleDir)){
+    stop("No valid path provided.")
+  } else if(!is.logical(clearData)) {
+    warning("clearData needs to be of type boolean. Using defaults instead.")
+    clearData = FALSE
+  }
+  
+  newSample <- createUmiSample(
+    sampleName = sampleName,
+    sampleDir = sampleDir,
+    importBam = FALSE
+  )
+  
+  newConsData <- newSample@cons.data
+  newConsData$sample <- sampleName
+  
+  object@cons.data <- dplyr::bind_rows(object@cons.data, newConsData)
 }

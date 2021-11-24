@@ -264,9 +264,11 @@ server <- function(input, output, session, plotFun) {
       selection = input$dir
     )
 
-    if(!is.null(path_to_umierrorcorrect_data)){
-      main <- path_to_umierrorcorrect_data
-    }
+    # TODO Users supplies path to load data from. Need to fix this without
+    # modifying global variable
+    #(!is.null(path_to_umierrorcorrect_data)){
+    #  main <- path_to_umierrorcorrect_data
+    #}
 
     # Create umiExperiment object
     if (identical(main, character(0))){

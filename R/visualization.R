@@ -29,6 +29,17 @@
 #' @importFrom plotly ggplotly
 #' 
 #' @return A UMIexperiment object
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' simsen <- generateQCplots(simsen)
+#' }
 #'
 generateQCplots <- function(
   object,
@@ -212,6 +223,18 @@ generateQCplots <- function(
 #' @importFrom viridis scale_fill_viridis
 #' 
 #' @return A UMIexperiment object
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' simsen <- filterUmiObject(simsen)
+#' simsen <- plotUmiCounts(simsen)
+#' }
 #'
 plotUmiCounts <- function(
   object,
@@ -336,6 +359,19 @@ plotUmiCounts <- function(
 #' }
 #' @return A UMIexperiment object containing a ggplot object with the
 #' amplicon plot.
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' simsen <- filterUmiObject(simsen)
+#' simsen <- generateAmpliconPlots(simsen)
+#' }
+#' 
 generateAmpliconPlots <- function(
   object,
   filter.name = 'default',
@@ -351,10 +387,10 @@ generateAmpliconPlots <- function(
   theme = 'classic',
   option = 'default',
   direction = 'default',
-  plot.text = TRUE,
+  plot.text = FALSE,
   plot.ref = TRUE,
   stack.plot = FALSE,
-  classic.plot = TRUE,
+  classic.plot = FALSE,
   fdr = 0.05,
   font.size = 6,
   angle = 45,
@@ -687,6 +723,18 @@ generateAmpliconPlots <- function(
 #' @importFrom grDevices dev.off
 #'
 #' @return A graphics object
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' simsen <- filterUmiObject(simsen)
+#' simsen <- amplicon_heatmap(simsen)
+#' }
 #'
 amplicon_heatmap <- function(
   object,
@@ -795,94 +843,6 @@ amplicon_heatmap <- function(
   print(heatmap_DNA_clean)
 }
 
-
-
-#' Generate Merged data plots
-#'
-#' @param object Requires a UMI sample or UMI experiment object
-#' @param do.plot Logical. Should plots be shown.
-#' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
-#' @param amplicons (Optional) character vector of amplicons to plot.
-#' @param theme ggplot theme to use. Default is classic.
-#' @param plot.ref = TRUE
-#'
-#' @export
-#'
-#' @import ggplot2
-#' @importFrom dplyr filter group_by
-#' @importFrom magrittr "%>%" "%<>%"
-#' 
-#' @return A UMIexperiment object
-#'
-vizMergedData <- function(
-  object,
-  cut.off = 5,
-  amplicons = NULL,
-  do.plot = TRUE,
-  theme = 'classic',
-  plot.ref = TRUE
-  ){
-
-  # Plotting maximum alternate alle count on merged data
-  data <- object@merged.data %>%
-    dplyr::rename(replicate = .data$group.by)
-  data$Position %<>% as.factor
-
-  if (!is.null(amplicons)) {
-    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
-  }
-
-  data$Variants <- ifelse(data$avg.MaxAC >= cut.off, 'Variant', 'Background')
-
-  # Use selected plotting theme
-  use_theme <- select_theme(theme = theme)
-
-  plot <- ggplot(
-    data = data,
-    mapping = aes_(
-      x=~Position,
-      y=~avg.Max.AF,
-      fill=~Variants
-      )
-    ) +
-    geom_bar(stat = 'identity') +
-    use_theme +
-    geom_errorbar(
-      mapping = aes_(
-        ymin=~.data$avg.Max.AF,
-        ymax=~(.data$avg.Max.AF + .data$std.MaxAF)
-      ),
-      width=.1
-    ) +
-    theme(axis.text.x = element_text(size = 2, angle = 90)) +
-    facet_grid(replicate ~ Name, scales = 'free_x', space = 'free_x') +
-    ylab("Variant Allele Frequency (%)") +
-    xlab("Amplicon position") +
-    ggplot2::scale_fill_brewer(palette = 'Set1')
-
-
-  if(plot.ref){
-    plot <- plot +
-      scale_x_discrete(
-        breaks = data$Position,
-        labels = data$Reference
-      ) +
-      theme(
-        axis.text.x = element_text(
-          size = 9,
-          angle = 0
-        )
-      )
-  }
-
-  if(do.plot) {
-    print(plot)
-    object@plots$merged_amplicons <- plot
-  } else {
-    object@plots$merged_amplicons <- plot
-  }
-}
-
 #' Consensus depth histograms
 #'
 #' Generate histograms for the frequency of barcode family depths.
@@ -902,6 +862,14 @@ vizMergedData <- function(
 #' @importFrom viridis scale_fill_viridis
 #' 
 #' @return A ggplot object
+#'
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#' simsen <- createUmiExperiment(main, importBam = TRUE)
+#' plotFamilyHistogram(reads)
+#' }
 #'
 plotFamilyHistogram <- function(
   object,
@@ -980,45 +948,6 @@ plotFamilyHistogram <- function(
   plot(cons_depth_plot)
 }
 
-
-#' Plot coverage before and after normalization
-#' 
-#' @importFrom gridExtra grid.arrange
-#' @importFrom magrittr "%>%" "%<>%"
-#' 
-#' @param cons.data Consensus data table
-#' 
-#' @noRd
-#' 
-#' @return A list of ggplot objects.
-#' 
-vizNormalization <- function(cons.data){
-
-  cons.data$Name %<>% as.factor
-  cons.data$replicate <- cons.data$group.by
-
-  # plot coverage before nomralization per assay and group by replicate
-  p1 <- ggplot(cons.data, aes_(x=~Name, y=~Coverage)) +
-    geom_boxplot(outlier.colour="red", outlier.shape=8,
-                 outlier.size=4) +
-    theme(axis.text.x = element_text(angle = 90)) +
-    ggtitle("Before normalization") +
-    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
-
-  # plot coverage after normalization per assay and group by replicate
-  p2 <- ggplot(cons.data, aes_(x=~Name, y=~normCoverage)) +
-    geom_boxplot(outlier.colour="red", outlier.shape=8,
-                 outlier.size=4) +
-    theme(axis.text.x = element_text(angle = 90)) +
-    ggtitle("After normalization") +
-    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
-
-  # group replicates
-  merged <- list(p1,p2)
-
-  return(merged)
-}
-
 #' Plot all variant allele bases
 #'
 #' @import ggplot2
@@ -1032,7 +961,7 @@ vizNormalization <- function(cons.data){
 #' @param option Color scheme
 #' @param direction Direction of the color scale
 #'
-#' @export
+#' @noRd
 #'
 #' @return A ggplot object.
 stacked_amplicon_plot <- function(
@@ -1153,34 +1082,6 @@ stacked_amplicon_plot <- function(
 
   return(stacked)
 
-}
-
-#' View count normalization
-#'
-#' @param object A UMIexperiment object containing norm plots
-#' @param do.plot should plot be shown? If false returns a grid.arrange object
-#'
-#' @export
-#' @importFrom gridExtra grid.arrange
-#' 
-#' @return A ggplot object
-#'
-viewNormPlot <- function(
-  object,
-  do.plot = TRUE
-  ){
-
-  plot <- grid.arrange(
-    object@plots$norm_plot[[1]],
-    object@plots$norm_plot[[2]],
-    nrow = 1
-  )
-
-  if(do.plot){
-    plot
-  } else{
-    return(plot)
-  }
 }
 
 #' Plot counts by nucleotide change
@@ -1314,7 +1215,6 @@ vizStackedCounts <- function(
 }
 
 
-
 #' Plot time series data
 #' 
 #' Function for plotting time series or other meta data. Uses facet wrap to
@@ -1347,6 +1247,23 @@ vizStackedCounts <- function(
 #' @return A ggplot object.
 #'
 #' @export
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#' simsen <- createUmiExperiment(main)
+#' simsen <- filterUmiObject(simsen)
+#' 
+#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#' simsen <- importDesign(object = simsen,file = metaData)
+#' 
+#' bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
+#' bed <- importBedFile(path = bed_dir)
+#' 
+#' timeSeriesGrid(simsen, x_variable = "time", bed_positions = bed)
+#' }
 #'
 timeSeriesGrid <- function(
   object,
@@ -1435,4 +1352,159 @@ timeSeriesGrid <- function(
     ggplot2::theme_bw()
 
   return(plot)
+}
+
+
+#' Plot coverage before and after normalization
+#' 
+#' @importFrom gridExtra grid.arrange
+#' @importFrom magrittr "%>%" "%<>%"
+#' 
+#' @param cons.data Consensus data table
+#' 
+#' @noRd
+#' 
+#' @return A list of ggplot objects.
+#' 
+vizNormalization <- function(cons.data){
+  
+  cons.data$Name %<>% as.factor
+  cons.data$replicate <- cons.data$group.by
+  
+  # plot coverage before nomralization per assay and group by replicate
+  p1 <- ggplot(cons.data, aes_(x=~Name, y=~Coverage)) +
+    geom_boxplot(outlier.colour="red", outlier.shape=8,
+                 outlier.size=4) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("Before normalization") +
+    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
+  
+  # plot coverage after normalization per assay and group by replicate
+  p2 <- ggplot(cons.data, aes_(x=~Name, y=~normCoverage)) +
+    geom_boxplot(outlier.colour="red", outlier.shape=8,
+                 outlier.size=4) +
+    theme(axis.text.x = element_text(angle = 90)) +
+    ggtitle("After normalization") +
+    facet_grid(. ~ replicate, scales = "free_x", space = "free_x")
+  
+  # group replicates
+  merged <- list(p1,p2)
+  
+  return(merged)
+}
+
+#' View count normalization
+#'
+#' @param object A UMIexperiment object containing norm plots
+#' @param do.plot should plot be shown? If false returns a grid.arrange object
+#'
+#' @noRd
+#' 
+#' @importFrom gridExtra grid.arrange
+#' 
+#' @return A ggplot object
+#'
+viewNormPlot <- function(
+  object,
+  do.plot = TRUE
+){
+  
+  plot <- grid.arrange(
+    object@plots$norm_plot[[1]],
+    object@plots$norm_plot[[2]],
+    nrow = 1
+  )
+  
+  if(do.plot){
+    plot
+  } else{
+    return(plot)
+  }
+}
+
+
+#' Generate Merged data plots
+#'
+#' @param object Requires a UMI sample or UMI experiment object
+#' @param do.plot Logical. Should plots be shown.
+#' @param cut.off How many variant reads are necessary to consider a variant above background? Default is 5 reads.
+#' @param amplicons (Optional) character vector of amplicons to plot.
+#' @param theme ggplot theme to use. Default is classic.
+#' @param plot.ref = TRUE
+#'
+#' @noRd
+#'
+#' @import ggplot2
+#' @importFrom dplyr filter group_by
+#' @importFrom magrittr "%>%" "%<>%"
+#' 
+#' @return A UMIexperiment object
+#'
+vizMergedData <- function(
+  object,
+  cut.off = 5,
+  amplicons = NULL,
+  do.plot = TRUE,
+  theme = 'classic',
+  plot.ref = TRUE
+){
+  
+  # Plotting maximum alternate alle count on merged data
+  data <- object@merged.data %>%
+    dplyr::rename(replicate = .data$group.by)
+  data$Position %<>% as.factor
+  
+  if (!is.null(amplicons)) {
+    data <- data %>% dplyr::filter(.data$Name %in% amplicons)
+  }
+  
+  data$Variants <- ifelse(data$avg.MaxAC >= cut.off, 'Variant', 'Background')
+  
+  # Use selected plotting theme
+  use_theme <- select_theme(theme = theme)
+  
+  plot <- ggplot(
+    data = data,
+    mapping = aes_(
+      x=~Position,
+      y=~avg.Max.AF,
+      fill=~Variants
+    )
+  ) +
+    geom_bar(stat = 'identity') +
+    use_theme +
+    geom_errorbar(
+      mapping = aes_(
+        ymin=~.data$avg.Max.AF,
+        ymax=~(.data$avg.Max.AF + .data$std.MaxAF)
+      ),
+      width=.1
+    ) +
+    theme(axis.text.x = element_text(size = 2, angle = 90)) +
+    facet_grid(replicate ~ Name, scales = 'free_x', space = 'free_x') +
+    ylab("Variant Allele Frequency (%)") +
+    xlab("Amplicon position") +
+    ggplot2::scale_fill_brewer(palette = 'Set1')
+  
+  
+  if(plot.ref){
+    plot <- plot +
+      scale_x_discrete(
+        breaks = data$Position,
+        labels = data$Reference
+      ) +
+      theme(
+        axis.text.x = element_text(
+          size = 9,
+          angle = 0
+        )
+      )
+  }
+  
+  if(do.plot) {
+    print(plot)
+    object@plots$merged_amplicons <- plot
+  } else {
+    object@plots$merged_amplicons <- plot
+  }
 }

@@ -46,7 +46,6 @@ Imports:
     viridis (>= 0.5.1)
 Suggests:
     knitr (>= 1.27),
-    rlang (>= 0.2.1),
     rmarkdown (>= 2.1)
 VignetteBuilder: 
     knitr

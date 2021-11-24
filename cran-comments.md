@@ -1,11 +1,25 @@
-## Resubmission comments
+## Second resubmission
 
 The following points were addressed:
 
+* Please add small executable examples in your Rd-files if possible.
+
+Added examples to exported functions. Longer running or less important
+examples were enclosed in `\dontrun{}`.
+
+* Please do not modify the .GlobalEnv. 
+
+Removed modification of the .GlobalEnv in the function runUmiVisualizer().
+
+
+## First resubmission
+
 * Please omit "+ file LICENSE" 
+
 Fixed.
 
 * The Date field is over a month old.
+
 This was changed to 2021-11-23.
 
 

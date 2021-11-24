@@ -11,6 +11,8 @@ setOldClass(c("tbl_df", "tbl", "data.frame"))
 #' 
 #' @export
 #' 
+#' @return An object of class UMIsample
+#' 
 UMIsample <- setClass(
   "UMIsample",
 
@@ -44,6 +46,7 @@ UMIsample <- setClass(
 #' 
 #' @export
 #' 
+#' @return An object of class UMIexperiment
 #' 
 UMIexperiment <- setClass(
   Class = "UMIexperiment",
