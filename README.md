@@ -1,6 +1,7 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sfilges/umiAnalyzer/workflows/R-CMD-check/badge.svg)](https://github.com/sfilges/umiAnalyzer/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/umiAnalyzer)](https://CRAN.R-project.org/package=umiAnalyzer)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/umiAnalyzer)](https://cran.r-project.org/package=umiAnalyzer)
 <!-- badges: end -->
 
 
@@ -34,17 +35,21 @@ Requirements
 Installation 
 ------------
 
-Install the current stable version from CRAN or GitHub or the latest
-development version from GitHub.
+Install the current stable version from CRAN:
 
 ```r
-# from CRAN (not supported yet)
-#install.packages('umiAnalyzer')
+# from CRAN
+install.packages('umiAnalyzer')
+```
 
-# Current stable version from github using the devtools package:
+Alternatively, you can download the stable version or the latest development
+version from GitHub using devtools:
+
+```r
+# get the current stable version from github using the devtools package:
 devtools::install_github('sfilges/umiAnalyzer')
 
-# Latest development version from github:
+# get the latest development version:
 devtools::install_github('sfilges/umiAnalyzer', ref = 'devel')
 ```
 
