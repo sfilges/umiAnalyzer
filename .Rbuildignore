@@ -6,4 +6,5 @@ cran-comments.md
 ^dev$
 ^revdep$
 LICENSE
+CRAN-RELEASE
 ^\.github$

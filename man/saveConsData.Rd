@@ -17,7 +17,8 @@ saveConsData(
 
 \item{save}{Logical. Should data be saved to file? Default is FALSE.}
 
-\item{fileName}{String. Name of the file to be saved. Default is 'consensus_data.csv'}
+\item{fileName}{String. Name of the file to be saved. Default 
+is 'consensus_data.csv'}
 
 \item{outDir}{output directory, defaults to working directory}
 
@@ -27,8 +28,8 @@ saveConsData(
 A data table
 }
 \description{
-If save is set to TRUE data will be written to a csv file otherwise consensus data will
-be returned as a tibble.
+If save is set to TRUE data will be written to a csv file otherwise consensus 
+data will be returned as a tibble.
 }
 \examples{
 library(umiAnalyzer)
