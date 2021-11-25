@@ -1,7 +1,11 @@
 # Prepare for CRAN ----
 
+# Install dependencies
+devtools::install_deps()
+
 # Update dependencies in DESCRIPTION
 attachment::att_amend_desc()
+
 
 # Run tests and examples
 devtools::run_examples()

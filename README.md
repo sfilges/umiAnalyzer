@@ -77,14 +77,17 @@ simsen <- createUmiExperiment(main)
 
 reads <- parseBamFiles(main, consDepth = 10)
 
-plotFamilyHistogram(reads)
+bc_hist <- BarcodeFamilyHistogram(reads)
+bc_hist
 
-simsen <- generateQCplots(simsen)
+qc_plot <- QCplot(simsen)
+qc_plot
 
 simsen <- filterUmiObject(simsen)
 
 myfilter <- getFilteredData(simsen)
 myfilter
 
-simsen <- generateAmpliconPlots(simsen)
+amplicon_plot <- AmpliconPlot(simsen)
+amplicon_plot
 ```

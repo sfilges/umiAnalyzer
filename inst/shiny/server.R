@@ -9,7 +9,7 @@ server <- function(input, output, session, plotFun) {
     },
     content = function(file) {
 
-      object = filteredData()
+      object <- filteredData()
       template <- umiAnalyzer::download_template(object)
       template <- tibble::add_column(template, my_variable = 1:nrow(template))
 
@@ -378,7 +378,7 @@ server <- function(input, output, session, plotFun) {
     }
 
     if( input$replicates == "" ){
-      replicates = NULL
+      replicates <- NULL
     } else {
       replicates <- input$replicates
     }
@@ -604,7 +604,7 @@ server <- function(input, output, session, plotFun) {
     }
 
     if(input$use_caller){
-      object = filteredData()
+      object <- filteredData()
       filter <- object@variants
     } else {
       filter <- umiAnalyzer::getFilteredData(
@@ -840,9 +840,9 @@ server <- function(input, output, session, plotFun) {
     }
 
     if(input$direction_umi == "default") {
-      direction = 1
+      direction <- 1
     } else {
-      direction = -1
+      direction <- -1
     }
 
     # Initialise progress bar

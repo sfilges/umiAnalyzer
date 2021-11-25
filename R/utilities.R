@@ -1,7 +1,7 @@
 #' Save consensus data
 #' 
-#' If save is set to TRUE data will be written to a csv file otherwise consensus data will
-#' be returned as a tibble.
+#' If save is set to TRUE data will be written to a csv file otherwise consensus 
+#' data will be returned as a tibble.
 #' 
 #' @export
 #' 
@@ -11,7 +11,8 @@
 #' @param outDir output directory, defaults to working directory
 #' @param save Logical. Should data be saved to file? Default is FALSE.
 #' @param delim Single character string, either ';' or ',' or tab
-#' @param fileName String. Name of the file to be saved. Default is 'consensus_data.csv'
+#' @param fileName String. Name of the file to be saved. Default 
+#' is 'consensus_data.csv'
 #'
 #' @return A data table
 #' 
@@ -187,17 +188,17 @@ getFilteredData <- function(
     save = FALSE
   } else if(!dir.exists(outDir)){
     warning("outDir needs to be a valid path. Using working directory.")
-    outDir = getwd()
+    outDir <- getwd()
   } else if(!is.character(fileName) && !is.null(fileName)){
     stop("fileName needs to be a string or NULL")
   } else if(! delim %in% c(';',',','\t')){
     warning("Invalid delimeter, needs to be comma, semicolon or tab.
             Using comma instead.")
-    delim = ','
+    delim <- ','
   } else if(is.null(object@filters[name][[1]])) {
     if(!is.null(object@filters$default)){
       warning("Requested filter not found, using default.")
-      name = 'default'
+      name <- 'default'
     } else {
       stop("Filter not found. Have you run filterUmiObject?")
     }
@@ -594,7 +595,7 @@ filterConsensusTable <- function(
   #  dplyr::filter(.data$Name %in% amplicons)
   #}
 
-  consensus.data.bind = consensus.data
+  consensus.data.bind <- consensus.data
 
   if (!is.null(amplicons)) {
     consensus.data.bind <- tibble()

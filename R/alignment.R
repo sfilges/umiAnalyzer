@@ -118,7 +118,7 @@ parseBamFiles <- function(
     stop("You must supply a valid directory.")
   } else if(!is.null(sampleNames) && !is.list(sampleNames)){
     warning("sampleNames must be NULL or list. Using defaults.")
-    sampleNames = NULL
+    sampleNames <- NULL
   }
   
   # Get sample names

@@ -167,13 +167,13 @@ mergeTechnicalReplicates <- function(
   } else if(is.null(object@filters[filter.name][[1]])) {
     if(!is.null(object@filters$default)){
       warning("Requested filter ", filter.name, " not found, using default.")
-      filter.name = 'default'
+      filter.name <- 'default'
     } else {
       stop("Filter not found. Have you run filterUmiObject?")
     }
   } else if(!is.logical(do.plot)) {
     warning("do.plot needs to  be of type boolean. Using default instead.")
-    do.plot = TRUE
+    do.plot <- TRUE
   }
   
   # Import filtered data
@@ -377,8 +377,8 @@ createUMIsample_Debarcer <- function(sample.name,sample.dir,cons = '10'){
 #' @return A UMIexperiment object
 #' 
 createUMIexperiment_Debarcer <- function(experiment.name,main.dir,dir.names){
-  main = main.dir
-  cons.data.merged = tibble()
+  main <- main.dir
+  cons.data.merged <- tibble()
 
   for(i in 1:length(dir.names)){
 

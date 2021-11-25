@@ -34,7 +34,7 @@ createUmiSample <- function(
     return(NULL)
   } else if(!is.logical(importBam)){
     warning("importBam needs to be of type boolean. Using defaults instead.")
-    importbam = FALSE
+    importbam <- FALSE
   }
   
   consFile <- list.files(path = sampleDir, pattern = "\\.cons$")
@@ -165,14 +165,14 @@ createUmiExperiment <- function(
   } else if(!is.null(experimentName)) {
     if( !is.character(experimentName) && length(experimentName) == 1 ) {
       warning("experimentName needs to be a string or NULL. Using default.")
-      experimentName = NULL
+      experimentName <- NULL
     }
   } else if(!is.logical(importBam)){
     warning("importBam needs to be of type boolean. Using default.")
-    importBam = FALSE
+    importBam <- FALSE
   } else if (!is.null(sampleNames) && !is.list(sampleNames)){
     warning("sampleNames must be NULL or a list. Using default.")
-    sampleNames = NULL
+    sampleNames <- NULL
   }
   
   # Get sample names
@@ -282,7 +282,7 @@ addUmiSample <- function(
     stop("No valid path provided.")
   } else if(!is.logical(clearData)) {
     warning("clearData needs to be of type boolean. Using defaults instead.")
-    clearData = FALSE
+    clearData <- FALSE
   }
   
   newSample <- createUmiSample(

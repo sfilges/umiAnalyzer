@@ -45,6 +45,7 @@ Imports:
     utils,
     viridis (>= 0.5.1)
 Suggests:
+    testthat (>= 3.0.0),
     knitr (>= 1.27),
     rmarkdown (>= 2.1)
 VignetteBuilder: 
