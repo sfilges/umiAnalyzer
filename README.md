@@ -1,6 +1,5 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sfilges/umiAnalyzer/workflows/R-CMD-check/badge.svg)](https://github.com/sfilges/umiAnalyzer/actions)
-[![minimal R version](https://img.shields.io/badge/R%3E%3D-`r rvers`-6666ff.svg)](https://cran.r-project.org/)
 <!-- badges: end -->
 
 
