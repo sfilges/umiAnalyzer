@@ -18,7 +18,6 @@ Metadata
 Retrieve meta data by name.
 }
 \examples{
-\donttest{
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
@@ -29,7 +28,5 @@ metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
 simsen <- importDesign(object = simsen,file = metaData)
 design <- getMetaData(object = simsen, attributeName = "design")
-design
-}
 
 }

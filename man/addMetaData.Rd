@@ -20,7 +20,6 @@ A UMIexperiment object
 Add metaData
 }
 \examples{
-\donttest{
 library(umiAnalyzer)
 
 main <- system.file("extdata", package = "umiAnalyzer")
@@ -30,6 +29,5 @@ simsen <- createUmiExperiment(main)
 metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 
 simsen <- addMetaData(simsen,'metaData',metaData)
-}
 
 }
