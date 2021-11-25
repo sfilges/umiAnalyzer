@@ -4,16 +4,19 @@
 \alias{runUmiVisualizer}
 \title{Function to run the umiVisualizer shiny app}
 \usage{
-runUmiVisualizer(docker = FALSE, path = NULL)
-}
-\arguments{
-\item{docker}{Boolean. Are you running in a docker container?}
-
-\item{path}{Path to directory containing UMIErrorCorrect output.}
+runUmiVisualizer()
 }
 \value{
 Opens the umiVisualizer app
 }
 \description{
 Function to run the umiVisualizer shiny app
+}
+\examples{
+\dontrun{
+library(umiAnalyzer)
+
+runUmiVisualizer()
+}
+
 }

@@ -5,6 +5,9 @@
 \alias{UMIsample-class}
 \alias{UMIsample}
 \title{UMIsample class}
+\value{
+An object of class UMIsample
+}
 \description{
 UMIsample class
 }

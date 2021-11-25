@@ -1,6 +1,323 @@
+#' Save consensus data
+#' 
+#' If save is set to TRUE data will be written to a csv file otherwise consensus 
+#' data will be returned as a tibble.
+#' 
+#' @export
+#' 
+#' @importFrom readr write_excel_csv write_delim
+#' 
+#' @param object UMIexperiment object
+#' @param outDir output directory, defaults to working directory
+#' @param save Logical. Should data be saved to file? Default is FALSE.
+#' @param delim Single character string, either ';' or ',' or tab
+#' @param fileName String. Name of the file to be saved. Default 
+#' is 'consensus_data.csv'
+#'
+#' @return A data table
+#' 
+#' @examples
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' 
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' example <- createUmiExperiment(experimentName = 'example',mainDir = main,sampleNames = samples)
+#' 
+#' consensus_data <- saveConsData(object = example)
+#' consensus_data
+#' 
+#'
+saveConsData <- function(
+  object,
+  save = FALSE,
+  fileName = 'consensus_data.csv',
+  outDir = getwd(),
+  delim = ';'
+){
+  
+  if(missing(x = object)) {
+    stop("No UMIexperiment object supplied.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!is.logical(save)){
+    stop("Save needs to be of type boolean.")
+  } else if(!(is.character(fileName) && length(fileName)==1)){
+    stop("Invalid file name.")
+  } else if(!dir.exists(outDir)) {
+    stop("Output directory does not exist.")
+  } else if(! delim %in% c(';',',','\t')){
+    stop("Invalid delimeter, needs to be comma, semicolon or tab.")
+  }
+  
+  consData <- object@cons.data
+  
+  if (save) {
+    path <- file.path(outDir,fileName)
+    if (delim == ';') {
+      readr::write_excel_csv(consData, path, delim = ';')
+    } else if (delim == ',') {
+      readr::write_excel_csv(consData, path)
+    } else if (delim == '\t') {
+      readr::write_delim(consData, path, delim = delim)
+    }
+  } else {
+    return(consData)
+  }
+}
+
+#' Method for filtering UMIexperiment and sample objects
+#' @export
+#'
+#' @importFrom magrittr "%>%" "%<>%"
+#' @importFrom utils data
+#' @importFrom dplyr filter
+#' @importFrom tibble as_tibble
+#'
+#' @param object Requires a UMI sample or UMI experiment object.
+#' @param name String. Name of the filter. Default is "default".
+#' @param minDepth Consensus depth to analyze. Default is 3.
+#' @param minCoverage Minimum coverage required for amplicons. Default is 1.
+#' @param minFreq Minimum variant allele frequency to keep. Default is 0.
+#' @param minCount Minimum variant allele count to keep. Default is 3.
+#'
+#' @return A UMI sample or UMI experiment object.
+#'
+#' @examples
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' 
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' 
+#' simsen <- filterUmiObject(simsen)
+#' 
+filterUmiObject <- function(
+  object,
+  name = "default",
+  minDepth = 3,
+  minCoverage = 100,
+  minFreq = 0,
+  minCount = 0) {
+  
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object and filter name.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(minDepth < 3){
+    warning("You set minDepth to a value below 3. This will severely impact
+            error correction.")
+  } else if(minCoverage < 100){
+    warning("Minimum coverage is below 50 consensus reads. Data with so few
+            reads may be very unreliable.")
+  } else if( tibble::is_tibble(object@filters[name][[1]]) ){
+    warning("Filter ", name, " already exists. Will be overwritten.")
+  }
+  
+  cons.table <- object@cons.data
+  
+  raw.error <- cons.table %>%
+    dplyr::filter(
+      .data$`Consensus group size` == 0,
+      .data$Coverage >= minCoverage,
+      .data$Name != '',
+      .data$`Max Non-ref Allele Frequency` >= minFreq,
+      .data$`Max Non-ref Allele Count` >= minCount
+    )
+  
+  cons.table <- cons.table %>%
+    dplyr::filter(
+      .data$`Consensus group size` == minDepth,
+      .data$Coverage >= minCoverage,
+      .data$Name != '',
+      .data$`Max Non-ref Allele Frequency` >= minFreq,
+      .data$`Max Non-ref Allele Count` >= minCount
+    )
+  
+  object@filters[[name]] <- cons.table
+  object@raw.error <- raw.error
+  
+  return(object)
+}
+
+#' Method for retrieving filtered data
+#' @export
+#' 
+#' @importFrom readr write_excel_csv write_delim
+#' 
+#' @param object Requires a UMI sample or UMI experiment object.
+#' @param name String. Name of the filter. Default is "default".
+#' @param save Logical, should data be saved as csv file? Default is FALSE.
+#' @param outDir Output directory
+#' @param fileName Filename to be used, default is the same as 'name'
+#' @param delim Character string denoting delimiter to be used, default is ';'.
+#' 
+#' @return A filtered consensus table, as a tibble.
+#' 
+#' @examples
+#' library(umiAnalyzer)
+#' 
+#' main = system.file('extdata', package = 'umiAnalyzer')
+#' 
+#' samples <- list.dirs(path = main, full.names = FALSE, recursive = FALSE)
+#' 
+#' simsen <- createUmiExperiment(experimentName = 'simsen',mainDir = main,sampleNames = samples)
+#' simsen <- filterUmiObject(simsen)
+#' 
+#' myfilter <- getFilteredData(simsen)
+#' myfilter
+#'
+getFilteredData <- function(
+  object,
+  name = 'default',
+  save = FALSE,
+  outDir = getwd(),
+  fileName = NULL,
+  delim = ';'
+) {
+  
+  if (missing(x = object)) {
+    stop("Must provide a umiExperiment object and filter name.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!is.logical(save)){
+    warning("save needs to be of type boolean. Using defaults instead.")
+    save = FALSE
+  } else if(!dir.exists(outDir)){
+    warning("outDir needs to be a valid path. Using working directory.")
+    outDir <- getwd()
+  } else if(!is.character(fileName) && !is.null(fileName)){
+    stop("fileName needs to be a string or NULL")
+  } else if(! delim %in% c(';',',','\t')){
+    warning("Invalid delimeter, needs to be comma, semicolon or tab.
+            Using comma instead.")
+    delim <- ','
+  } else if(is.null(object@filters[name][[1]])) {
+    if(!is.null(object@filters$default)){
+      warning("Requested filter not found, using default.")
+      name <- 'default'
+    } else {
+      stop("Filter not found. Have you run filterUmiObject?")
+    }
+  }
+  
+  filter <- object@filters[name][[1]]
+  
+  if (is.null(fileName)) {
+    outFile <- paste(name, ".csv", sep = '')
+  } else {
+    outFile <- paste(fileName, ".csv", sep = '')
+  }
+  
+  if (save) {
+    path <- file.path(outDir, outFile)
+    if (delim == ';') {
+      readr::write_excel_csv(filter, path, delim = ';')
+    } else if (delim == ',') {
+      readr::write_excel_csv(filter, path)
+    } else {
+      readr::write_delim(filter, path, delim = delim)
+    }
+  } else {
+    return(filter)
+  }
+}
+
+#' Import experimental design meta data such as replicates, treatments, categorical variables.
+#' @export
+#' 
+#' @importFrom utils read.table
+#' 
+#' @param object UMI.experiment to which to add metadata
+#' @param file File containing meta data
+#' @param delim Column separator. Default is NULL (automatically determine delimiter)
+#'
+#' @return A UMIexperiment object
+#' 
+#' @examples
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#' 
+#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#'
+#' simsen <- importDesign(object = simsen,file = metaData)
+#' 
+#' # Retrieve meta data
+#' design <- getMetaData(object = simsen, attributeName = "design")
+#' design
+#' 
+#'
+importDesign <- function(
+  object,
+  file,
+  delim = NULL
+){
+  
+  # Error Handling
+  if (missing(x = object) || missing(x = file)) {
+    stop("Must provide a umiExperiment object and file name.")
+  } else if(!class(object) == "UMIexperiment"){
+    stop("Object is not of class UMIexperiment.")
+  } else if(!is.character(file)) {
+    stop("File must be a valid name.")
+  }
+  
+  if(is.null(delim)) {
+    # Automatically determine file type if delim = NULL
+    # Import data using all three delimiters and then check the number of
+    # columns. If the delimiter is wrong, there will only be one column.
+    
+    # TODO this works for these delimiters but doesn't handle other
+    # delimiters well.
+    comma <- read.table(file = file, sep = ',', header = TRUE)
+    semicolon <- read.table(file = file, sep = ';', header = TRUE)
+    tab <- read.table(file = file, sep = '\t', header = TRUE)
+    
+    if(ncol(comma) > 1){
+      metaData <- comma
+      print("Uploading comma separated meta data file.")
+    } else if(ncol(semicolon) > 1) {
+      metaData <- semicolon
+      print("Uploading semicolon separated meta data file.")
+    } else if(ncol(tab) > 1) {
+      metaData <- tab
+      print("Uploading tab separated meta data file.")
+    } else {
+      warning('Automatic delimiter selection failed: It seems like your metadata
+              file is not delimited by either comma, semicolon or tab.')
+    }
+  } else if (!delim %in% c(',', ';', '\t')) {
+    # If delim is not NULL and not comma, simicolon or tab, throw exception
+    stop("Delimiter needs to be one of: c(',', ';', '\t')")
+  } else {
+    # Import file using user defined delimiter
+    metaData <- read.table(
+      file = file,
+      sep = delim,
+      header = TRUE
+    )
+  }
+  
+  # Add imported table to the object meta.data slot
+  object@meta.data <- metaData
+  object <- addMetaData(object = object, attributeName = 'design', metaData)
+  
+  return(object)
+}
+
+
 #' Beta binomial model
 #' 
-#' VGAM package function VGAM::rbetabinom.ab
+#' Code was obtained from VGAM package function VGAM::rbetabinom.ab. The VGAM
+#' package is available under the GPL-3 license and maintained by
+#' Thomas Yee <t.yee at auckland.ac.nz>. Source code of the function is identical
+#' to rbetabinom.ab, but the function name was changed to beta_binom.
 #' 
 #' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
 #' 
@@ -16,6 +333,11 @@
 #' @param .dontuse.prob NULL
 #' 
 #' @return Numeric 
+#' 
+#' @examples
+#' beta_binom(10,5, 0.5, 1)
+#' beta_binom(10,2, 0.5, 1)
+#' 
 beta_binom <- function(
   n,
   size,
@@ -77,9 +399,12 @@ beta_binom <- function(
   ans
 }
 
-#' Beta binomial model
+#' Is numeric
 #' 
-#' VGAM package function VGAM:::is.Numeric
+#' VGAM package function VGAM:::is.Numeric. The VGAM
+#' package is available under the GPL-3 license and maintained by
+#' Thomas Yee <t.yee at auckland.ac.nz>. Source code of the function is identical
+#' to is.Numeric., but the function name was changed to is_Numeric.
 #' 
 #' @references Yee TW (2015). Vector Generalized Linear and Additive Models: With an Implementation in R. Springer, New York, USA.
 #' 
@@ -126,6 +451,15 @@ is_Numeric <- function(
 #' @export
 #'
 #' @return A tibble containing a metadata template
+#' 
+#' @examples
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#' 
+#' download_template(simsen)
 #'
 download_template <- function(object){
   data <- object@cons.data
@@ -246,7 +580,7 @@ select_theme <- function(theme){
 #' @param samples Null or a list of samples to use.
 #' @param positions Null or a list of positions to use.
 #'
-#' @export
+#' @noRd
 #'
 #' @return A consensus table.
 filterConsensusTable <- function(
@@ -261,7 +595,7 @@ filterConsensusTable <- function(
   #  dplyr::filter(.data$Name %in% amplicons)
   #}
 
-  consensus.data.bind = consensus.data
+  consensus.data.bind <- consensus.data
 
   if (!is.null(amplicons)) {
     consensus.data.bind <- tibble()
@@ -300,6 +634,17 @@ filterConsensusTable <- function(
 #' @importFrom dplyr mutate
 #'
 #' @return merged consensus data
+#' 
+#' @examples
+#' \donttest{
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#'
+#' simsen <- mergeAssays(object = simsen,name = "new",assay.list = c("PIK3CA_123", "PIK3CA_234"))
+#' }
 #'
 mergeAssays <- function(object, name, assay.list){
 
@@ -322,120 +667,7 @@ mergeAssays <- function(object, name, assay.list){
   return(object)
 }
 
-#' Analyze time-course data
-#'
-#'
-#' @param object UMIexperiment object containing meta data
-#' @param filter.name Name of the filter to use.
-#' @param time.var String. Name of the time variable. Default is "time"
-#' @param use.variants Logical. Should pre computed variants be used? Default is FALSE.
-#' @param group.by String. Variable for grouping data, e.g. replicates. Default is NULL.
-#' @param do.plot Should plot be shown?
-#'
-#' @export
-#'
-#' @importFrom magrittr "%>%" "%<>%"
-#' @import dplyr
-#' @importFrom stats sd
-#'
-#' @return A UMIexperiment object
-analyzeTimeSeries <- function(
-  object,
-  filter.name = "default",
-  time.var = "time",
-  use.variants = FALSE,
-  group.by = NULL,
-  do.plot = TRUE
-) {
 
-  if (missing(x = object)) {
-    stop("Must provide a umiExperiment object and filter names")
-  } else if(!class(object) == "UMIexperiment"){
-    stop("Object is not of class UMIexperiment.")
-  } else if(is.null(object@filters$default)) {
-    stop("No data filter found.")
-  }
-
-  # Check if variant caller has been run on object
-  if (use.variants == FALSE) {
-    consData <- getFilteredData(
-      object = object,
-      name = filter.name
-    )
-    consData$Position %<>% as.factor
-    consData$Variants <- ifelse(consData$`Max Non-ref Allele Count` >= 5, "Variant", "Background")
-  }
-  else {
-    consData <- object@variants
-    consData$Variants <- ifelse(consData$p.adjust <= 0.05, "Variant", "Background")
-  }
-
-  metaData <- as_tibble(object@meta.data)
-
-
-  # If no group.by info is provided use sample name instead, else use the
-  # group.by column from meta.data.
-  if (is.null(group.by)){
-    metaData$group.by <- dplyr::pull(metaData, 1)
-    metaData$group.by %<>% as.factor
-  } else {
-    metaData$group.by <- dplyr::pull(metaData, group.by)
-    metaData$group.by %<>% as.factor
-  }
-
-
-  # Join meta data and consData replicate ID column to consData
-  # Change to left_join?
-  summaryData <- dplyr::inner_join(
-    consData,
-    metaData,
-    by = c(`Sample Name` ="Sample_Name")
-  )
-
-  print(summaryData)
-
-  summaryData <- summaryData %>%
-    dplyr::filter(.data$Variants == "Variant",
-                  !.data$`Max Non-ref Allele` %in% c("I", "D")) %>%
-    tidyr::unite("Position", .data$Contig, .data$Position, sep = ":") %>%
-    tidyr::unite("Change", .data$Reference, .data$`Max Non-ref Allele`, sep = ">") %>%
-    tidyr::unite("Change", .data$Change, .data$Position, sep = "*") %>%
-    tidyr::unite("Change", .data$Change, .data$Name, sep = "*") %>%
-    tidyr::unite("Change", .data$Change, .data$group.by, sep = "*")
-
-    summaryData <- summaryData[duplicated(summaryData$Change),]
-
-    summaryData$time_var <- dplyr::pull(summaryData, time.var)
-    summaryData$time_var %<>% as.factor
-
-    summaryData <- summaryData %>% dplyr::group_by(.data$Change, .data$time_var) %>%
-      dplyr::summarise(VAF = 100 * mean(.data$`Max Non-ref Allele Frequency`)) %>%
-      dplyr::ungroup() %>%
-      tidyr::separate(.data$Change, c("Change", "Position", "Name", "Sample"), sep = "\\*")
-
-
-  time_course <- ggplot(
-    summaryData, aes_(
-      x = ~time_var,
-      y = ~VAF,
-      group = ~Change,
-      shape = ~Name)) +
-    theme_bw() +
-    xlab("Time") +
-    ylab("VAF [%]") +
-    geom_point() +
-    geom_line(aes(color = Position))
-
-  if(do.plot){
-    print(time_course)
-
-    object@plots$time_course <- time_course
-    return(object)
-  } else {
-    object@plots$time_course <- time_course
-    return(object)
-  }
-}
 
 #' Add metaData
 #'
@@ -446,6 +678,17 @@ analyzeTimeSeries <- function(
 #' @export
 #' 
 #' @return A UMIexperiment object
+#'
+#' @examples
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#' 
+#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#'
+#' simsen <- addMetaData(simsen,'metaData',metaData)
 #'
 addMetaData <- function(object,attributeName,attributeValue){
   attr(x = object, attributeName) <- attributeValue
@@ -459,6 +702,18 @@ addMetaData <- function(object,attributeName,attributeValue){
 #' @param attributeName Name of the meta data attribute.
 #' 
 #' @return Metadata
+#' 
+#' @examples
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#' 
+#' metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
+#'
+#' simsen <- importDesign(object = simsen,file = metaData)
+#' design <- getMetaData(object = simsen, attributeName = "design")
 #'
 getMetaData <- function(object,attributeName){
   if(attributeName %in% names(attributes(object))){
@@ -481,6 +736,19 @@ getMetaData <- function(object,attributeName){
 #' @export
 #' 
 #' @return A VCF file
+#' 
+#' @examples
+#' \dontrun{
+#' library(umiAnalyzer)
+#'
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#'
+#' simsen <- createUmiExperiment(main)
+#' 
+#' simsen <- filterUmiObject(simsen)
+#'
+#' generateVCF(simsen,'simsen.vcf', printAll = FALSE, save = FALSE)
+#' }
 #'
 generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
   cons.table <- object@cons.table
@@ -563,6 +831,12 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
 #' @export
 #' 
 #' @return A table containing genome positions
+#' 
+#' @examples 
+#' library(umiAnalzyer)
+#' 
+#' bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
+#' bed <- importBedFile(path = bed_dir)
 #'
 importBedFile <- function(path){
 

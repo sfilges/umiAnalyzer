@@ -9,7 +9,7 @@ server <- function(input, output, session, plotFun) {
     },
     content = function(file) {
 
-      object = filteredData()
+      object <- filteredData()
       template <- umiAnalyzer::download_template(object)
       template <- tibble::add_column(template, my_variable = 1:nrow(template))
 
@@ -98,9 +98,8 @@ server <- function(input, output, session, plotFun) {
     content <- function(file) {
 
 
-      object <- umiAnalyzer::generateAmpliconPlots(
+      plot <- umiAnalyzer::AmpliconPlot(
           object = filteredData(),
-          do.plot = FALSE,
           amplicons = input$assays,
           samples = input$samples,
           abs.count = input$abs_counts,
@@ -118,8 +117,6 @@ server <- function(input, output, session, plotFun) {
           fdr = input$fdr_cutoff,
           use.caller = input$use_caller
         )
-
-      plot <- object@plots$amplicon_plot
 
       ggplot2::ggsave(
         filename = file,
@@ -142,7 +139,7 @@ server <- function(input, output, session, plotFun) {
     content <- function(file) {
 
       pdf(file,width = 9, height = 6)
-        umiAnalyzer::amplicon_heatmap(
+        umiAnalyzer::AmpliconHeatmap(
           object = filteredData(),
           amplicons = input$assays,
           samples = input$samples,
@@ -162,9 +159,8 @@ server <- function(input, output, session, plotFun) {
       paste('qc-plot-', Sys.Date(),'.pdf',sep='') },
     content <- function(file) {
       pdf(file, width = 7, height = 3)
-      object <- umiAnalyzer::generateQCplots(
+      object <- umiAnalyzer::QCplot(
         object = experiment(),
-        do.plot = TRUE,
         group.by = 'sample',
         plotDepth = input$consensus,
         assays = input$assays,
@@ -189,9 +185,8 @@ server <- function(input, output, session, plotFun) {
       }
 
       pdf(file, width = 9, height = 6)
-        umiAnalyzer::plotUmiCounts(
+        umiAnalyzer::UmiCountsPlot(
           object = experiment(),
-          do.plot = TRUE,
           amplicons = input$assays,
           samples = input$samples
         )
@@ -264,9 +259,11 @@ server <- function(input, output, session, plotFun) {
       selection = input$dir
     )
 
-    if(!is.null(path_to_umierrorcorrect_data)){
-      main <- path_to_umierrorcorrect_data
-    }
+    # TODO Users supplies path to load data from. Need to fix this without
+    # modifying global variable
+    #(!is.null(path_to_umierrorcorrect_data)){
+    #  main <- path_to_umierrorcorrect_data
+    #}
 
     # Create umiExperiment object
     if (identical(main, character(0))){
@@ -381,7 +378,7 @@ server <- function(input, output, session, plotFun) {
     }
 
     if( input$replicates == "" ){
-      replicates = NULL
+      replicates <- NULL
     } else {
       replicates <- input$replicates
     }
@@ -607,7 +604,7 @@ server <- function(input, output, session, plotFun) {
     }
 
     if(input$use_caller){
-      object = filteredData()
+      object <- filteredData()
       filter <- object@variants
     } else {
       filter <- umiAnalyzer::getFilteredData(
@@ -681,9 +678,8 @@ server <- function(input, output, session, plotFun) {
 
     withProgress(message = 'Rendering amplicon plot', value = 0.25, {
 
-      object <- umiAnalyzer::generateAmpliconPlots(
+      plot <- umiAnalyzer::AmpliconPlot(
         object = filteredData(),
-        do.plot = TRUE,
         amplicons = amplicon_settings_d(),
         samples = sample_settings_d(),
         abs.count = input$abs_counts,
@@ -710,7 +706,7 @@ server <- function(input, output, session, plotFun) {
 
     })
 
-    object@plots$amplicon_plot
+    plot
   })
 
 
@@ -724,9 +720,8 @@ server <- function(input, output, session, plotFun) {
     }
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
-      object <- umiAnalyzer::generateQCplots(
+      qc_depth_plot <- umiAnalyzer::QCplot(
         object = experiment(),
-        do.plot = FALSE,
         group.by = 'sample',
         plotDepth = input$consensus,
         assays = input$assays,
@@ -743,7 +738,7 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering QC plot"))
     })
 
-    object@plots$qc_depth_plot
+    qc_depth_plot
   })
 
 
@@ -768,7 +763,7 @@ server <- function(input, output, session, plotFun) {
 
     shiny::withProgress(message = 'Rendering QC plot', value = 0.25, {
 
-      object <- umiAnalyzer::timeSeriesGrid(
+      plot <- umiAnalyzer::timeSeriesGrid(
         object = filteredData(),
         filter.name = 'default',
         cut.off = input$manual_cutoff,
@@ -781,7 +776,6 @@ server <- function(input, output, session, plotFun) {
         columns = input$columns,
         rows = input$rows,
         color_by = "Name",
-        do.plot = TRUE,
         use.caller = TRUE,
         bed_positions = pos
       )
@@ -789,7 +783,7 @@ server <- function(input, output, session, plotFun) {
       shiny::incProgress(1, detail = paste("Rendering time series plot"))
     })
 
-    object
+    plot
   })
 
 
@@ -801,7 +795,7 @@ server <- function(input, output, session, plotFun) {
       return(NULL)
     }
 
-    umiAnalyzer::amplicon_heatmap(
+    umiAnalyzer::AmpliconHeatmap(
       object = filteredData(),
       amplicons = input$assays,
       samples = input$samples,
@@ -846,9 +840,9 @@ server <- function(input, output, session, plotFun) {
     }
 
     if(input$direction_umi == "default") {
-      direction = 1
+      direction <- 1
     } else {
-      direction = -1
+      direction <- -1
     }
 
     # Initialise progress bar
@@ -856,9 +850,8 @@ server <- function(input, output, session, plotFun) {
       message = 'Rendering UMI plot',
       value = 0.25, {
 
-        umiAnalyzer::plotUmiCounts(
+        plot <- umiAnalyzer::UmiCountsPlot(
           object = experiment(),
-          do.plot = TRUE,
           amplicons = input$assays,
           samples = input$samples,
           theme = input$theme_umi,
@@ -872,7 +865,7 @@ server <- function(input, output, session, plotFun) {
           detail = paste("Rendering UMIs")
         )
       })
-
+    plot
   })
 
   #----- Import BAM files ------
@@ -924,7 +917,7 @@ server <- function(input, output, session, plotFun) {
           value = 0.25, {
 
             # Generate histogram plot using user defined parameters
-            umiAnalyzer::plotFamilyHistogram(
+            umiAnalyzer::BarcodeFamilyHistogram(
               object = reads,
               xMin = input$famSize[1],
               xMax = input$famSize[2],

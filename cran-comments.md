@@ -1,3 +1,42 @@
+## Third resubmission
+
+The following points were addressed:
+
+* Please always write package names, software names and API names in single 
+quotes in title and description. 
+
+Fixed.
+
+* dontrun{} should only be used if the example really cannot be executed.
+
+Removed dontrun{} where possible or changed to donttest{} for long examples.
+
+
+## Second resubmission
+
+The following points were addressed:
+
+* Please add small executable examples in your Rd-files if possible.
+
+Added examples to exported functions. Longer running or less important
+examples were enclosed in `\dontrun{}`.
+
+* Please do not modify the .GlobalEnv. 
+
+Removed modification of the .GlobalEnv in the function runUmiVisualizer().
+
+
+## First resubmission
+
+* Please omit "+ file LICENSE" 
+
+Fixed.
+
+* The Date field is over a month old.
+
+This was changed to 2021-11-23.
+
+
 ## Tested environments
 * Local macOS installation (Intel), Monterey 12.0.1, R 4.1.1
 * Apple Silicon (M1), macOS 11.6 Big Sur, R-release

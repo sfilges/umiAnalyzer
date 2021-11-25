@@ -6,15 +6,8 @@ knitr::opts_chunk$set(
   fig.height=6
 )
 
-## ----installDeps, eval=FALSE--------------------------------------------------
-#  pkgs <- c('tidyverse', 'shinydashboard', 'shinyFiles', 'shinyWidgets', 'DT')
-#  
-#  install.packages(pkgs)
-
 ## ----runApp, eval=FALSE-------------------------------------------------------
-#  library(umiAnalyzer)
-#  
-#  runUmiVisualizer()
+#  umiAnalyzer::runUmiVisualizer()
 
 ## ----example1, eval=TRUE------------------------------------------------------
 library(umiAnalyzer)
@@ -32,63 +25,44 @@ simsen <- mergeAssays(
 ## ----bam-files, eval=TRUE-----------------------------------------------------
 reads <- parseBamFiles(main, consDepth = 10)
 
-plotFamilyHistogram(reads)
+BarcodeFamilyHistogram(reads)
 
 ## ----example1continued, eval=TRUE---------------------------------------------
-simsen <- generateQCplots(
-  object = simsen,
-  group.by = 'assay',
-  option = 'default'
-)
+QCplot(simsen)
 
-simsen <- filterUmiObject(
-  object = simsen
-)
+## ----filerobject, eval=TRUE---------------------------------------------------
+simsen <- filterUmiObject(simsen)
 
 ## ----example1continued_2, eval=TRUE-------------------------------------------
 # This is optional
-simsen <- callVariants(
-  object = simsen, 
-  computePrior = FALSE
-)
+simsen <- callVariants(simsen)
 
 ## ----getFilter, eval=TRUE-----------------------------------------------------
-myfilter <- getFilteredData(
-  object = simsen
-)
-
+myfilter <- getFilteredData(simsen)
 myfilter
 
 ## ----example1continued_3, eval=TRUE-------------------------------------------
-simsen <- plotUmiCounts(
-  object = simsen
-)
+UmiCountsPlot(simsen)
 
-## ---- eval=TRUE---------------------------------------------------------------
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  do.plot = TRUE,
-  amplicons = 'KIT_125',
-  plot.ref = TRUE,
-  plot.text = FALSE
-)
+## ---- eval=FALSE--------------------------------------------------------------
+#  AmpliconPlot(simsen)
 
-## ---- eval=TRUE---------------------------------------------------------------
-simsen <- generateAmpliconPlots(
-  object = simsen,
-  amplicons = c('new'),
-  samples = 'VAF-1-5ng-1-10x'
-)
+## ---- eval=FALSE--------------------------------------------------------------
+#  AmpliconPlot(
+#    object = simsen,
+#    amplicons = 'KIT_125',
+#    samples = 'VAF-1-5ng-1-10x'
+#  )
 
 ## ----metaDataImport, eval=FALSE-----------------------------------------------
 #  metaData <- system.file("extdata", "metadata.txt", package = "umiAnalyzer")
 #  
-#  simsen <- umiAnalyzer::importDesign(
+#  simsen <- importDesign(
 #    object = simsen,
 #    file = metaData
 #  )
 #  
-#  design <- umiAnalyzer::getMetaData(
+#  design <- getMetaData(
 #    object = simsen,
 #    attributeName = "design"
 #  )

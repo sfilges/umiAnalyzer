@@ -26,6 +26,15 @@ used to define the shape of a beta-binomial distribution used to estimate
 variant P-Values. This can be interpreted as a probability for a variant to
 not have arisen by chance.
 }
+\examples{
+library(umiAnalyzer)
+main <- system.file("extdata", package = "umiAnalyzer")
+
+simsen <- createUmiExperiment(main)
+simsen <- filterUmiObject(simsen)
+simsen <- callVariants(simsen, computePrior = FALSE)
+
+}
 \seealso{
 \code{\link{filterVariants}} on how to filter variants.
 }

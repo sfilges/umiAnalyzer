@@ -94,6 +94,15 @@ readBamFile <- function(
 #' @param as.shiny Set to TRUE if run within a shiny::withProgress environment
 #' 
 #' @return A data table
+#' 
+#' @examples
+#' \donttest{
+#' library(umiAnalyzer)
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#' simsen <- createUmiExperiment(main)
+#' 
+#' reads <- parseBamFiles(main, consDepth = 10)
+#' }
 #'
 parseBamFiles <- function(
   mainDir,
@@ -109,7 +118,7 @@ parseBamFiles <- function(
     stop("You must supply a valid directory.")
   } else if(!is.null(sampleNames) && !is.list(sampleNames)){
     warning("sampleNames must be NULL or list. Using defaults.")
-    sampleNames = NULL
+    sampleNames <- NULL
   }
   
   # Get sample names
@@ -159,3 +168,53 @@ parseBamFiles <- function(
   
   return(seq.Data)
 }
+
+#' Find consensus reads
+#' A function to analyze consensus read tables generated with parseBamFiles or
+#' a UMIexperiment object containing reads.
+#'
+#' @export
+#'
+#' @import tibble
+#'
+#' @param object Either a tibble generated with parseBamFiles or a UMIexperiment object
+#' @param pattern Regular expression
+#' @param consDepth Minimum consensus depth to keep. Default is 0.
+#' @param groupBy Should data be grouped by position, sample, both or not at all.
+#'
+#' @return A data table
+#' 
+#' @examples
+#' \donttest{
+#' library(umiAnalyzer)
+#' main <- system.file("extdata", package = "umiAnalyzer")
+#' simsen <- createUmiExperiment(main, importBam = TRUE)
+#' 
+#' reads <- findConsensusReads(simsen)
+#' reads
+#' }
+#'
+findConsensusReads <- function(
+  object,
+  consDepth = 0,
+  groupBy = c("none", "sample", "position", "both"),
+  pattern = NULL
+){
+  
+  if(missing(x = object)){
+    stop("No object supplied")
+  } else if(!tibble::is_tibble(object)) {
+    if(!class(object) == "UMIexperiment") {
+      stop("Need to supply either a UMIexperiment object or tibble generated
+         with parseBamFiles.")
+    }
+  }
+  
+  if (class(object)[1] == "UMIexperiment") {
+    readsTable <- object@reads
+  } else {
+    readsTable <- object
+  }
+}
+
+
