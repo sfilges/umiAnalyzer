@@ -16,7 +16,7 @@ A table containing genome positions
 Import bed file
 }
 \examples{
-library(umiAnalzyer)
+library(umiAnalyzer)
 
 bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
 bed <- importBedFile(path = bed_dir)

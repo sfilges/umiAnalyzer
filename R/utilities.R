@@ -833,7 +833,7 @@ generateVCF <- function(object, outDir = getwd(), outFile, printAll = FALSE) {
 #' @return A table containing genome positions
 #' 
 #' @examples 
-#' library(umiAnalzyer)
+#' library(umiAnalyzer)
 #' 
 #' bed_dir <- system.file("extdata", "simple.bed", package = "umiAnalyzer")
 #' bed <- importBedFile(path = bed_dir)

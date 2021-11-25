@@ -1,5 +1,6 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/sfilges/umiAnalyzer/workflows/R-CMD-check/badge.svg)](https://github.com/sfilges/umiAnalyzer/actions)
+[![CRAN status](https://www.r-pkg.org/badges/version/umiAnalyzer)](https://CRAN.R-project.org/package=umiAnalyzer)
 <!-- badges: end -->
 
 
