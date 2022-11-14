@@ -17,7 +17,9 @@ QCplot(
   center = "mean",
   line_col = "blue",
   angle = 0,
-  plotly = FALSE
+  plotly = FALSE,
+  font_size_x = 8,
+  font_size_y = 12
 )
 }
 \arguments{

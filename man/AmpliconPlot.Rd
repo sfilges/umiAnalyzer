@@ -26,7 +26,8 @@ AmpliconPlot(
   font.size = 6,
   angle = 45,
   use.caller = FALSE,
-  use.plotly = TRUE
+  use.plotly = TRUE,
+  max.positions = 5000
 )
 }
 \arguments{

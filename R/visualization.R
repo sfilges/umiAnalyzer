@@ -51,7 +51,9 @@ QCplot <- function(
   center = 'mean',
   line_col = 'blue',
   angle = 0,
-  plotly = FALSE
+  plotly = FALSE,
+  font_size_x = 8,
+  font_size_y = 12
   ) {
 
   if (missing(x = object)) {
@@ -117,8 +119,8 @@ QCplot <- function(
       use_theme +
       theme(
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 14, angle = angle, hjust = 1),
-        axis.text.y = element_text(size = 14)
+        axis.text.x = element_text(size = font_size_x, angle = angle, hjust = 1),
+        axis.text.y = element_text(size = font_size_y)
       ) +
       labs(
         title = paste('Consensus ', plotDepth, ' depths by assay', sep = ""),
@@ -134,8 +136,8 @@ QCplot <- function(
       use_theme +
       theme(
         axis.title.x = element_blank(),
-        axis.text.x = element_text(size = 14, angle = angle),
-        axis.text.y = element_text(size = 14)
+        axis.text.x = element_text(size = font_size_x, angle = angle),
+        axis.text.y = element_text(size = font_size_y)
       ) +
       labs(
         title = paste('Consensus ', plotDepth, ' depths by sample', sep = ''),
@@ -360,7 +362,8 @@ AmpliconPlot <- function(
   font.size = 6,
   angle = 45,
   use.caller = FALSE,
-  use.plotly = TRUE
+  use.plotly = TRUE,
+  max.positions = 5000
   ) {
 
   if (missing(x = object)) {

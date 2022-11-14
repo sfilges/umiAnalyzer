@@ -37,7 +37,7 @@ createUmiSample <- function(
     importbam <- FALSE
   }
   
-  consFile <- list.files(path = sampleDir, pattern = "\\.cons$")
+  consFile <- list.files(path = sampleDir, pattern = "\\_cons.tsv$")
   summaryFile <- list.files(path = sampleDir, pattern = "\\_summary_statistics.txt$")
   
   if(length(consFile) == 0 | length(summaryFile) == 0){
@@ -204,14 +204,14 @@ createUmiExperiment <- function(
     # Find .cons file
     consFile <- list.files(
       path = file.path(mainDir, sampleNames[i]),
-      pattern = "\\.cons$")
+      pattern = "\\_cons.tsv$")
     
     if( identical(consFile, character(0))  ){
       next
     }
     
     # Remove file ending
-    consFile <- stringr::str_remove(consFile, '.cons')
+    consFile <- stringr::str_remove(consFile, '_cons.tsv')
     
     # Create UMI sample
     sample <- createUmiSample(
